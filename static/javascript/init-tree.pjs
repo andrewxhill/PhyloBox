@@ -1,0 +1,88 @@
+String NODE_COLOR = "#4444FF";
+String LEAF_COLOR = "#FF4444";
+String BRANCH_COLOR = "#FFCB99";
+
+// Set Last Mouse X & Y for dist check  
+int lastMouseX, lastMouseY;  
+
+//Set sample rate and buffer arrays  
+int sampleRate = 16, sampleLoc = 0;  
+int lastSampleRate = sampleRate;  
+int[] distXY = new int[sampleRate];  
+int[] nextDistXY = new int[sampleRate]; 
+
+
+int numNodes = 1;
+Nodes[] nodes = new Node[numNodes];
+
+
+void setup() 
+{
+  size(500,400);  // Size should be the first statement
+  stroke(255);     // Set line drawing color to white
+  frameRate(30);
+  for (int i = 0; i < numNodes; i++) {  
+    nodes[i] = new Node(width/2, height/2, random(20, 40), i, nodes);
+  }
+}
+
+void draw() 
+{ 
+  background(50);   // Set the background to black
+  readMouse();
+  for (int i = 0; i < numNodes; i++) {  
+      nodes[i].display();   
+      nodes[i].move();   
+  }
+}
+
+class Node {
+    float x, y; 
+    float diameter;  
+    float vx = 0;  
+    float vy = 0;  
+    int id;  
+    
+    Node[] others;
+    
+    Node(float xin, float yin, float din, int idin, Node[] oin) {  
+        x = xin;  
+        y = yin;  
+        diameter = din;  
+        id = idin;  
+        others = oin;  
+    }
+    void move() {
+        x = lastMouseX;
+        y = lastMouseY;
+    }
+    
+    void display() {  
+        fill(255, 204);  
+        ellipse(x, y, diameter, diameter);  
+    }
+}
+
+
+
+void readMouse(){  
+  // Check lastMouseX has value to stop initial jump   
+  if (!isNaN(lastMouseX)){               
+    
+    // Calculate MouseX Movement Distance
+    if (mouseX > lastMouseX){distX = mouseX - lastMouseX;}
+    else {distX = lastMouseX - mouseX;}
+    
+    // Calculate MouseY Movement Distance
+    if (mouseY > lastMouseY){distY = mouseY - lastMouseY;}
+    else {distY = lastMouseY - mouseY;}
+    
+    //Combine total distance traveled
+    nextDistXY[sampleLoc] = distX + distY;
+    lastDistXY = distX + distY;    
+  }
+  
+  // Setup lastMouseX & Y for next movement
+  lastMouseX = mouseX;
+  lastMouseY = mouseY;
+}

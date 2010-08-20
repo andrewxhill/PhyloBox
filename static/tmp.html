@@ -1,0 +1,26 @@
+<html>
+<head>
+<script type="text/javascript" src="http://phylobox.appspot.com/static/javascript/jquery.js"></script>
+</head>
+<body style="background-color: #eee;" onload="init();">
+<div id="tmp" >
+<script language="javascript">
+    var WIDTH = 500;
+    var HEIGHT = 500;
+    function init(){
+    var url = "http://phylobox.appspot.com/lookup";
+    var k = '9c63a1c1-9d89-4562-97cf-b1a479e56460';
+         
+        //lookup method can also take a callback variable, get or post
+        //Full URL: http://phylobox.appspot.com/lookup
+        url = url+"?k="+k+"&callback=?";
+        $.getJSON(url,
+        function(data){ 
+            alert(data);
+        });
+    }
+    
+</script>
+</div>
+</body>
+</html>

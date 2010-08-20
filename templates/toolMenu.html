@@ -1,0 +1,119 @@
+                    <div class="toolset-options"><div id="basic_toggle" class="toolset-option">Basic </div><div class="toolset-option"> | </div><div id="advanced_toggle" class="toolset-option"> Advanced</div></div><br/>
+                    <div class="toolset" id="basic">
+                        <div id="item_title">Tree Title:</div><input id="ProjectTitle" type='text' /><br />
+                        <div id="item_title">Background Color:</div> <input id="BackgroundColor" class="color" value="#1A1A1A" />
+                        <div id="item_title">Branch Width: <span id="branch_width"></span> </div><br/>
+                        <div id="slider" class="branch_width_slider"></div>
+                        <div id="item_title">Node Radius: <span id="node_radius"></span> </div><br/>
+                        <div id="slider" class="node_radius_slider"></div>
+                        <div id="item_title">View Type:</div>
+                        <div id="view_selector">
+                            <form>
+                                <input type="radio" id="p" name="radio" /><label for="p">P</label>
+                                <input type="radio" id="d" name="radio" checked="checked" /><label for="d">D</label>
+                                <input type="radio" id="c" name="radio" /><label for="c">C</label>
+                                <input type="radio" id="3d" name="radio" /><label for="3d">3D</label>
+                            </form>
+                        </div>
+                        <div id="item_title">Labels:</div><br/>
+                        <div id="item_title"> 
+                            <div id="node_label_toggle">
+                                <form>
+                                    <input type="radio" id="non" name="radio" /><label for="non">On</label>
+                                    Leaf-HTU
+                                    <input type="radio" id="noff" name="radio" checked="checked" /><label for="noff">Off</label>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="item_title">
+                            <div id="branch_label_toggle">
+                                <form>
+                                    <input type="radio" id="bon" name="radio" /><label for="bon">On</label>
+                                     Branches
+                                    <input type="radio" id="boff" name="radio" checked="checked" /><label for="boff">Off</label>
+                                </form>
+                            </div>
+                        </div>
+                        <br/>
+                        <p>
+                            <div id="item_title">Other:</div>
+                                <div id="other_tools">
+                                    <button id="forkButton" class="other" title="Fork New Project">
+                                        <img alt="Fork New Project" src="/static/images/editor/fork_project.png" class="extended-button"/>
+                                    </button>
+                                </div>
+                        </p>
+                    </div>
+                    <div class="toolset" id="advanced">
+                        <div id="item_title">Tools:</div>
+                            <div id="edit_tools">
+                                <p >
+                                    <button id="handTool" class="tool" title="Interact">
+                                        <img id="handTool-img" src="/static/images/editor/hand_tool.png" class="tool-button" />
+                                    </button>
+                                    <button id="toggleClade" class="tool" title="Toggle Clade">
+                                        <img id="toggleClade-img" src="/static/images/editor/collapse_clade.png" class="tool-button" />
+                                    </button>
+                                    <button id="externalLink" class="tool" title="URI Links">
+                                        <img id="externalLink-img" src="/static/images/editor/uri_link.png" class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <br/>
+                                </p>
+                                <p >
+                                    Primary URI <select id='primaryURI'></select>
+                                </p>
+                                <p >
+                                    <button id="paintNodes" class="tool" title="Paint Tool">
+                                        <img id="paintNodes-img" src="/static/images/editor/paint_tool.png" class="tool-button"/>
+                                    </button>
+                                    <input id="colornode" class="color" value="#75a0cb" />
+                                </p>
+                            </div>
+                        <br />
+                    </div>
+                    
