@@ -1,0 +1,38 @@
+.menu{
+    position: absolute;
+    z-index:1000;
+    background-color: #75a0cb;
+    color:#1d1d1d; 
+    font-family: font-style:italic; font-family:Georgia, Times, serif; 
+     -webkit-box-shadow:10px 10px 20px #000000;
+     box-shadow:10px 10px 20px #000000;
+     filter: alpha(opacity=75);
+     opacity: 0.75;
+}
+#menus{
+    width: 100px;
+    height: 95px;
+}
+.menuHeader{
+    margin: 2%;
+    width: 96%;
+    height: 20px;
+    background: #eee;
+    text-align: center;
+    cursor: crosshair;
+    filter: alpha(opacity=100);
+    opacity: 1;
+}
+#taxaList{
+    position: absolute;
+    width: 100px;
+    height: 80px;
+    z-index:1000;
+    background-color: #75a0cb;
+    color:#1d1d1d; 
+    font-family: font-style:italic; font-family:Georgia, Times, serif; 
+     -webkit-box-shadow:10px 10px 20px #000000;
+     box-shadow:10px 10px 20px #000000;
+     filter: alpha(opacity=75);
+     opacity: 0.75;
+}

@@ -1,0 +1,4 @@
+cron:
+- description: Daily tmpStore cleanup
+  url: /dailycron
+  schedule: every 24 hours

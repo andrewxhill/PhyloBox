@@ -1,0 +1,514 @@
+{
+    "description": "PhyloJSON Tree Generated at PhyloBox", 
+    "author": "AndrewXHill", 
+    "title": "Baeolophus Example", 
+    "tree": [
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "75a0cb", 
+            "taxonomy": null, 
+            "id": 2, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 3
+                }, 
+                {
+                    "id": 16
+                }
+            ], 
+            "parent_id": null, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "75a0cb", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "75a0cb", 
+            "taxonomy": null, 
+            "id": 3, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 4
+                }, 
+                {
+                    "id": 9
+                }
+            ], 
+            "parent_id": 2, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "75a0cb", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "75a0cb", 
+            "taxonomy": null, 
+            "id": 4, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 5
+                }, 
+                {
+                    "id": 6
+                }
+            ], 
+            "parent_id": 3, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "75a0cb", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "3048", 
+            "name": null, 
+            "color": "ffc000", 
+            "taxonomy": {
+                "scientific_name": "Baeolophus atricristatus"
+            }, 
+            "id": 5, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/5/51800.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/5/59716.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:24e96b7e-60a7-102d-be47-00304854f810:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 4, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 30, 
+                    "alt": 0, 
+                    "lon": -103
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ffc000", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "ff2a00", 
+            "taxonomy": {
+                "scientific_name": "Baeolophus bicolor"
+            }, 
+            "id": 6, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 7
+                }, 
+                {
+                    "id": 8
+                }
+            ], 
+            "parent_id": 4, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ff2a00", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "30853", 
+            "name": null, 
+            "color": "ff2a00", 
+            "taxonomy": null, 
+            "id": 7, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/9/94271.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/3/33146.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:f33e10de-29c1-102b-9a4a-00304854f820:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 6, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 42, 
+                    "alt": 0, 
+                    "lon": -80
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ff2a00", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "9484", 
+            "name": null, 
+            "color": "ff2a00", 
+            "taxonomy": null, 
+            "id": 8, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/5/53157.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/3/35191.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:f33e10de-29c1-102b-9a4a-00304854f820:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 6, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 42, 
+                    "alt": 0, 
+                    "lon": -79
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ff2a00", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "75a0cb", 
+            "taxonomy": null, 
+            "id": 9, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 10
+                }, 
+                {
+                    "id": 13
+                }
+            ], 
+            "parent_id": 3, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "75a0cb", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "ff00fa", 
+            "taxonomy": {
+                "scientific_name": "Baeolophus ridgwayi"
+            }, 
+            "id": 10, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 11
+                }, 
+                {
+                    "id": 12
+                }
+            ], 
+            "parent_id": 9, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ff00fa", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "41537", 
+            "name": null, 
+            "color": "ff00fa", 
+            "taxonomy": null, 
+            "id": 11, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/10/109089.mp3", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:f33e7d6c-29c1-102b-9a4a-00304854f820:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 10, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 35, 
+                    "alt": 0, 
+                    "lon": -106
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ff00fa", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "47712", 
+            "name": null, 
+            "color": "ff00fa", 
+            "taxonomy": null, 
+            "id": 12, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/4/44636.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/3/35571.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:f33e7d6c-29c1-102b-9a4a-00304854f820:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 10, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 35, 
+                    "alt": 0, 
+                    "lon": -115
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "ff00fa", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": null, 
+            "name": null, 
+            "color": "7fff00", 
+            "taxonomy": {
+                "scientific_name": "Baeolophus inornatus", 
+                "common_name": "Oak Titmouse"
+            }, 
+            "id": 13, 
+            "uri": null, 
+            "visibility": true, 
+            "children": [
+                {
+                    "id": 14
+                }, 
+                {
+                    "id": 15
+                }
+            ], 
+            "parent_id": 9, 
+            "length": null, 
+            "points": null, 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "7fff00", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "57760", 
+            "name": null, 
+            "color": "7fff00", 
+            "taxonomy": null, 
+            "id": 14, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/11/110924.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/4/47589.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:24e8dc86-60a7-102d-be47-00304854f810:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 13, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 29.99, 
+                    "alt": 0, 
+                    "lon": -116
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "7fff00", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "57761", 
+            "name": null, 
+            "color": "7fff00", 
+            "taxonomy": null, 
+            "id": 15, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/5/50180.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/4/47581.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:24e8dc86-60a7-102d-be47-00304854f810:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 13, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 29.99, 
+                    "alt": 0, 
+                    "lon": -116.02
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "7fff00", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }, 
+        {
+            "date_min": null, 
+            "code": "41536", 
+            "name": null, 
+            "color": "00fffa", 
+            "taxonomy": {
+                "scientific_name": "Baeolophus wollweberi", 
+                "common_name": "Bridled Titmouse"
+            }, 
+            "id": 16, 
+            "uri": {
+                "audio": "http://mlaudio.ornith.cornell.edu/11/110924.mp3", 
+                "video": "http://mlvideo.ornith.cornell.edu/4/44013.mov", 
+                "icon": "http://geophylo.appspot.com/static_files/icons/01.png", 
+                "col-lsid": "urn:lsid:catalogueoflife.org:taxon:f33e13cc-29c1-102b-9a4a-00304854f820:ac2010"
+            }, 
+            "visibility": true, 
+            "children": null, 
+            "parent_id": 2, 
+            "length": null, 
+            "points": [
+                {
+                    "lat": 31, 
+                    "alt": 0, 
+                    "lon": -109
+                }
+            ], 
+            "centroid": null, 
+            "conf": null, 
+            "ncolor": "00fffa", 
+            "date": null, 
+            "events": null, 
+            "type": null, 
+            "polygons": null, 
+            "date_max": null
+        }
+    ], 
+    "environment": {
+        "width": 7, 
+        "color": "1d1d1d", 
+        "branchlenghts": true, 
+        "leaflabels": false, 
+        "htulabels": false, 
+        "viewmode": 0, 
+        "radius": 7, 
+        "offset": {
+            "dz": 1424, 
+            "dx": 0, 
+            "dy": 0, 
+            "ay": 0, 
+            "ax": 0, 
+            "az": 0
+        }, 
+        "primaryuri": null, 
+        "angvel": {
+            "y": null, 
+            "x": null, 
+            "z": null
+        }, 
+        "root": 2, 
+        "branchlabels": false, 
+        "3D": false
+    }, 
+    "v": 1, 
+    "date": "2010-06-20 21:13:43.083065", 
+    "root": 2
+}

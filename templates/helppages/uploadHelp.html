@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>PhyloBox</title>
+    <meta name="description" content="PhyloBox Help">
+    <script type="text/javascript" src="/static/javascript/jquery.js"></script>  
+    <script type="text/javascript" src="/static/javascript/generalUI.js"></script>  
+    
+    <link rel="stylesheet" href="/static/css/treeedit.css" /> 
+    <link rel="stylesheet" href="/static/css/helppage.css" /> 
+    <link rel="stylesheet" href="/static/css/header.css" /> 
+    
+</head>
+<body>
+<div id="wrapper">
+    {{ header }}
+    <div id="content">
+        <div id="full">
+            <div id="left">
+                    Uploading a tree should be a breeze. Simply use the form on the <a href="/">PhyloBox Homepage</a> to browse to your locally stored phylogeny and press 'GO!'.
+                <p>
+                    For just a short time, we only have support for PhyloXML trees. We wanted to ask around at <a href="http://ievobio.org">iEvoBio</a> about what formats people want to see supported first. Nexus? NeXML? Newick? NHX?
+                </p><p>
+                    If you have have a large bioinformatics project and want to create a lot of trees, you can also use our <a href="/api">our API</a>.
+                </p>
+            </div>
+            <div id="right">
+                <img src="/static/images/helppages/upload.png"/>
+            </div>
+        </div>
+    </div>
+    {{ homeMenu }}
+</div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phyloxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.phyloxml.org http://www.phyloxml.org/1.10/phyloxml.xsd" xmlns="http://www.phyloxml.org">
+<phylogeny rooted="true">
+  <clade>
+    <clade>
+      <clade>
+        <clade>
+          <node_id>3048</node_id>
+          <name>Baeolophus atricristatus</name>
+          <taxonomy>
+            <scientific_name>Baeolophus atricristatus</scientific_name>
+          </taxonomy>
+          <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+          <branchcolor>ffc000</branchcolor>
+          <distribution>
+            <point><lat>30.0</lat><lon>-103</lon><alt>0</alt></point>
+          </distribution>
+        </clade>
+        <clade>
+          <name>Baeolophus bicolor</name>
+          <taxonomy>
+            <scientific_name>Baeolophus bicolor</scientific_name>
+          </taxonomy>
+          <branchcolor>ff2a00</branchcolor>
+          <clade>
+            <node_id>30853</node_id>
+            <name>Baeolophus bicolor</name>
+            <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+            <distribution>
+              <point><lat>42.0</lat><lon>-80.0</lon><alt>0</alt></point>
+           </distribution>
+          </clade>
+          <clade>
+            <node_id>9484</node_id>
+            <name>Baeolophus bicolor</name>
+            <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+            <distribution>
+              <point><lat>42.0</lat><lon>-79.0</lon><alt>0</alt></point>
+            </distribution>
+          </clade>
+        </clade> 
+      </clade> 
+      <clade>
+        <clade>
+          <name>Baeolophus ridgwayi</name>
+          <taxonomy>
+            <scientific_name>Baeolophus bicolor</scientific_name>
+          </taxonomy>
+          <branchcolor>ff00fa</branchcolor>
+          <clade>
+            <node_id>41537</node_id>
+            <name>Baeolophus ridgwayi</name>
+            <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+            <distribution>
+              <point><lat>35.0</lat><lon>-106.0</lon><alt>0</alt></point>
+            </distribution>
+          </clade>
+          <clade>
+            <node_id>47712</node_id>
+            <name>Baeolophus ridgwayi</name>
+            <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+            <distribution>
+              <point><lat>35.0</lat><lon>-115.0</lon><alt>0</alt></point>
+            </distribution>
+          </clade>
+        </clade> 
+        <clade>
+          <name>Baeolophus inornatus</name>
+          <taxonomy>
+            <scientific_name>Baeolophus inornatus</scientific_name>
+          </taxonomy>
+          <branchcolor>7fff00</branchcolor>
+          <clade>
+            <node_id>57760</node_id>
+            <name>Baeolophus inornatus</name>
+            <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+            <distribution>
+              <point><lat>29.99</lat><lon>-116.0</lon><alt>0</alt></point>
+            </distribution>
+          </clade>
+          <clade>
+            <node_id>57761</node_id>
+            <name>Baeolophus inornatus</name>
+            <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+            <distribution>
+              <point><lat>29.99</lat><lon>-116.02</lon><alt>0</alt></point>
+            </distribution>
+          </clade>
+        </clade> 
+      </clade> 
+    </clade>
+    <clade>
+      <node_id>41536</node_id>
+      <name>Baeolophus wollweberi</name>
+      <taxonomy>
+        <scientific_name>Baeolophus wollweberi</scientific_name>
+      </taxonomy>
+      <branchcolor>00fffa</branchcolor>
+      <uri type="icon">http://geophylo.appspot.com/static_files/icons/01.png</uri>
+      <distribution>
+        <point><lat>31.0</lat><lon>-109.0</lon><alt>0</alt></point>  
+      </distribution>
+    </clade>
+  </clade>
+</phylogeny> 
+</phyloxml> 
