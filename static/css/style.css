@@ -5,7 +5,7 @@ html{color:#000;background:#FFF;}*{outline:none;}*,body,div,dl,dt,dd,ul,ol,li,h1
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
-body { width:100%; font-family:Arial,sans-serif; font-size:11px; }
+body { width:100%; font-family:Arial,sans-serif; font-size:10px; line-height:13px; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
@@ -14,21 +14,27 @@ a:visited { }
 a:hover { text-decoration:none; }
 a:active { outline:none; }
 
-a.plain { font-family:"Plain",Arial,sans-serif; font-size:8px; color:grey; }
+a.plain { font-family:"Plain",Arial,sans-serif; font-size:8px; color:gray; }
 a.plain:hover { text-decoration:underline; }
 a.plain:active { color:black; }
+
+a.taxa-link { text-transform:uppercase; white-space:nowrap; line-height:13px; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
 h1.logo { font-family:"Logo",Arial,sans-serif; font-size:12px; line-height:40px; color:black; padding:0 0 0 10px; float:left; cursor:default; }
 
-h2.panel-head { font-family:Arial black,Arial,sans-serif; font-size:11px; line-height:25px; font-weight:bold; color:#333; padding:0 0 0 10px; white-space:nowrap; }
+h2 { font-weight:bold; color:#333; white-space:nowrap; }
+h2.panel-head { font-family:Arial black,Arial,sans-serif; font-size:11px; line-height:25px; padding:0 0 0 10px; }
+h2.prop-title { font-size:10px; padding:0 0 0 0; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
 header { }
 
 nav { }
+
+section { overflow-x:hidden; overflow-y:auto; }
 
 footer { }
 
@@ -37,7 +43,17 @@ footer { }
 input[type='submit']::-moz-focus-inner { border:none; }
 input[type="submit"] {  }
 
+select { width:80px; }
+
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
+
+span.editable {  }
+span.editable-prop { color:gray; width:50px; display:inline-block; }
+input.editable-field { display:none; }
+input.editable-field-short { width:20px; }
+input.editable-field-long { width:40px; }
+
+span.uri-link { color:gray; }
 
 div.clear { clear:both; }
 
@@ -71,6 +87,11 @@ div.panel-right {
 	background-image:-moz-linear-gradient(center left,#CCC 0%,#F2F2F2 5%);
 }
 
+table { width:100%; border-bottom:1px solid #D3D3D3; color:#333; margin:0 0 8px 0; }
+caption { font-weight:bold; white-space:nowrap; display:block; padding:0 0 8px 10px; }
+td { font-family:"Plain",Arial,sans-serif; font-size:8px; line-height:26px; white-space:nowrap; width:50%; padding:0 0 0 10px; }
+td.empty { line-height:2px; }
+
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
 #head { background:#82877A; width:100%; height:30px; }
@@ -96,7 +117,7 @@ div.panel-right {
 }
 #toolbar > nav { margin:0 auto; width:200px; height:25px; }
 #toolbar li { display:inline; }
-#toolbar a { background:none; padding:10px 8px 2px; }
+#toolbar a { background:none; padding:11px 8px 3px; }
 #toolbar a:hover { background:rgba(51,51,51,0.1); }
 #toolbar a:active { background:rgba(51,51,51,0.2); }
 #toolbar img.tool { padding:4px 0 0 0; }
@@ -106,17 +127,21 @@ div.panel-right {
 #main {  }
 
 #main-left { float:left; }
-#main-center { margin:0 200px 0 300px; opacity:0.999; }
+#main-center { margin:0 250px 0 300px; opacity:0.999; }
 #main-right { float:right; }
 
-#taxa { width:100px; }
+#taxa { width:175px; }
+#node { width:125px; }
 #trees {  }
-#node { width:200px; }
-#doc { width:200px; overflow:hidden; }
+#doc { width:250px; overflow:hidden; }
+#taxa > section { padding:10px 0 0 2px; }
+#node > section { padding:10px 0 0 10px; }
+#trees > section { padding:0 10px; overflow:hidden; }
+#doc > section { padding:10px 0 0 0; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
-#foot { background:#B4AA97; width:100%; height:20px; }
+#foot { background:#B4AA97; width:100%; height:20px; position:relative; }
 #foot a { line-height:20px; color:white; padding:0 0 0 10px; }
 #foot a:active { color:black; }
 
