@@ -1,0 +1,112 @@
+                    <div class="toolset-options"><div id="basic_toggle" class="toolset-option">Basic </div><div class="toolset-option"> | </div><div id="advanced_toggle" class="toolset-option"> Advanced</div></div><br/>
+                    <div class="toolset" id="basic">
+                        <div id="item_title">Tree Title:</div><input id="ProjectTitle" type='text' /><br />
+                        <div id="item_title">Background Color:</div> <input id="background_color" class="color" value="#1A1A1A" />
+                        <div id="item_title">Branch Width: <span id="branch_width"></span> </div><br/>
+                        <div id="slider" class="branch_width_slider"></div>
+                        <div id="item_title">Node Radius: <span id="node_radius"></span> </div><br/>
+                        <div id="slider" class="node_radius_slider"></div>
+                        <div id="item_title">View Type:</div>
+                        <div id="view_selector">
+                            <button id="viewButton" class="other" title="Change Viewtype">
+                                <img alt="Change Viewtype" src="/static/images/editor/viewPhylogram.png" class="extended-button"/>
+                            </button>
+                        </div>
+                        <div id="item_title">Labels:</div><br/>
+                        <div class="checkoption">
+                            <input type="checkbox" id="leaflabels" name="leaflabels" > <label class="checkbox" for="leaflabels">Leaf</label>
+                            <input type="checkbox" id="htulabels" name="htulabels" ><label class="checkbox" for="htulabels">HTU</label>
+                            <input type="checkbox" id="branchlabels" name="branchlabels" DISABLED><label class="checkbox" for="branchlabels">Branch</label>
+                        </div>
+                        <br/>
+                        <div id="item_title">Viewing:</div><br/>
+                        <div class="checkoption">
+                            <input type="checkbox" id="branchlength" name="branchlength" DISABLED> <label class="checkbox" for="branchlength">Branch Length</label>
+                            <input type="checkbox" id="3d" name="3d" DISABLED><label class="checkbox" for="3d">3D</label>
+                        </div>
+                        <br/>
+                        <p>
+                            <div id="item_title">Other:</div>
+                                <div id="other_tools">
+                                    <button id="forkButton" class="other" title="Fork New Project">
+                                        <img alt="Fork New Project" src="/static/images/editor/fork_project.png" class="extended-button"/>
+                                    </button>
+                                    <button id="stopButton" class="other" title="Stop Tree">
+                                        <img alt="Stop Tree" src="/static/images/editor/stop_sign.png" class="extended-button"/>
+                                    </button>
+                                </div>
+                        </p>
+                    </div>
+                    <div class="toolset" id="advanced">
+                        <div id="item_title">Tools:</div>
+                            <div id="edit_tools">
+                                <p >
+                                    <button id="handTool" class="tool" title="Interact">
+                                        <img id="handTool-img" src="/static/images/editor/hand_tool.png" class="tool-button" />
+                                    </button>
+                                    <button id="toggleClade" class="tool" title="Toggle Clade">
+                                        <img id="toggleClade-img" src="/static/images/editor/collapse_clade.png" class="tool-button" />
+                                    </button>
+                                    <button id="externalLink" class="tool" title="URI Links">
+                                        <img id="externalLink-img" src="/static/images/editor/uri_link.png" class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <button id="empty" class="tool" title="in dev">
+                                        <img src="/static/images/editor/empty.png"  class="tool-button" />
+                                    </button>
+                                    <br/>
+                                </p>
+                                <p >
+                                    Primary URI <select id='primaryURI'></select>
+                                </p>
+                                <p >
+                                    <button id="paintNodes" class="tool" title="Paint Tool">
+                                        <img id="paintNodes-img" src="/static/images/editor/paint_tool.png" class="tool-button"/>
+                                    </button>
+                                    <input id="colornode" class="color" value="#75a0cb" />
+                                </p>
+                            </div>
+                        <br />
+                    </div>
+                    

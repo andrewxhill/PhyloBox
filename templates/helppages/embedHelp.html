@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>PhyloBox</title>
+    <meta name="description" content="PhyloBox Blogger Help">
+    <script type="text/javascript" src="/static/javascript/jquery.js"></script>  
+    <script type="text/javascript" src="/static/javascript/generalUI.js"></script>  
+    
+    <link rel="stylesheet" href="/static/css/treeedit.css" /> 
+    <link rel="stylesheet" href="/static/css/helppage.css" /> 
+    <link rel="stylesheet" href="/static/css/header.css" /> 
+    
+</head>
+<body>
+<div id="wrapper">
+    {{ header }}
+    <div id="content">
+        <div id="first">
+                Embedding phylogenies in on your webpage is what PhyloBox is all about. If the methods we show you here don't work for your 
+                particular project, please contact me, AndrewXHill@gmail.com and I will do my best to help you make it happen.
+            <p>
+                Embedding a tree in a site you fully control different that embedding a tree in a more restrictive site, say Blogger. For instruction on 
+                getting your tree into Blogger, <a href="/help/blogger">go here</a>.
+            </p>
+        </div>
+        <div id="second">
+            <div id="left">
+                The easiest way to embed your tree in HTML, is to simple cut and paste the code from the 'Embed Tree' link within the Editor directly into your web page source code. See example code to right.
+                </p><p>
+                You can change the height and width parameters to your liking, and by wrapping it in a custom <a href="http://dev.w3.org/html5/markup/div.html">DIV element</a> you can easily position it anywhere on the page.
+                </p>
+            </div>
+            <pre class="embedCode" id="blogger">
+&lt;div width="400" 
+     height="385"
+     style="width:400px;height:385px;"
+     id="phylobox_perm783d06b1-e040-4c94-bf18-8a35bda8ea00"
+     class="phylobox_embed_parent"&gt; &lt;a href="http://phylobox.appspot.com"&gt; &lt;img src="http://phylobox.appspot.com/static/images/widget/holder_425.png" width="375" height"344" /&gt; &lt;/a&gt; &lt;/div&gt; 
+&lt;script type="text/javascript" src="http://phylobox.appspot.com/static/javascript/WidgetControllers/latest/InsertWidget.js"&gt; &lt;/script&gt; &lt;script type="text/javascript"&gt; if (PHYLOBOX) PHYLOBOX.renderPhylo();&lt;/script&gt; &lt;noscript&gt; Sorry, we haven't spent much time with IE, maybe that is why you are not seeing anything here?&lt;/noscript&gt; 
+             
+            </pre>
+        </div>
+    </div>
+    {{ homeMenu }}
+</div>
+</body>
+</html>

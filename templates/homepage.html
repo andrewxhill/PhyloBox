@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>PhyloBox</title>
+    <meta name="description" content="PhyloBox">
+    <script type="text/javascript">
+        if((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) { 
+            window.location = "/mobile/i"; 
+        }
+        if (navigator.userAgent.match(/Android/i)){
+            window.location = "/mobile/a";
+        }
+    </script>
+    <meta name="google-site-verification" content="5cWBbUo-CQBriB6BaiUWXpXbrG5CFKnc9fIybuh9CzQ" />
+    <script type="text/javascript" src="/static/javascript/jquery.js"></script>  
+    <link rel="stylesheet" href="/static/css/homepage.css" />
+    <script type="text/javascript" src="/static/javascript/jquery-ui/jquery.gritter.min.js"></script>
+    <link rel="stylesheet" href="/static/javascript/jquery-themes/jquery.gritter.css"/> 
+
+<script type="text/javascript">
+function init(){
+    $.gritter.add({
+                // (string | mandatory) the heading of the notification
+                title: "PhyloBox is Testing Newick Support",
+                // (string | mandatory) the text inside the notification
+                text: "We've added an option to upload a Newick file below. It currently supports node labels and branch lengths.",
+                // (string | optional) the image to display on the left
+                image: '/static/images/icons/phylobox-80.png',
+                // (bool | optional) if you want it to fade out on its own or just sit there
+                sticky: false, 
+                // (int | optional) the time you want it to be alive for before fading out
+                time: 6000
+            });
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+    <div id="row" class="main">
+        <div id="col" class="info">
+            PhyloBox is an online environment for viewing, editing, sharing, and publishing phylogenetic trees. 
+            We plan to support some of the same tools as <a href="http://mesquiteproject.org">Mesquite</a>, while allowing web features like embedding phylogenies in your webpage similar to a <a href="http://www.google.com/support/youtube/bin/answer.py?hl=en&answer=57788">YouTube</a> video. All work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 License</a>
+        </div>
+        <div id="col" class="upload">
+            <form name="upload" action="/tree/edit?k={{ key }}" method="post" enctype="multipart/form-data">
+                <div id="row" class="upload-header">Upload your phylogeny*</div>
+                <div id="row" class="uploader">
+                        <input type="hidden" name="key" value="{{ key }}"/>
+                        <input class="file" type="file" name="phyloxml" size="10"/>
+                        <input class="submit" type="submit" value="Go!" /> 
+                    
+                </div>
+                <br/>
+                <div id="row" class="upload-subheader">
+                    * <input type="radio" name="method" value="phyloxml" checked>phyloXML  |
+                    <input type="radio" name="method" value="newick">Newick
+                </div>
+            </form>
+        </div>
+    </div>
+    {{ bottomMenu }}
+</div>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-4047687-6']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</body>
+</html>

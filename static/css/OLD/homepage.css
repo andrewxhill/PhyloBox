@@ -1,0 +1,90 @@
+body {
+    background-color: #75a0cb;
+    font-family: font-style:italic; font-family:Georgia, Times, serif; 
+    font-size:24px; 
+    color:#8ebfdb; 
+    overflow: hidden;
+    min-width: 780px;
+    min-height: 580px;
+}
+#wrapper {
+    width: 100%;
+    height: 90%;
+    overflow: hidden;
+}
+.main {
+    position: absolute;
+    min-width: 700px;
+    background-color: #1d1d1d;
+    top: 25%;
+    left: -1px;
+    width: 105%;
+    height: 45%;
+    min-height: 235px;
+     -webkit-box-shadow:10px 10px 20px #000000;
+     box-shadow:10px 10px 20px #000000;
+}
+
+.info {
+    position: relative;
+    float: left;
+    padding-top: 1%;
+    margin: 2%;
+    width: 30%;
+    height: 75%;
+    font-size: 0.65em;
+    line-height: 22px;
+}
+.info a {
+    color:#8ebfdb; 
+}
+.upload {
+    position: relative;
+    float: left;
+    margin: 1%;
+    width: 60%;
+    height: 90%;
+}
+.upload-header {
+    margin-left: 5%;
+    width: 95%;
+    height: 22%;
+    font-size: 1.2em;
+    font-weight: bold;
+    font-style: italic;
+    
+}
+.upload-subheader {
+    padding-top: 6%;
+    width: 100%;
+    height: 12%;
+    font-size: 0.6em;
+    font-weight: bold;
+    font-style: italic;
+    text-align: right;
+}
+.upload-subheader a {
+    color:#8ebfdb; 
+}
+.uploader {
+    width: 96%;
+    height: 25%;
+    padding-top: 8%;
+    padding-left: 4%;
+}
+input.file {
+    color:#FFFFFF;
+    width:70%;
+    font-family:Georgia, "Times New Roman", Times, serif; font-size:22px; font-style:italic; font-weight:bold;
+    float: left;
+}
+input.submit {
+    padding: 0px;
+    margin-left: 5%;
+    background-color:#f0f2f1; 
+    border:1px solid #ddd9d8; 
+    width:15%;
+    font-family:Georgia, "Times New Roman", Times, serif; font-size:22px; font-style:italic; font-weight:bold;
+    float: left;
+}
+

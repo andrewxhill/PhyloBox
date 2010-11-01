@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>PhyloBox</title>
+    <meta name="description" content="PhyloBox Editor">
+    <script type="text/javascript">
+        var key = '{{ key }}';
+    </script>
+    
+    <script type="text/javascript" src="/static/javascript/jquery.js"></script>  
+    <script type="text/javascript" src="/static/javascript/PhyloBoxTools.js"></script>  
+    <script type="text/javascript" src="/static/javascript/jscolor/jscolor.js"></script>
+    
+    <link rel="stylesheet" href="/static/css/treeedit.css" /> 
+    <link rel="stylesheet" href="/static/css/editorMenu.css" /> 
+    <link rel="stylesheet" href="/static/css/toolMenu.css" /> 
+    <link rel="stylesheet" href="/static/css/header.css" /> 
+    
+    <script type="text/javascript" src="/static/javascript/PhyloBoxViewer.js"></script> 
+    
+</head>
+<body>
+<div id="wrapper">
+    {{ header }}
+    <div id="content">
+        <div id="taxalist">
+        <div id="title">Leaf Nodes</div><br />
+        <ul id="leafnodes" class="nodes">
+        </ul>
+        <div id="title">HTU Nodes</div><br />
+        <ul id="htunodes" class="nodes">
+        </ul>
+        </div>
+        <div id="tree">
+            <canvas id="tree-canvas" height="450" width="435"></canvas>
+            <div id="tool_container">
+                <div class="tools">
+                    {{ toolMenu }}
+                </div>
+            </div>
+            <canvas id="highlight-node"></canvas>
+        </div>
+    </div>
+    {{ bottomMenu }}
+</div>
+</body>
+</html>

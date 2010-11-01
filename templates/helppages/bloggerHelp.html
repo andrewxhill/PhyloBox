@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>PhyloBox</title>
+    <meta name="description" content="PhyloBox Blogger Help">
+    <script type="text/javascript" src="/static/javascript/jquery.js"></script>  
+    <script type="text/javascript" src="/static/javascript/generalUI.js"></script>  
+    
+    <link rel="stylesheet" href="/static/css/treeedit.css" /> 
+    <link rel="stylesheet" href="/static/css/helppage.css" /> 
+    <link rel="stylesheet" href="/static/css/header.css" /> 
+    
+</head>
+<body>
+<div id="wrapper">
+    {{ header }}
+    <div id="content">
+        <div id="first">
+            Blogs hosted by blogspot (and probably others) don't allow Javascript in blog posts. 
+            To get around this, we need you to install our gadget in your blog. 
+            It is a very small snippet of code that will only get launched if you have embedded a PhyloBox in the currently loaded blog post. 
+        </div>
+        <div id="second">
+            <div id="left">
+                <p>
+                To add the gadget, go to your blog admin panel. Click 'Layout' -> 'Add a Gadget' -> 'HTML/JavaScript'
+                </p><p>
+                For a title put, 'PhyloBox'. Next cut and paste the code on the right into the 'Content' box and save.
+                </p>
+            </div>
+            <pre class="embedCode" id="blogger">
+&lt;script type='text/javascript'&gt; 
+window.onload = function (){
+    if(document.getElementById('PhyloboxEmbed')){
+        var pbdiv = document.getElementById('PhyloboxEmbed');
+        function blogPhylobox(){
+            if (PHYLOBOX) PHYLOBOX.renderPhylo();
+        }
+        var head = document.documentElement.firstChild;
+        if (!head || (head.nodeName && head.nodeName.toLowerCase().indexOf("comment")&gt;-1)) head = document.getElementsByTagName("head")[0];
+        var script = document.createElement("script");
+        script.id = "phylobox_main_js";
+        script.type = "text/javascript";
+        script.setAttribute('async', 'true');
+        script.src = "http://phylobox.appspot.com/static/javascript/WidgetControllers/latest/InsertWidget.js";
+        script.onload = blogPhylobox;
+        head.appendChild(script);
+    }
+}
+&lt;/script&gt; 
+&lt;a href="http://phylobox.appspot.com/help/blogger"&gt;Get PhyloBox&lt;/a&gt;
+            </pre>
+        </div>
+    </div>
+    {{ homeMenu }}
+</div>
+</body>
+</html>

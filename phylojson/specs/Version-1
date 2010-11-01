@@ -1,0 +1,114 @@
+/////////////////////////////////////////////////////////////////
+//////////////////////// PHYLOJSON OBJECT ///////////////////////
+/////////////////////////////////////////////////////////////////
+/////////////////////////// Version 1 ///////////////////////////
+/////////////////////////////////////////////////////////////////
+////////// key : type (format) –null allowed– @comment //////////
+/////////////////////////////////////////////////////////////////
+phyloJSON = {
+    
+    v : string –NOT NULL–, "@ phyloJSON version number"
+    
+    date : string (ISO 8601 YYYY-MM-DDThh:mm:ss.sTZD) –NOT NULL–,
+    
+    author : string –NOT NULL–,
+    
+    title : string –NOT NULL–,
+
+    description : string –NULL–,
+
+    root : int –NULL–, "@id of root, NULL if unrooted tree"
+
+    environment : {
+    
+                root : int –NULL–, "@id, NULL if no root, for drawing"
+                
+                viewmode : string –NULL–, "dendrogram, cladogram, circular dendrogram"
+                
+                3d : boolean –NULL–, "NULL is false"
+                
+                branchlenghts : boolean –NULL–, "whether to display with branchlenths or not"
+                
+                color : string (hex) –NULL–, "@background color"
+                        
+                angvel: {x: float, y: float, z: float} –NULL–, "@angular velocity, 0 = none"
+                
+                offset : {
+                
+                         dx: float –NULL–, "@cardinal offsets"
+                
+                         dy: float –NULL–,
+                         
+                         dz: float –NULL–,
+                
+                         ax: float –NULL–, "@angular offsets"
+                
+                         ay: float –NULL–,
+                         
+                         az: float –NULL–,
+                         
+                        }  –NULL–, "@starting tree position"
+                
+                radius: int –NULL–, "@node radius, default = 1"
+            
+                width : int –NULL–, "@branch width, default = 1"
+                
+                primaryuri : string –NULL–, "@what key to use for external uri links"
+                
+                branchlabels : boolean –NULL–, "@toggle branch lables on/off default=off"
+                
+                branchkey : string –NULL–, "@what key to use for branchlables, default 'length'"
+                
+                htulabels : boolean –NULL–, "@toggle htu (non-leaf node) lables on/off default=off"
+                
+                htukey : string –NULL–, "@what key to use for htulabels, default 'name'"
+                
+                leaflabels : boolean –NULL–, "@toggle htu (non-leaf node) lables on/off default=off"
+                
+                leafkey : string –NULL–, "@what key to use for leaflabels, default 'name'"
+                
+            } –NOT NULL–,
+    
+    tree : [{
+     
+        ncolor : string (hex) –NULL–, "@node_color"
+        
+        color : string (hex) –NULL–, "@branch_color"
+     
+        length : numeric –NULL–, "@branch_length"
+     
+        children : [{ id:int }] –NULL–,
+
+        conf : numeric –NULL–, "@confidence"
+        
+        conf_type : string –NULL–, "@confidence_type"
+
+        date : string (ISO 8601 YYYY-MM-DDThh:mm:ss.sTZD) –NULL–,
+
+        date_max : string (ISO 8601 YYYY-MM-DDThh:mm:ss.sTZD) –NULL–,
+
+        date_min : string (ISO 8601 YYYY-MM-DDThh:mm:ss.sTZD) –NULL–,
+
+        id : int –NOT NULL–, "@unique id"
+
+        name : string –NULL–, "@name_text"
+
+        code : int –NOT NULL–, "@node_id"
+
+        parent_id : int –NULL–, "@unique id of parent"
+
+        coordinates : [{lat: float -NULL, lon: float -NULL-, alt: float -NULL-}] -NULL-,
+
+        polygons : [{polygon: ["array of coordinates"]}] –NULL–,
+
+        taxonomy : { 'keys' : string } –NULL–,
+
+        uri : { 'keys' : string } –NULL–, 
+
+        events : { 'keys' : varchar } –NULL–, 
+        
+        visibility : boolean –NULL–, "@default = True, whether the *clade* is visible or not."
+
+    }] –NOT NULL– 
+    
+}

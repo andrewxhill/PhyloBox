@@ -1,0 +1,99 @@
+body {
+    background-color: #75a0cb;
+    font-family: font-style:italic; font-family:Georgia, Times, serif; 
+    font-size:24px; 
+    color:#8ebfdb; 
+    overflow: hidden;
+    min-width: 780px;
+    min-height: 580px;
+}
+#wrapper {
+    width: 100%;
+}
+#main {
+    position: relative;
+    background-color: #1d1d1d;
+    width: 98%;
+    height: 70%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1%;
+    min-height: 235px;
+    -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px;
+    float: left;
+}
+#projects {
+    margin-left: auto;
+    margin-right: auto;
+    width: 95%;
+    font-size: 0.7em;
+}
+#derivedWorks {
+    width: 96%;
+    float: right;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    opacity: 0.95;
+    filter: alpha(opacity=95);
+    font-size: 0.8em;
+}
+#project {
+    width: 100%;
+    float: left;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+#project.hidden{
+    display: none;
+}
+#project.header{
+    border-bottom: 1px solid grey;
+    color: #ddd;
+}
+#project.even{
+    background-color: #1a1a1a;
+}
+#project a{
+    color:#8ebfdb; 
+    text-decoration: none;
+}
+#project #rowCt {
+    width: 4%;
+    float: left;
+}
+#project #author {
+    width: 30%;
+    float: left;
+    text-align: center;
+}
+#project #collaborators {
+    width: 22%;
+    float: left;
+    text-align: center;
+}
+#project #collaborators select, option{
+    color: #8ebfdb;
+    background: #1b1b1b;
+    background-color: #1b1b1b;
+}
+#project #viewTree {
+    width: 20%;
+    float: left;
+    text-align: center;
+}
+#project #viewTree:hover{
+    text-decoration: underline;
+}
+#project #lastUpdate {
+    width: 14%;
+    float: right;
+    text-align: center;
+}
+#project #numberViews {
+    width: 8%;
+    float: left;
+    text-align: center;
+}
