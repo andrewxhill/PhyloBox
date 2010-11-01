@@ -189,6 +189,11 @@ PhyloBox.Interface = {
 			$(this.nextElementSibling).bind("keyup","return",done);
 		});
 		// change background color
+		$("#tree-prop-name").live("change",function() {
+			PhyloBox.Document.tree(__this._activeTree).title($(this).val());
+			__this.setTree();
+		});
+		// change background color
 		$("#tree-prop-bg").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().color = $(this).val();
 			if(PhyloBox.Document.tree(__this._activeTree).view.single()) 
@@ -264,18 +269,25 @@ PhyloBox.Interface = {
 				PhyloBox.Document.tree(__this._activeTree).node_list()[n].selected(false);
 			// set selected
 			node.selected(true);
+			// reset taxa link style
+			$(".taxa-link").each(function(i) {
+				$(this).removeClass("taxa-link-selected");
+				$(this).css("padding-left","0");
+			});
+			// add style
+			$(this).addClass("taxa-link-selected");
+			// set node title
+			$(".panel-head",$("#node")).text("Node - "+$(this).text().substring(3));
+			// walk kids
+			(function(n) {
+				for(var c in n.children()) {
+					n.children()[c].link().css("padding-left","20px");
+					arguments.callee(n.children()[c]);
+				}
+			})(node);
 			// refresh view
 			if(PhyloBox.Document.tree(__this._activeTree).view.single()) 
 				PhyloBox.Document.tree(__this._activeTree).view.refresh();
-			// reset taxa link style
-			$(".taxa-link").each(function(i) {
-				var nc = $(this).data("node").color();
-				$(this).css("color","#"+nc);
-			});
-			// add style
-			$(this).css("color","black");
-			// set node title
-			$(".panel-head",$("#node")).text("Node - "+$(this).text().substring(3));
 			// parse node properties
 			__this.setNode(node);
 		});
@@ -351,7 +363,11 @@ PhyloBox.Interface = {
 	// public methods
 	setTaxa:function() {
 		// use active tree
-		var nodes = PhyloBox.Document.tree(this._activeTree).node_list();
+		var node_list = PhyloBox.Document.tree(this._activeTree).node_list();
+		// order nodes by id
+		var nodes = [];
+		for(var i=0;i<node_list.length;i++) nodes[i] = node_list[i];
+		nodes.sort(function(a,b) { return a.id() - b.id(); });
 		// create taxa list
 		var taxa = $("#taxa > section > ul");
 		// walk nodes
@@ -367,10 +383,20 @@ PhyloBox.Interface = {
 				}
 			if(node.n_children() > 0) name = "(HTU) "+name;
 			name = "&mdash;&nbsp;&nbsp;"+node.id()+":&nbsp;"+name;
+			// color square
+			var info = "<div class='taxa-right'>";
+			info += 	"<div class='ex'>x</div>";
+			info += 	"<div class='dot' style='background:#"+node.color()+";'></div>";
+			info += "</div>";
 			// add to doc
-			taxa.append("<li><a href='javascript:;' id='nl-"+node.id()+"' class='plain taxa-link' style='color:#"+node.color()+";'>"+name+"</a></li>");
-			// add node as data
-			$("#nl-"+node.id()).data("node",node);
+			taxa.append("<li><a href='javascript:;' id='nl-"+node.id()+"' class='taxa-link'>"+name+info+"</a></li>");
+			// add node as data to link
+			var l = $("#nl-"+node.id());
+			l.data("node",node);
+			// save link to node
+			node.link(l);
+			// hide x if visible
+			if(node.visibility()) $("div.ex",l).hide();
 		}
 	},
 	setNode:function(node) {
@@ -409,19 +435,19 @@ PhyloBox.Interface = {
 		uri +=		"<tr>";
 		uri += 			"<td align='right'>images</td>";
 		uri += 			"<td>";
-		uri +=				"n / a";
+		uri +=				"<span class='uri-link'>n / a</span>";
 		uri +=			"</td>";
 		uri +=		"</tr>";
 		uri +=		"<tr>";
 		uri += 			"<td align='right'>videos</td>";
 		uri += 			"<td>";
-		uri +=				"n / a";
+		uri +=				"<span class='uri-link'>n / a</span>";
 		uri +=			"</td>";
 		uri +=		"</tr>";
 		uri +=		"<tr>";
 		uri += 			"<td align='right'>wiki</td>";
 		uri += 			"<td>";
-		uri +=				"n / a";
+		uri +=				"<span class='uri-link'>n / a</span>";
 		uri +=			"</td>";
 		uri +=		"</tr>";
 		uri +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
@@ -632,7 +658,7 @@ var IO = Class.extend({
 var Node = Class.extend({
 	// private vars
 	_id:null, _parent:null, _children:[], _siblings:[], _n_parents:0, _layer:0, _is_leaf:false, _is_root:false,
-	_color:null, _uri:null, _name:null, _taxonomy:null, _visibility:true, _length:null, _point3D:null, _selected:false, _hover:false,
+	_color:null, _uri:null, _name:null, _taxonomy:null, _visibility:true, _length:null, _point3D:null, _link:null, _selected:false, _hover:false,
 	// constructor
 	init:function(id) { this._id = id; this._children = []; this._siblings = []; },
 	// private methods
@@ -658,6 +684,7 @@ var Node = Class.extend({
 	length:function(v) { if(v!==undefined) this._length = v; else return this._length; },
 	//–––––––––––––––––––––– for drawing ––––––––––––––––––––––//
 	point3D:function(v) { if(v!==undefined) this._point3D = v; else return this._point3D; },
+	link:function(v) { if(v!==undefined) this._link = v; else return this._link; },
 	selected:function(v) { if(v!==undefined) this._selected = v; else return this._selected; },
 	hover:function(v) { if(v!==undefined) this._hover = v; else return this._hover; },
 });

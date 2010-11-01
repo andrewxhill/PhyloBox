@@ -18,7 +18,12 @@ a.plain { font-family:"Plain",Arial,sans-serif; font-size:8px; color:gray; }
 a.plain:hover { text-decoration:underline; }
 a.plain:active { color:black; }
 
-a.taxa-link { text-transform:uppercase; white-space:nowrap; line-height:13px; }
+a.taxa-link { 
+	font-family:"Plain",Arial,sans-serif; font-size:8px; display:block; color:#B3B3B3;
+	text-transform:uppercase; white-space:nowrap; line-height:13px; 
+}
+a.taxa-link:hover { background:rgba(212,73,23,0.5); color:#333; }
+a.taxa-link:active, a.taxa-link-selected { background:rgba(0,255,0,0.5); color:#333; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
@@ -56,6 +61,14 @@ input.editable-field-long { width:40px; }
 span.uri-link { color:gray; }
 
 div.clear { clear:both; }
+
+div.taxa-right { float:right; }
+div.ex { display:inline-block; padding:0 5px; color:red; text-transform:none; }
+div.dot {
+	width:5px; height:5px; margin:4px 5px 0px 0px; display:inline-block;
+	border-radius:5px; -moz-border-radius:5px; -khtml-border-radius:5px; -webkit-border-radius:5px;
+	box-shadow:0px 0px 2px black; -moz-box-shadow:0px 0px 2px black; -khtml-box-shadow:0px 0px 2px black; -webkit-box-shadow:0px 0px 2px black;
+}
 
 div.separator { position:relative; }
 div.separator > img { position:absolute; }
@@ -127,14 +140,14 @@ td.empty { line-height:2px; }
 #main {  }
 
 #main-left { float:left; }
-#main-center { margin:0 250px 0 300px; opacity:0.999; }
+#main-center { margin:0 250px 0 350px; opacity:0.999; }
 #main-right { float:right; }
 
 #taxa { width:175px; }
-#node { width:125px; }
+#node { width:175px; }
 #trees {  }
 #doc { width:250px; overflow:hidden; }
-#taxa > section { padding:10px 0 0 2px; }
+#taxa > section { padding:10px 0 0 0; }
 #node > section { padding:10px 0 0 10px; }
 #trees > section { padding:0 10px; overflow:hidden; }
 #doc > section { padding:10px 0 0 0; }
