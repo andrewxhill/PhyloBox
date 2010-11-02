@@ -129,11 +129,16 @@ td.empty { line-height:2px; }
 	background-image:-moz-linear-gradient(center bottom,silver 0%,white 100%);
 }
 #toolbar > nav { margin:0 auto; width:200px; height:25px; }
-#toolbar li { display:inline; }
-#toolbar a { background:none; padding:11px 8px 3px; }
+#toolbar li { display:inline-block; margin:0 -2px; }
+#toolbar a { 
+	background:none; padding:5px 8px; display:inline-block; width:16px;
+	border-left:1px solid rgba(128,128,128,0); border-right:1px solid rgba(128,128,128,0);
+}
 #toolbar a:hover { background:rgba(51,51,51,0.1); }
-#toolbar a:active { background:rgba(51,51,51,0.2); }
-#toolbar img.tool { padding:4px 0 0 0; }
+#toolbar a:active, #toolbar a.tool-active { 
+	background:rgba(51,51,51,0.2); 
+	border-left:1px solid silver; border-right:1px solid silver;
+}
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
