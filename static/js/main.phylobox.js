@@ -168,6 +168,8 @@ PhyloBox.Interface = {
 		});
 		// tools
 		$(".tool").live("click",function() {
+			// check unavailable
+			if($(this).hasClass("tool-off")) return false;
 			// check already active
 			if($(this).hasClass("tool-active")) return false;
 			// clear styles
@@ -181,11 +183,11 @@ PhyloBox.Interface = {
 		$("#trees canvas").live("mousedown",function(e) {
 			// save reference
 			var canvas = $(this);
-			// trigger for active view
+			// trigger event
 			canvas.trigger("pb-"+__this._activeTool,["mousedown",__this._viewMouse(e,canvas)]);
 			// add move event
 			canvas.bind("mousemove",function(e) {
-				// trigger for active view
+				// trigger event
 				canvas.trigger("pb-"+__this._activeTool,["mousemove",__this._viewMouse(e,canvas)]);
 			});
 			// add up event
@@ -193,9 +195,39 @@ PhyloBox.Interface = {
 				// unbind events
 				canvas.unbind("mousemove");
 				$(this).unbind("mouseup");
-				// trigger for active view
+				// trigger event
 				canvas.trigger("pb-"+__this._activeTool,["mouseup",__this._viewMouse(e,canvas)]);
 			});
+		});
+		$("#trees canvas").live("mouseenter",function(e) {
+			// set cursor
+			switch(__this._activeTool) {
+				case "select" :
+					$(this).css("cursor","none");
+					break;
+				case "translate" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-translate.png) 8 8, auto");
+					break;
+				case "rotate" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-rotate.png) 8 8, auto");
+					break;
+				case "zin" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-zin.png) 6 6, auto");
+					break;
+				case "zout" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-zout.png) 6 6, auto");
+					break;		
+			}
+		});
+		$("#trees canvas").live("mouseleave",function(e) {
+			// refresh view
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
+		});
+		$("#trees canvas").live("mousemove",function(e) {
+			// save reference
+			var canvas = $(this);
+			// trigger event
+			canvas.trigger("pb-"+__this._activeTool,["mousesearch",__this._viewMouse(e,canvas)]);
 		});
 		// editable cells
 		$(".editable").live("click",function() {
@@ -227,50 +259,47 @@ PhyloBox.Interface = {
 		// change background color
 		$("#tree-prop-bg").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().color = $(this).val();
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// change branch width
 		$("#tree-prop-bw").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().width = $(this).val();
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// change node radius width
 		$("#tree-prop-nr").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().radius = $(this).val();
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// change tree type
 		$("#tree-prop-vm").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().viewmode = parseInt($(this).val());
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().replot();
 		});
 		// change branch length option
 		$("#tree-prop-bl").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().branchlenghts = !PhyloBox.Document.tree(__this._activeTree).environment().branchlenghts;
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().replot();
 		});
 		// change 3d option
 		$("#tree-prop-3d").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().threeD = !PhyloBox.Document.tree(__this._activeTree).environment().threeD;
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().replot();
 		});
 		// leaf labels
 		$("#tree-prop-ll").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().leaflabels = !PhyloBox.Document.tree(__this._activeTree).environment().leaflabels;
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// htu labels
 		$("#tree-prop-hl").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().htulabels = !PhyloBox.Document.tree(__this._activeTree).environment().htulabels;
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// branch labels
 		$("#tree-prop-bl").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().branchlabels = !PhyloBox.Document.tree(__this._activeTree).environment().branchlabels;
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// hover node in list
 		$(".taxa-link").live("mouseenter",function() {
@@ -279,8 +308,7 @@ PhyloBox.Interface = {
 			// set hover
 			node.hover(true);
 			// refresh view
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		$(".taxa-link").live("mouseleave",function() {
 			// get node
@@ -288,35 +316,12 @@ PhyloBox.Interface = {
 			// set hover
 			node.hover(false);
 			// refresh view
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// click node in list
 		$(".taxa-link").live("click",function() {
 			// get node
 			var node = $(this).data("node");
-			// reset selected
-			for(var n in PhyloBox.Document.tree(__this._activeTree).node_list())
-				PhyloBox.Document.tree(__this._activeTree).node_list()[n].selected(false);
-			// set selected
-			node.selected(true);
-			// reset taxa link style
-			$(".taxa-link").each(function(i) {
-				$(this).removeClass("taxa-link-selected");
-				$(this).css("padding-left","0");
-			});
-			// add style
-			$(this).addClass("taxa-link-selected");
-			// walk kids
-			(function(n) {
-				for(var c in n.children()) {
-					n.children()[c].link().css("padding-left","20px");
-					arguments.callee(n.children()[c]);
-				}
-			})(node);
-			// refresh view
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
 			// parse node properties
 			__this.setNode(node);
 		});
@@ -334,8 +339,8 @@ PhyloBox.Interface = {
 	        	}
 			})(node);
 			// refresh view
-			if(PhyloBox.Document.tree(__this._activeTree).view().single()) 
-				PhyloBox.Document.tree(__this._activeTree).view().refresh();
+			PhyloBox.Document.tree(__this._activeTree).view().update_links(true);
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// clade toggle
 		$("#node-prop-vb").live("change",function() {
@@ -351,7 +356,8 @@ PhyloBox.Interface = {
 	        	}
 			})(node);
 			// refresh view
-			PhyloBox.Document.tree(__this._activeTree).view().plot();
+			PhyloBox.Document.tree(__this._activeTree).view().update_links(true);
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 	},
 	// private methods
@@ -434,11 +440,27 @@ PhyloBox.Interface = {
 			l.data("node",node);
 			// save link to node
 			node.link(l);
-			// hide x if visible
-			if(node.visibility()) $("div.ex",l).hide();
 		}
 	},
 	setNode:function(node) {
+		// set selected
+		PhyloBox.Document.tree(this._activeTree).view().setSelected(node);
+		// reset style -- could change this to a walk and use node's link()... might be faster ?
+		$(".taxa-link").each(function(i) {
+			$(this).removeClass("taxa-link-selected");
+			$(this).css("padding-left","0");
+		});
+		// set style
+		node.link().addClass("taxa-link-selected");
+		// walk kids
+		(function(n) {
+			for(var c in n.children()) {
+				n.children()[c].link().css("padding-left","20px");
+				arguments.callee(n.children()[c]);
+			}
+		})(node);
+		// refresh view
+		PhyloBox.Document.tree(this._activeTree).view().refresh();
 		// save data
 		$("#node").data("node",node);
 		// set node title
@@ -656,6 +678,7 @@ PhyloBox.Document = {
 				PhyloBox.Interface.setTools();
 				// create view
 				t.view(new View(20,"#trees > section",{t:20,r:20,b:20,l:20},true,true));
+				t.view().boundaries(true);
 				t.view().plot(t);
 				// go
 				t.view().begin();

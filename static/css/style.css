@@ -63,7 +63,7 @@ span.uri-link { color:gray; }
 div.clear { clear:both; }
 
 div.taxa-right { float:right; }
-div.ex { display:inline-block; padding:0 5px; color:red; text-transform:none; }
+div.ex { display:inline-block; padding:0 5px; color:red; text-transform:none; line-height:12px; }
 div.dot {
 	width:5px; height:5px; margin:4px 5px 0px 0px; display:inline-block;
 	border-radius:5px; -moz-border-radius:5px; -khtml-border-radius:5px; -webkit-border-radius:5px;
@@ -139,6 +139,7 @@ td.empty { line-height:2px; }
 	background:rgba(51,51,51,0.2); 
 	border-left:1px solid silver; border-right:1px solid silver;
 }
+#toolbar a.tool-off { opacity:0.5; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
