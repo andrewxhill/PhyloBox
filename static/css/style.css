@@ -22,7 +22,7 @@ a.taxa-link {
 	font-family:"Plain",Arial,sans-serif; font-size:8px; display:block; color:#B3B3B3;
 	text-transform:uppercase; white-space:nowrap; line-height:13px; 
 }
-a.taxa-link:hover { background:rgba(212,73,23,0.5); color:#333; }
+a.taxa-link:hover, a.taxa-link-hover { background:rgba(212,73,23,0.5); color:#333; }
 a.taxa-link:active, a.taxa-link-selected { background:rgba(0,255,0,0.5); color:#333; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
@@ -31,7 +31,8 @@ h1.logo { font-family:"Logo",Arial,sans-serif; font-size:12px; line-height:40px;
 
 h2 { font-weight:bold; color:#333; white-space:nowrap; }
 h2.panel-head { font-family:Arial black,Arial,sans-serif; font-size:11px; line-height:25px; padding:0 0 0 10px; }
-h2.prop-title { font-size:10px; padding:0 0 0 0; }
+h2.prop-title { font-size:10px; }
+h2.nodes-blank { padding:0 0 0 10px; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 

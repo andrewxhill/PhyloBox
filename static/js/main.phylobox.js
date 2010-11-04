@@ -164,6 +164,8 @@ PhyloBox.Interface = {
 			$(document).bind("mouseup",function() {
 				// remove all
 				$(this).unbind("mousemove").unbind("mouseup");
+				// add back tools events
+				__this._addToolEvents();
 			});
 		});
 		// tools
@@ -179,56 +181,12 @@ PhyloBox.Interface = {
 			// set to active
 			__this._activeTool = this.id;
 		});
+		$(".tool").live("mousedown",function(e) {
+			// prevent image drag behavior
+			if(e.preventDefault) e.preventDefault();
+		});
 		// tool event dispatching
-		$("#trees canvas").live("mousedown",function(e) {
-			// save reference
-			var canvas = $(this);
-			// trigger event
-			canvas.trigger("pb-"+__this._activeTool,["mousedown",__this._viewMouse(e,canvas)]);
-			// add move event
-			canvas.bind("mousemove",function(e) {
-				// trigger event
-				canvas.trigger("pb-"+__this._activeTool,["mousemove",__this._viewMouse(e,canvas)]);
-			});
-			// add up event
-			$(document).bind("mouseup",function(e) {
-				// unbind events
-				canvas.unbind("mousemove");
-				$(this).unbind("mouseup");
-				// trigger event
-				canvas.trigger("pb-"+__this._activeTool,["mouseup",__this._viewMouse(e,canvas)]);
-			});
-		});
-		$("#trees canvas").live("mouseenter",function(e) {
-			// set cursor
-			switch(__this._activeTool) {
-				case "select" :
-					$(this).css("cursor","none");
-					break;
-				case "translate" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-translate.png) 8 8, auto");
-					break;
-				case "rotate" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-rotate.png) 8 8, auto");
-					break;
-				case "zin" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-zin.png) 6 6, auto");
-					break;
-				case "zout" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-zout.png) 6 6, auto");
-					break;		
-			}
-		});
-		$("#trees canvas").live("mouseleave",function(e) {
-			// refresh view
-			PhyloBox.Document.tree(__this._activeTree).view().refresh();
-		});
-		$("#trees canvas").live("mousemove",function(e) {
-			// save reference
-			var canvas = $(this);
-			// trigger event
-			canvas.trigger("pb-"+__this._activeTool,["mousesearch",__this._viewMouse(e,canvas)]);
-		});
+		__this._addToolEvents();
 		// editable cells
 		$(".editable").live("click",function() {
 			// save ref
@@ -285,6 +243,11 @@ PhyloBox.Interface = {
 		$("#tree-prop-3d").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).environment().threeD = !PhyloBox.Document.tree(__this._activeTree).environment().threeD;
 			PhyloBox.Document.tree(__this._activeTree).view().replot();
+		});
+		// change boundaries option
+		$("#tree-prop-bn").live("change",function() {
+			PhyloBox.Document.tree(__this._activeTree).view().boundaries(!PhyloBox.Document.tree(__this._activeTree).view().boundaries());
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 		// leaf labels
 		$("#tree-prop-ll").live("change",function() {
@@ -380,6 +343,66 @@ PhyloBox.Interface = {
 			$(this).css("top",t);
 		});
 	},
+	_addToolEvents:function() {
+		// get all
+		var canvases = $("#trees canvas");
+		// save ref
+		var __this = this;
+		// add events
+		canvases.live("mousedown",function(e) {
+			// save reference
+			var canvas = $(this);
+			// trigger event
+			canvas.trigger("pb-"+__this._activeTool,["mousedown",__this._viewMouse(e,canvas)]);
+			// add move event
+			canvas.bind("mousemove",function(e) {
+				// trigger event
+				canvas.trigger("pb-"+__this._activeTool,["mousemove",__this._viewMouse(e,canvas)]);
+			});
+			// add up event
+			$(document).bind("mouseup",function(e) {
+				// unbind events
+				canvas.unbind("mousemove");
+				$(this).unbind("mouseup");
+				// trigger event
+				canvas.trigger("pb-"+__this._activeTool,["mouseup",__this._viewMouse(e,canvas)]);
+			});
+		});
+		canvases.live("mouseenter",function(e) {
+			// set cursor
+			switch(__this._activeTool) {
+				case "select" :
+					$(this).css("cursor","none");
+					break;
+				case "translate" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-translate.png) 8 8, auto");
+					break;
+				case "rotate" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-rotate.png) 8 8, auto");
+					break;
+				case "zin" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-zin.png) 6 6, auto");
+					break;
+				case "zout" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-zout.png) 6 6, auto");
+					break;		
+			}
+		});
+		canvases.live("mouseleave",function(e) {
+			// refresh view
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
+		});
+		canvases.live("mousemove",function(e) {
+			// save reference
+			var canvas = $(this);
+			// trigger event
+			canvas.trigger("pb-"+__this._activeTool,["mousesearch",__this._viewMouse(e,canvas)]);
+		});
+		canvases.live("dblclick",function(e) {
+			// clear selected
+			__this._clearNode(true);
+		});
+	},
 	_mouse:function(e) {
 		// get true mouse position
 		var px = 0;
@@ -403,6 +426,35 @@ PhyloBox.Interface = {
 		vy = m.y - c.offset().top;
 		// format
 		return { x:vx, y:vy };
+	},
+	_navTo:function(n) {
+		// go to it
+		$("#taxa > section").scrollTo("#"+n.link().attr("id"),100,{ offset:-45 });
+	},
+	_clearNode:function(props) {
+		// get selected
+		var node = PhyloBox.Document.tree(this._activeTree).view().selected_node();
+		// check exists
+		if(!node) return false;
+		// clear selected
+		PhyloBox.Document.tree(this._activeTree).view().clearSelected();
+		// clear style
+		node.link().removeClass("taxa-link-selected");
+		// clear child style
+		$(".taxa-link").each(function(i) {
+			$(this).css("padding-left","0");
+		});
+		// clear node panel
+		if(!props) return false;
+		// refresh view
+		var view = PhyloBox.Document.tree(this._activeTree).view();
+		view.selecting(true);
+		view.refresh();
+		view.selecting(false);
+		// title
+		$(".panel-head",$("#node")).text("Node");
+		// body
+		$("#node > section").html("<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>");
 	},
 	_error:function(e) { console.log("Interface: "+e); },
 	// public methods
@@ -442,16 +494,15 @@ PhyloBox.Interface = {
 			node.link(l);
 		}
 	},
-	setNode:function(node) {
+	setNode:function(node,found) {
+		// clear first
+		this._clearNode();
 		// set selected
 		PhyloBox.Document.tree(this._activeTree).view().setSelected(node);
-		// reset style -- could change this to a walk and use node's link()... might be faster ?
-		$(".taxa-link").each(function(i) {
-			$(this).removeClass("taxa-link-selected");
-			$(this).css("padding-left","0");
-		});
 		// set style
 		node.link().addClass("taxa-link-selected");
+		// go to it
+		if(found) this._navTo(node);
 		// walk kids
 		(function(n) {
 			for(var c in n.children()) {
@@ -601,6 +652,13 @@ PhyloBox.Interface = {
 		viewing +=			"</td>";
 		viewing +=		"</tr>";
 		viewing +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+		viewing +=		"<tr>";
+		viewing += 			"<td align='right'>boundaries</td>";
+		viewing += 			"<td>";
+		viewing +=				"<input type='checkbox' id='tree-prop-bn' />";
+		viewing +=			"</td>";
+		viewing +=		"</tr>";
+		viewing +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
 		viewing += 	"</tbody>";
 		viewing += "</table>";
 		// write labels table
@@ -635,6 +693,21 @@ PhyloBox.Interface = {
 		// default tool is select
 		$("#select").addClass("tool-active");
 		this._activeTool = "select";
+	},
+	hoverNode:function(n) {
+		// set style
+		n.link().addClass("taxa-link-hover");
+		// go to it
+		this._navTo(n);
+	},
+	unhoverNode:function(n) {
+		// check n
+		if(!n) return false;
+		// set style
+		n.link().removeClass("taxa-link-hover");
+		// go back to selected
+		if(PhyloBox.Document.tree(this._activeTree).view().selected_node())
+			this._navTo(PhyloBox.Document.tree(this._activeTree).view().selected_node());
 	},
 	// get & set vars
 	activeTree:function(v) { if(v!==undefined) this._activeTree = v; else return this._activeTree; },
@@ -678,7 +751,6 @@ PhyloBox.Document = {
 				PhyloBox.Interface.setTools();
 				// create view
 				t.view(new View(20,"#trees > section",{t:20,r:20,b:20,l:20},true,true));
-				t.view().boundaries(true);
 				t.view().plot(t);
 				// go
 				t.view().begin();
