@@ -1,7 +1,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en">
 <head>
-	<script type="text/javascript"> var __key__ = '{{ key }}'; </script>
+	<script type="text/javascript">
+		var __key__ = '{{ key }}';
+	</script>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>PhyloBox</title>
 	<!--[if IE]>
@@ -32,8 +34,8 @@
 			</div>
 			<nav>
 				<ul>
-					<li><a href="javascript:;">Help</a></li>
-					<li><a href="javascript:;">Print</a></li>
+					<li><a href="javascript:;" class="option-butt">Help</a></li>
+					<li><a href="javascript:;" class="option-butt">Print</a></li>
 				</ul>
 			</nav>
 		</div>
@@ -41,9 +43,66 @@
 			<h1 class="logo">PhyloBOX</h1>
 			<nav>
 				<ul>
-					<li><a href="javascript:;">File<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a></li>
-					<li><a href="javascript:;">Edit<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a></li>
-					<li><a href="javascript:;">Share<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a></li>
+					<li class="menu-holder">
+						<a href="javascript:;" class="menu-butt">File<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
+						<div id="file-menu" class="menu">
+							<ul>
+								<li>
+									<input type="file" id="file-menu-new-fi" class="menu-submit-file" size="1" name="phyloFile" />
+									<a href="javascript:;" id="" class="menu-item">New</a>
+								</li>
+								<li><a href="javascript:;" id="" class="menu-item">Open...</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Close</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Save</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Fork...</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Export as PhyloJson</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Export as SVG</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Export as JPEG</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Export as PNG</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Print</a></li>
+							</ul>
+						</div>
+					</li>
+					<li class="menu-holder">
+						<a href="javascript:;" class="menu-butt">Edit<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
+						<div id="edit-menu" class="menu">
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Option 1</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Option 2</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Option 3</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Option 4</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Option 5</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Option 6</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Option 7</a></li>
+							</ul>
+						</div>
+					</li>
+					<li class="menu-holder">
+						<a href="javascript:;" class="menu-butt">Share<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
+						<div id="share-menu" class="menu">
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Option 1</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Option 2</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item">Option 3</a></li>
+							</ul>
+						</div>
+					</li>
+					<div class="clear"></div>
 				</ul>
 			</nav>
 			<div class="clear"></div>
@@ -58,6 +117,7 @@
 				<li style="padding-right:30px;"><a href="javascript:;" id="rotate" class="tool"><img src="static/gfx/tools/rotate.png" alt="rotate-tool" title="Rotate" /></a></li>
 				<li><a href="javascript:;" id="zin" class="tool"><img src="static/gfx/tools/zin.png" alt="zoom-in-tool" title="Zoom In" /></a></li>
 				<li><a href="javascript:;" id="zout" class="tool"><img src="static/gfx/tools/zout.png" alt="zoom-out-tool" title="Zoom Out" /></a></li>
+				<div class="clear"></div>
 			</ul>
 		</nav>
 	</div>
@@ -116,7 +176,7 @@
 					</div>
 				</div>
 				<header>
-					<h2 class="panel-head">ncbi_taxonomy_mollusca.js</h2>
+					<h2 class="panel-head">Trees</h2>
 				</header>
 				<section></section>
 			</div>

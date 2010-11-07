@@ -22,7 +22,7 @@ a.taxa-link {
 	font-family:"Plain",Arial,sans-serif; font-size:8px; display:block; color:#B3B3B3;
 	text-transform:uppercase; white-space:nowrap; line-height:13px; 
 }
-a.taxa-link:hover, a.taxa-link-hover { background:rgba(212,73,23,0.5); color:#333; }
+a.taxa-link:hover, a.taxa-link-hover { background:rgba(212,73,23,0.5) !important; color:#333; }
 a.taxa-link:active, a.taxa-link-selected { background:rgba(0,255,0,0.5); color:#333; }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
@@ -47,7 +47,7 @@ footer { }
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
 input[type='submit']::-moz-focus-inner { border:none; }
-input[type="submit"] {  }
+input[type='file'] { opacity:0; width:100%; height:20px; position:absolute; }
 
 select { width:80px; }
 
@@ -101,6 +101,28 @@ div.panel-right {
 	background-image:-moz-linear-gradient(center left,#CCC 0%,#F2F2F2 5%);
 }
 
+div.menu-separator { border-bottom:1px solid gray; margin:0 10px; }
+
+div.menu {
+	width:150px; position:absolute; z-index:1; display:none;
+	background-image:-webkit-gradient(linear,0% 100%,0% 0%,from(rgba(180,170,151,0.9)),to(rgba(130,135,122,0.9)));
+	background-image:-moz-linear-gradient(center bottom,rgba(180,170,151,0.9) 0%,rgba(130,135,122,0.9) 100%);
+	box-shadow:2px 2px 4px rgba(0,0,0,0.5); -moz-box-shadow:2px 2px 4px rgba(0,0,0,0.5); -khtml-box-shadow:2px 2px 4px rgba(0,0,0,0.5); -webkit-box-shadow:2px 2px 4px rgba(0,0,0,0.5);
+}
+div.menu ul li { float:none !important; }
+div.menu ul li a { display:block; color:white; font-family:"Plain",Arial,sans-serif; font-size:8px; line-height:20px; padding:0 10px; cursor:default; }
+div.menu ul li:first-child a { margin-top:5px; }
+div.menu ul li:last-child a { margin-bottom:5px; }
+div.menu ul li a:hover, a.menu-submit-hover { color:white; background:rgba(0,0,0,0.5); }
+div.menu ul li a:active, a.menu-submit-active { color:black; background:rgba(255,255,255,0.5); }
+
+#file-menu { top:29px; left:200px; }
+#edit-menu { top:29px; left:257px; }
+#share-menu { top:29px; left:315px; }
+
+div.tree-holder { width:100%; height:100%; min-height:100px; min-width:100px; border-bottom:5px solid white; }
+div.tree-holder:last-child { border-bottom:none !important; }
+
 table { width:100%; border-bottom:1px solid #D3D3D3; color:#333; margin:0 0 8px 0; }
 caption { font-weight:bold; white-space:nowrap; display:block; padding:0 0 8px 10px; }
 td { font-family:"Plain",Arial,sans-serif; font-size:8px; line-height:26px; white-space:nowrap; width:50%; padding:0 0 0 10px; }
@@ -110,11 +132,11 @@ td.empty { line-height:2px; }
 
 #head { background:#82877A; width:100%; height:30px; }
 #head nav { line-height:27px; white-space:nowrap; }
-#head li { display:inline; }
-#head a { font-family:Arial,sans-serif; font-size:10px; font-weight:bold; color:white; background:none; padding:10px; }
-#head a:hover { background:rgba(51,51,51,0.3); }
-#head a:active { background:rgba(51,51,51,0.6); }
-#head img.nav-arrow { padding:0 0 0 10px; }
+#head li { float:left; }
+a.menu-butt, a.option-butt { font-family:Arial,sans-serif; font-size:10px; font-weight:bold; color:white; background:none; padding:10px; cursor:default; }
+a.menu-butt:hover, a.option-butt:hover { background:rgba(51,51,51,0.3); }
+a.menu-butt:active, a.option-butt:active, a.menu-butt-active { background:rgba(51,51,51,0.6) !important; }
+img.nav-arrow { padding:0 0 0 10px; }
 
 #head-left { height:30px; margin:0 50% 0 0; }
 #head-left > nav { margin:0 0 0 200px; min-width:200px; }
@@ -125,13 +147,13 @@ td.empty { line-height:2px; }
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
 #toolbar { 
-	width:100%; height:25px;
+	width:100%; height:26px;
 	background-image:-webkit-gradient(linear,0% 100%,0% 0%,from(silver),to(white));
 	background-image:-moz-linear-gradient(center bottom,silver 0%,white 100%);
 }
-#toolbar > nav { margin:0 auto; width:200px; height:25px; }
-#toolbar li { display:inline-block; margin:0 -2px; }
-#toolbar a { 
+#toolbar > nav { margin:0 auto; width:200px; height:26px; }
+#toolbar li { float:left; }
+#toolbar a {
 	background:none; padding:5px 8px; display:inline-block; width:16px;
 	border-left:1px solid rgba(128,128,128,0); border-right:1px solid rgba(128,128,128,0);
 }

@@ -5,8 +5,8 @@ api_version: 1
 
 handlers:
 - url: /favicon.ico
-  static_files: static/images/icons/favicon.ico
-  upload: static/images/icons/favicon.ico
+  static_files: static/gfx/favicon.ico
+  upload: static/gfx/favicon.ico
 
 - url: /static
   static_dir: static

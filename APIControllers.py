@@ -120,7 +120,7 @@ class LookUp(webapp.RequestHandler):
     memtime = 300
     k = str(self.request.params.get('k', None)).strip()
     if k is None:
-        self.response.out.write('nothing here')
+        self.response.out.write(200)
         
     elif k == 'perm9c63a1c1-9d89-4562-97cf-b1a479e56460':
         treefile = open('examplejson','r').read()
@@ -202,6 +202,95 @@ class LookUp(webapp.RequestHandler):
         out = str(callback)+"("+out+")"
         
     self.response.out.write(out.replace("\\/","/"))
+
+
+
+############################
+
+class AddNewTree(webapp.RequestHandler):
+  def get(self):
+    self.response.out.write(404)  
+      
+  def post(self):
+    user,url,url_linktext = GetCurrentUser(self)
+    treefile = self.request.params.get('phyloFile', None)
+    if treefile is not None:
+        version = os.environ['CURRENT_VERSION_ID'].split('.')
+        version = str(version[0])
+        k = "tmp-phylobox-"+version+"-"+str(uuid.uuid4())
+        treefile = UnzipFiles(treefile)
+        background = "23232F"
+        color = "FFFFCC"
+        if user:
+            author = str(user)
+        else:
+            author = "anon"
+        title = "Your tree"
+        description = "PhyloJSON Tree Generated at PhyloBox"
+        view_mode = 'Dendrogram'.lower()
+        root = None
+        width = 1
+        htulabels = False
+        branchlabels = False
+        leaflabels = False
+        node_radius = 1
+        #set defaults
+        branch_color = "FFFFFFFF"
+        branch_width = 1.5
+        icon = "http://geophylo.appspot.com/static_files/icons/a99.png"
+        proximity = 2
+        alt_grow = 15000
+        title = "Created with Phylobox"
+        
+        tree = PhyloXMLtoTree(treefile,color=color)
+        tree.load()
+        if tree.title is not None:
+            title = tree.title
+        if tree.rooted is not None:
+            root = tree.root
+        out = ''
+        output = []
+        #output = {}
+        for a,b in tree.objtree.tree.items():
+            if a != 0:
+                output.append(b.json())
+                
+        treefile = {}
+        treefile['v'] = 1
+        treefile['k'] = k
+        treefile['date'] = str(datetime.datetime.now())
+        treefile['author'] = author
+        treefile['title'] = title
+        treefile['description'] = description
+        treefile['root'] = root
+        treefile['environment'] = {}
+        treefile['environment']['root'] = tree.root
+        treefile['environment']['viewmode'] = 0
+        treefile['environment']['branchlengths'] = True
+        treefile['environment']['threeD'] = False
+        treefile['environment']['color'] = background
+        treefile['environment']['angvel'] = {'x':None,'y':None,'z':None}
+        treefile['environment']['offset'] = {'dx':0.0,'dy':0.0,'dz':None,'ax':0.0,'ay':0.0,'az':0.0}
+        treefile['environment']['width'] = width
+        treefile['environment']['radius'] = node_radius
+        treefile['environment']['htulabels'] = htulabels
+        treefile['environment']['branchlabels'] = branchlabels
+        treefile['environment']['leaflabels'] = leaflabels
+        treefile['environment']['primaryuri'] = None
+        treefile['tree'] = output
+        treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
+
+        #zip the string
+        treefilezip = ZipFiles(treefile)
+
+        #i have removed a temp table from the data store
+        #now i just store tmp trees in memcache for 10 or so days
+        memcache.set("tree-data-"+k, treefilezip, 360000)
+        
+    self.response.out.write(treefile)
+
+############################
+
         
 class ConvertToPhyloJSON(webapp.RequestHandler):
   def get(self):

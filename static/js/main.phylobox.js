@@ -70,13 +70,57 @@ PhyloBox.System = {
 ###########################################################################*/
 PhyloBox.Interface = {
 	// private vars
-	_activeTree:null, _activeTool:null,
+	_activeTree:null, _activeTool:null, _activeMenu:null,
 	// constructor
 	init:function() {
-		// save reference
-		var __this = this;
-		// define console to avoid errors when console isn't available
+		// miscellaneous setup
 		if(!window.console) window.console = { log:function() {} };
+		$(window).load(function() {
+			$(".menu").each(function(i) {
+				$(this).css("left",$(this.parentNode).offset().left);
+			});
+		});
+		// add resize events
+		this._addResizeEvents();
+		// add menu events
+		this._addMenuEvents();
+		// add tool event dispatching
+		this._addToolEvents();
+		// add property events
+		this._addPropertyEvents();
+	},
+	// private methods
+	_fit:function() {
+		// size panels to fit window height
+		$(".panel").each(function(i) {
+			var h = $(window).height() - 76;
+			$(this).height(h);
+		});
+		$("section").each(function(i) {
+			var h = this.parentNode.id!="trees" ? $(window).height() - 111 : $(window).height() - 101;
+			$(this).height(h);
+		});
+		$(".handle > div").each(function(i) {
+			var h = $(window).height() - 101;
+			$(this).height(h);
+		});
+		$(".handle > div > img").each(function(i) {
+			var t = ($(window).height() - 125) / 2;
+			$(this).css("top",t);
+		});
+	},
+	_killMenu:function(e) {
+		if(e.target.nodeName != "INPUT") {
+			var __this = e.data.ref;
+			$(document).unbind("click",__this._killMenu);
+			$(__this._activeMenu).removeClass("menu-butt-active");
+			$(__this._activeMenu.nextElementSibling).hide();
+			__this._activeMenu = null;
+		}
+	},
+	_addResizeEvents:function() {
+		// save ref
+		var __this = this;
 		// set window and resizes
 		$(window).resize(function() {
 			// trigger handlers for all views
@@ -103,7 +147,7 @@ PhyloBox.Interface = {
 					var sib = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.previousElementSibling.lastElementChild.previousElementSibling;
 					var sib_w_orig = $(sib).width();
 					// bind mouse move
-					$(document).bind("mousemove",function(e) {
+					var movehandle = function(e) {
 						// get mouse position
 						var mouse = __this._mouse(e);
 						// determine new values
@@ -118,14 +162,15 @@ PhyloBox.Interface = {
 						$(sib).width(sw);
 						// trigger handlers for all views
 						$(this).trigger("pb-treeresize");
-					});
+					};
+					$(document).bind("mousemove",movehandle);
 				} else {
 					// get margin and sibling
 					var main_m_orig = parseInt($(main).css("margin-right"));
 					var sib = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.lastElementChild;
 					var sib_w_orig = $(sib).width();
 					// bind mouse move
-					$(document).bind("mousemove",function(e) {
+					var movehandle = function(e) {
 						// get mouse position
 						var mouse = __this._mouse(e);
 						// determine new values
@@ -140,14 +185,15 @@ PhyloBox.Interface = {
 						$(sib).width(sw);
 						// trigger handlers for all views
 						$(this).trigger("pb-treeresize");
-					});
+					};
+					$(document).bind("mousemove",movehandle);
 				}
 			} else { // panel-left
 				// get sibling
 				var sib = this.parentNode.parentNode.parentNode.previousElementSibling;
 				var sib_w_orig = $(sib).width();
 				// bind mouse move
-				$(document).bind("mousemove",function(e) {
+				var movehandle = function(e) {
 					// get mouse position
 					var mouse = __this._mouse(e);
 					// determine new values
@@ -158,16 +204,112 @@ PhyloBox.Interface = {
 					// set widths
 					$(pan).width(pw);
 					$(sib).width(sw);
-				});
+				};
+				$(document).bind("mousemove",movehandle);
 			}
 			// bind mouse up
 			$(document).bind("mouseup",function() {
 				// remove all
-				$(this).unbind("mousemove").unbind("mouseup");
+				$(this).unbind("mousemove",movehandle).unbind("mouseup",arguments.callee);
 				// add back tools events
-				__this._addToolEvents();
+				//__this._addToolEvents();
 			});
 		});
+	},
+	_addMenuEvents:function() {
+		// save ref
+		var __this = this;
+		// menu events
+		$(".menu-butt").live("click",function() {
+			// set active
+			__this._activeMenu = this;
+			// add style and show menu
+			$(this).addClass("menu-butt-active");
+			$(this.nextElementSibling).show();
+			// hide when click out	
+			$(document).bind("click",{ ref:__this },__this._killMenu);
+		});
+		$(".menu-butt").live("mouseenter",function() {
+			// check if active
+			if(__this._activeMenu) {
+				// remove first document listener
+				$(document).unbind("click",__this._killMenu);
+				// remove style and hide menu
+				$(__this._activeMenu).removeClass("menu-butt-active");
+				$(__this._activeMenu.nextElementSibling).hide();
+				// set active
+				__this._activeMenu = this;
+				// add style and show menu
+				$(this).addClass("menu-butt-active");
+				$(this.nextElementSibling).show();
+				// hide when click out	
+				$(document).bind("click",{ ref:__this },__this._killMenu);
+			}
+		});
+		// menu file events
+		$(".menu-submit-file").live("mouseenter",function() {
+			$(this.nextElementSibling).addClass("menu-submit-hover");
+		});
+		$(".menu-submit-file").live("mouseleave",function() {
+			$(this.nextElementSibling).removeClass("menu-submit-hover");
+		});
+		$(".menu-submit-file").live("mousedown",function() {
+			$(this.nextElementSibling).addClass("menu-submit-active");
+		});
+		$(".menu-submit-file").live("mouseup",function() {
+			$(this.nextElementSibling).removeClass("menu-submit-active");
+		});
+		$(".menu-submit-file").live("change",function() {
+			// hide menu
+			$(document).unbind("click",__this._killMenu);
+			$(__this._activeMenu).removeClass("menu-butt-active");
+			$(__this._activeMenu.nextElementSibling).hide();
+			__this._activeMenu = null;
+			// show loading gif
+			
+			// save ref to parent
+			var parent = this.parentNode;
+			// create an iframe
+			var iframe = $("<iframe id='uploader' name='uploader' style='display:none;' />");
+			// add to doc
+		    iframe.appendTo("body");
+			// iframe event handling
+			var uploaded = function(e) {
+				// remove load event
+				$("#uploader").unbind("load",uploaded);
+				// get data
+				var data = JSON.parse($("#uploader").contents().find("body").html());
+				// make a tree
+				PhyloBox.Document.load(data);
+				// clean up -- safari needs the delay
+				setTimeout(function() {
+					$("#uploader").remove();
+					$("#file-form").remove();
+				},1000);
+			}
+			// add load event to iframe
+			$("#uploader").bind("load",uploaded);
+			// create the upload form
+			var form = "<form id='file-form' action='/new' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'>";
+			form += 		"<input type='hidden' name='method' value='phyloxml' />";
+			form += 	"</form>";
+			// add to doc
+		    $(form).appendTo("body");
+			// change form's target to the iframe (this is what simulates ajax)
+		    $("#file-form").attr("target","uploader");
+			// add the file input to the form
+			$(this).appendTo("#file-form");
+			// submit form
+		    $("#file-form").submit();
+			// re-attach input field
+			$(this).prependTo(parent);
+			// ensure single submit
+			return false;
+		});
+	},
+	_addToolEvents:function() {
+		// save ref
+		var __this = this;
 		// tools
 		$(".tool").live("click",function() {
 			// check unavailable
@@ -185,8 +327,92 @@ PhyloBox.Interface = {
 			// prevent image drag behavior
 			if(e.preventDefault) e.preventDefault();
 		});
-		// tool event dispatching
-		__this._addToolEvents();
+		// get all
+		var canvases = $("#trees canvas");
+		// canvas tools
+		canvases.live("click",function(e) {
+			// set active if not
+			if(this.id == PhyloBox.Document.tree(__this._activeTree).view().id()) return false;
+			else {
+				__this._activeTree = $(this).data("view").tree().age();
+				// trigger mouseenter for cursor
+				$(this).trigger("mouseenter");
+				// set taxa list
+				PhyloBox.Interface.setTaxa();
+				// set properties
+				PhyloBox.Interface.setProperties();
+			}
+		});
+		canvases.live("mousedown",function(e) {
+			// check if active
+			if(this.id != PhyloBox.Document.tree(__this._activeTree).view().id()) return false;
+			// save reference
+			var canvas = $(this);
+			// trigger event
+			canvas.trigger("pb-"+__this._activeTool,["mousedown",__this._viewMouse(e,canvas)]);
+			// add move event
+			canvas.bind("mousemove",function(e) {
+				// trigger event
+				canvas.trigger("pb-"+__this._activeTool,["mousemove",__this._viewMouse(e,canvas)]);
+			});
+			// add up event
+			$(document).bind("mouseup",function(e) {
+				// unbind events
+				canvas.unbind("mousemove");
+				$(this).unbind("mouseup");
+				// trigger event
+				canvas.trigger("pb-"+__this._activeTool,["mouseup",__this._viewMouse(e,canvas)]);
+			});
+		});
+		canvases.live("mouseenter",function(e) {
+			// check if active
+			if(this.id != PhyloBox.Document.tree(__this._activeTree).view().id()) { 
+				$(this).css("cursor","default");
+				return false;
+			}
+			// set cursor
+			switch(__this._activeTool) {
+				case "select" :
+					$(this).css("cursor","none");
+					break;
+				case "translate" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-translate.png) 8 8, auto");
+					break;
+				case "rotate" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-rotate.png) 8 8, auto");
+					break;
+				case "zin" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-zin.png) 6 6, auto");
+					break;
+				case "zout" :
+					$(this).css("cursor","url(static/gfx/tools/mouse-zout.png) 6 6, auto");
+					break;		
+			}
+		});
+		canvases.live("mouseleave",function(e) {
+			// check if active
+			if(this.id != PhyloBox.Document.tree(__this._activeTree).view().id()) return false;
+			// refresh view
+			PhyloBox.Document.tree(__this._activeTree).view().refresh();
+		});
+		canvases.live("mousemove",function(e) {
+			// check if active
+			if(this.id != PhyloBox.Document.tree(__this._activeTree).view().id()) return false;
+			// save reference
+			var canvas = $(this);
+			// trigger event
+			canvas.trigger("pb-"+__this._activeTool,["mousesearch",__this._viewMouse(e,canvas)]);
+		});
+		canvases.live("dblclick",function(e) {
+			// check if active
+			if(this.id != PhyloBox.Document.tree(__this._activeTree).view().id()) return false;
+			// clear selected
+			__this._clearNode(true);
+		});
+	},
+	_addPropertyEvents:function() {
+		// save ref
+		var __this = this;
 		// editable cells
 		$(".editable").live("click",function() {
 			// save ref
@@ -323,86 +549,6 @@ PhyloBox.Interface = {
 			PhyloBox.Document.tree(__this._activeTree).view().refresh();
 		});
 	},
-	// private methods
-	_fit:function() {
-		// size panels to fit window height
-		$(".panel").each(function(i) {
-			var h = $(window).height() - 75;
-			$(this).height(h);
-		});
-		$("section").each(function(i) {
-			var h = this.parentNode.id!="trees" ? $(window).height() - 110 : $(window).height() - 100;
-			$(this).height(h);
-		});
-		$(".handle > div").each(function(i) {
-			var h = $(window).height() - 100;
-			$(this).height(h);
-		});
-		$(".handle > div > img").each(function(i) {
-			var t = ($(window).height() - 124) / 2;
-			$(this).css("top",t);
-		});
-	},
-	_addToolEvents:function() {
-		// get all
-		var canvases = $("#trees canvas");
-		// save ref
-		var __this = this;
-		// add events
-		canvases.live("mousedown",function(e) {
-			// save reference
-			var canvas = $(this);
-			// trigger event
-			canvas.trigger("pb-"+__this._activeTool,["mousedown",__this._viewMouse(e,canvas)]);
-			// add move event
-			canvas.bind("mousemove",function(e) {
-				// trigger event
-				canvas.trigger("pb-"+__this._activeTool,["mousemove",__this._viewMouse(e,canvas)]);
-			});
-			// add up event
-			$(document).bind("mouseup",function(e) {
-				// unbind events
-				canvas.unbind("mousemove");
-				$(this).unbind("mouseup");
-				// trigger event
-				canvas.trigger("pb-"+__this._activeTool,["mouseup",__this._viewMouse(e,canvas)]);
-			});
-		});
-		canvases.live("mouseenter",function(e) {
-			// set cursor
-			switch(__this._activeTool) {
-				case "select" :
-					$(this).css("cursor","none");
-					break;
-				case "translate" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-translate.png) 8 8, auto");
-					break;
-				case "rotate" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-rotate.png) 8 8, auto");
-					break;
-				case "zin" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-zin.png) 6 6, auto");
-					break;
-				case "zout" :
-					$(this).css("cursor","url(static/gfx/tools/mouse-zout.png) 6 6, auto");
-					break;		
-			}
-		});
-		canvases.live("mouseleave",function(e) {
-			// refresh view
-			PhyloBox.Document.tree(__this._activeTree).view().refresh();
-		});
-		canvases.live("mousemove",function(e) {
-			// save reference
-			var canvas = $(this);
-			// trigger event
-			canvas.trigger("pb-"+__this._activeTool,["mousesearch",__this._viewMouse(e,canvas)]);
-		});
-		canvases.live("dblclick",function(e) {
-			// clear selected
-			__this._clearNode(true);
-		});
-	},
 	_mouse:function(e) {
 		// get true mouse position
 		var px = 0;
@@ -465,15 +611,17 @@ PhyloBox.Interface = {
 		var nodes = [];
 		for(var i=0;i<node_list.length;i++) nodes[i] = node_list[i];
 		nodes.sort(function(a,b) { return a.id() - b.id(); });
-		// create taxa list
+		// get taxa list
 		var taxa = $("#taxa > section > ul");
+		// empty taxa
+		taxa.empty();
 		// walk nodes
 		for(var n in nodes) {
 			var node = nodes[n];
 			// get name
 			var name = "";
 			if(node.name()) name += node.name();
-			if(node.taxonomy())
+			else if(node.taxonomy())
 				for(var i in node.taxonomy()) {
 					if(name!="") name += " | ";
 					name += node.taxonomy()[i];
@@ -482,7 +630,7 @@ PhyloBox.Interface = {
 			name = "&mdash;&nbsp;&nbsp;"+node.id()+":&nbsp;"+name;
 			// color square
 			var info = "<div class='taxa-right'>";
-			info += 	"<div class='ex'>x</div>";
+			info += 	"<div class='ex' style='"+(node.visibility() ? "display:none" : "")+"'>x</div>";
 			info += 	"<div class='dot' style='background:#"+node.color()+";'></div>";
 			info += "</div>";
 			// add to doc
@@ -576,6 +724,12 @@ PhyloBox.Interface = {
 		var tree = PhyloBox.Document.tree(this._activeTree);
 		// title
 		$(".panel-head",$("#trees")).text("Tree - "+tree.title());
+		// grid the trees
+		$(".tree-holder").each(function(i) {
+			$(this).css("height",(100 / PhyloBox.Document.trees().length)+"%");
+		});
+		// auto-fit
+		$(window).trigger("resize");
 	},
 	setProperties:function() {
 		// use active tree
@@ -690,6 +844,8 @@ PhyloBox.Interface = {
 		$("#doc > section").html(name+visual+viewing+labels);
 	},
 	setTools:function() {
+		// don't if a tree exists already
+		if(PhyloBox.Document.trees().length > 1) return false;
 		// default tool is select
 		$("#select").addClass("tool-active");
 		this._activeTool = "select";
@@ -717,48 +873,27 @@ PhyloBox.Interface = {
 ###########################################################################*/
 PhyloBox.Document = {
 	// private vars
-	_io:null, _keys:[], _trees:[],
+	_trees:[],
 	// constructor
-	init:function() {
-		// initialize io
-		this._io = new IO(this,PhyloBox.API,"json","#doc-loader");
-	},
+	init:function() {  },
 	// private methods
 	_error:function(e) { console.log("Document: "+e); },
 	// public methods
-	load:function(key) {
-		this._keys.push(key);
-		this._io.request("load","k="+key);
-	},
-	receive:function(type,data) {
-		// temp !
-		data.environment.threeD = data.environment['3D'];
-		// do something
-		switch(type) {
-			case "load" :
-				// convert data to tree type
-				var t = new Tree(data);
-				this._trees.push(t);
-				// set to active
-				PhyloBox.Interface.activeTree(this._trees.length-1);
-				// set taxa list
-				PhyloBox.Interface.setTaxa();
-				// set trees
-				PhyloBox.Interface.setTree();
-				// set properties
-				PhyloBox.Interface.setProperties();
-				// set tools
-				PhyloBox.Interface.setTools();
-				// create view
-				t.view(new View(20,"#trees > section",{t:20,r:20,b:20,l:20},true,true));
-				t.view().plot(t);
-				// go
-				t.view().begin();
-				break;
-		}
+	load:function(data) {
+		// create a tree type
+		var t = new Tree();
+		// save it
+		this._trees.push(t);
+		// set age
+		t.age(this._trees.length-1);
+		// set to active
+		PhyloBox.Interface.activeTree(t.age());
+		// go
+		t.begin(data);
 	},
 	// get & set vars
 	tree:function(v) { return this._trees[v]; },
+	trees:function() { return this._trees; },
 };
 /*###########################################################################
 ########################################################################## IO
@@ -787,6 +922,7 @@ var IO = Class.extend({
   			success:function(json) {
 				__this._loading(false);
 				if(!json) { __this._error("nothing received..."); return false; }
+				else if(json==404) { __this._error("nothing received..."); return false; }
 				__this._caller.receive(a,json);
 			},
 			error:function(e) {
@@ -837,17 +973,19 @@ var Node = Class.extend({
 ###########################################################################*/
 var Tree = Class.extend({
 	// private vars
+	_key:null, _view:null, _io:null, _age:null,
 	_data:[], _data_clone:[], _json:[], _node_list:[], _nodes:[],
-	_n_leaves:0, _n_layers:0, _title:null, _environment:null, _view:null,
+	_n_leaves:0, _n_layers:0, _title:null, _environment:null,
 	// constructor
-	init:function(data) {
+	init:function() {  },
+	// private methods
+	_make:function(data) {
 		// store data
 		this._data = data;
 		// nest this tree around the root
 		var ir = this._data.environment.root ? this._data.environment.root : this._data.root ? this._data.root : this._data.tree[0].id;
 		this.nest(ir);
 	},
-	// private methods
 	_nest:function(rid) {
 		// root node?
 		if(!rid) { this._error("no root node provided for nest..."); return false; }
@@ -946,6 +1084,45 @@ var Tree = Class.extend({
 	},
 	_error:function(e) { console.log("Tree: "+e); },
 	// public methods
+	begin:function(data) {
+		// save key
+		this._key = typeof data == "string" ? data : data.k;
+		// make and attach a tree holder
+		var holder = $("<div class='tree-holder' />");
+		holder.appendTo("#trees > section");
+		// create view
+		this._view = new View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
+		// initialize io
+		this._io = new IO(this,PhyloBox.API,"json","#tree-loader-"+this._view.id());
+		// load data if present otherwise go on
+		typeof data == "string" ? this._io.request("load","k="+this._key) : this.receive("load",data);
+	},
+	receive:function(type,data) {
+		// do something
+		switch(type) {
+			case "load" :
+				// make tree
+				this._make(data);
+				// bind handler for tree ready
+				$("#"+this._view.id()).bind("viewready",function(e) {
+					// unbind
+					$(e.target).unbind("viewready",arguments.callee);
+					// set taxa list
+					PhyloBox.Interface.setTaxa();
+					// set trees
+					PhyloBox.Interface.setTree();
+					// set properties
+					PhyloBox.Interface.setProperties();
+					// set tools
+					PhyloBox.Interface.setTools();
+				});
+				// plot
+				this._view.plot(this);
+				// go
+				this._view.begin();
+				break;
+		}
+	},
 	nest:function(rid) {
 		// clone the original data
 		this._data_clone = $.extend(true,{},this._data);
@@ -965,6 +1142,7 @@ var Tree = Class.extend({
 	title:function(v) { if(v!==undefined) this._title = v; else return this._title; },
 	environment:function() { return this._environment; },
 	view:function(v) { if(v!==undefined) this._view = v; else return this._view; },
+	age:function(v) { if(v!==undefined) this._age = v; else return this._age; },
 });
 /*###########################################################################
 ################################################################### DOC READY  
@@ -979,7 +1157,7 @@ $(function() {
 	PhyloBox.System.init();
 	PhyloBox.Interface.init();
 	PhyloBox.Document.init();
-	//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– MINE DATA
-	PhyloBox.Document.load(__key__);
+	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
+	if(__key__!=="0") PhyloBox.Document.load(__key__);
 });
 //####################################################################### END
