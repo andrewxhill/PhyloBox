@@ -438,7 +438,7 @@ PhyloBox.Interface = {
 		// change background color
 		$("#tree-prop-name").live("change",function() {
 			PhyloBox.Document.tree(__this._activeTree).title($(this).val());
-			__this.setTree();
+			PhyloBox.Document.tree(__this._activeTree).view().replot();
 		});
 		// change background color
 		$("#tree-prop-bg").live("change",function() {
@@ -723,7 +723,7 @@ PhyloBox.Interface = {
 		// use active tree
 		var tree = PhyloBox.Document.tree(this._activeTree);
 		// title
-		$(".panel-head",$("#trees")).text("Tree - "+tree.title());
+		//$(".panel-head",$("#trees")).text("Tree - "+tree.title());
 		// grid the trees
 		$(".tree-holder").each(function(i) {
 			$(this).css("height",(100 / PhyloBox.Document.trees().length)+"%");
@@ -1158,6 +1158,7 @@ $(function() {
 	PhyloBox.Interface.init();
 	PhyloBox.Document.init();
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
+	console.log(__user__);
 	if(__key__!=="0") PhyloBox.Document.load(__key__);
 });
 //####################################################################### END
