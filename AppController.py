@@ -553,183 +553,183 @@ class TreeSave(webapp.RequestHandler):
 #         #write the page
 #         self.response.out.write(data)
 #         
-# class TreeEditor(webapp.RequestHandler):
-#   def post(self):
-#     user,url,url_linktext = GetCurrentUser(self)
-#                 
-#     #phyloxml = open(self.request.POST.get('phyloxml'),'r').read()
-#     treefile = UnzipFiles(self.request.POST.get('phyloxml'))
-#     
-#     method = self.request.params.get('method', None)
-#     if method=="newick":
-#         treefile = ParseNewick(str(treefile))
-#         
-#     #print treefile
-#     #set defaults
-#     background = "1d1d1d"
-#     color = "75a0cb"
-#     if user:
-#         author = str(user)
-#     else:
-#         author = "anon"
-#     title = "Your tree"
-#     description = "PhyloJSON Tree Generated at PhyloBox"
-#     view_mode = 0
-#     root = None
-#     width = 1
-#     htulabels = False
-#     branchlabels = False
-#     leaflabels = False
-#     node_radius = 1
-#     
-#     tree = PhyloXMLtoTree(treefile,color=color)
-#     tree.load()
-#     if tree.title is not None:
-#         title = tree.title
-#     if tree.rooted is not None:
-#         root = tree.root
-#     out = ''
-#     output = []
-#     #output = {}
-#     for a,b in tree.objtree.tree.items():
-#         if a != 0:
-#             output.append(b.json())
-#             #output[a]= b.json()
-#             
-#     treefile = {}
-#     treefile['v'] = 1
-#     treefile['date'] = str(datetime.datetime.now())
-#     treefile['author'] = author
-#     treefile['title'] = title
-#     treefile['description'] = description
-#     treefile['root'] = root
-#     treefile['environment'] = {}
-#     treefile['environment']['root'] = tree.root
-#     treefile['environment']['viewmode'] = view_mode
-#     treefile['environment']['branchlenghts'] = True
-#     treefile['environment']['3D'] = False
-#     treefile['environment']['color'] = background
-#     treefile['environment']['angvel'] = {'x':None,'y':None,'z':None}
-#     treefile['environment']['offset'] = {'dx':0.0,'dy':0.0,'dz':None,'ax':0.0,'ay':0.0,'az':0.0}
-#     treefile['environment']['width'] = width
-#     treefile['environment']['radius'] = node_radius
-#     treefile['environment']['htulabels'] = htulabels
-#     treefile['environment']['branchlabels'] = branchlabels
-#     treefile['environment']['leaflabels'] = leaflabels
-#     treefile['environment']['primaryuri'] = None
-#     treefile['tree'] = output
-#     treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
-#     
-#     #self.response.out.write(treefile)
-#     
-#     k = self.request.params.get('k', None)
-#     
-#     if k is None:
-#         version = os.environ['CURRENT_VERSION_ID'].split('.')
-#         version = str(version[0])
-#         k = "tmp-phylobox-"+version+"-"+str(uuid.uuid4())
-#         
-#     #zip the string
-#     treefile = ZipFiles(treefile)
-#     
-#     #i have removed a temp table from the data store
-#     #now i just store tmp trees in memcache for 10 or so days
-#     memcache.set("tree-data-"+k, treefile, 360000)
-#     
-#         
-#     template_values = {
-#             'key':k,
-#             'tmp':True,
-#             'user':user,
-#             'url': url,
-#             'url_linktext': url_linktext,
-#             'collaborators': [],
-#             }
-#                 
-#     path = os.path.join(os.path.dirname(__file__), 'templates/header.html')
-#     header = str(template.render(path, template_values))
-#     
-#     path = os.path.join(os.path.dirname(__file__), 'templates/testtoolMenu.html')
-#     toolMenu = str(template.render(path, template_values))
-#     
-#     path = os.path.join(os.path.dirname(__file__), 'templates/optionsPanel.html')
-#     optionsPanel = str(template.render(path, template_values))
-#     
-#     template_values['header'] = header
-#     template_values['toolMenu'] = toolMenu
-#     template_values['optionsPanel'] = optionsPanel
-#     
-#     path = os.path.join(os.path.dirname(__file__), 'templates/newEngine.html')
-#     
-#     #render the final page HTML
-#     data = template.render(path, template_values)
-#     #store the final page in memcache
-#     #write the page
-#     self.response.out.write(data)
-#     
-#     
-#     
-#   def get(self):
-#     user,url,url_linktext = GetCurrentUser(self)
-#     #print url
-#     #Default, view the Baeolophus tree from GeoPhylo
-#     #use POST above to allow users to upload their own files
-#     k = self.request.params.get('k', None)
-#     if k is None:
-#         k = EXAMPLE_PHYLOBOX_KEY
-#         treefile = open("examplejson",'r').read()
-#         
-#     #check memcache for the page first
-#     data = memcache.get("tree-edit-"+k)
-#     #return it if it exists
-#     if data is not None:
-#         self.response.out.write(data)
-#     #else build the page
-#     else:
-#         
-#         tmp = False
-#         if cmp('tmp',k[:3])==0:
-#             tmp=True
-#             
-#             
-#         collaborators = []
-#         results = treeOwners.gql("WHERE objId = :objId",
-#                         objId=k).fetch(100)
-#         for res in results:
-#             collaborators.append(str(res.userName))
-#             
-#         template_values = {
-#                 'key':k,
-#                 'tmp':tmp,
-#                 'user':user,
-#                 'url': url,
-#                 'url_linktext': url_linktext,
-#                 'collaborators': collaborators
-#                 }
-#                 
-#         path = os.path.join(os.path.dirname(__file__), 'templates/header.html')
-#         header = str(template.render(path, template_values))
-#         
-#         path = os.path.join(os.path.dirname(__file__), 'templates/testtoolMenu.html')
-#         toolMenu = str(template.render(path, template_values))
-#         
-#         path = os.path.join(os.path.dirname(__file__), 'templates/optionsPanel.html')
-#         optionsPanel = str(template.render(path, template_values))
-#         
-#         template_values['header'] = header
-#         template_values['toolMenu'] = toolMenu
-#         template_values['optionsPanel'] = optionsPanel
-#         
-#         path = os.path.join(os.path.dirname(__file__), 'templates/newEngine.html')
-#         
-#         #render the final page HTML
-#         data = template.render(path, template_values)
-#             #store the final page in memcache
-#         #memcache.set("tree-edit-"+k, data, 5)
-#         
-#         #store the final page in memcache
-#         #write the page
-#         self.response.out.write(data)
+class TreeEditor(webapp.RequestHandler):
+  def post(self):
+    user,url,url_linktext = GetCurrentUser(self)
+                
+    #phyloxml = open(self.request.POST.get('phyloxml'),'r').read()
+    treefile = UnzipFiles(self.request.POST.get('phyloxml'))
+    
+    method = self.request.params.get('method', None)
+    if method=="newick":
+        treefile = ParseNewick(str(treefile))
+        
+    #print treefile
+    #set defaults
+    background = "1d1d1d"
+    color = "75a0cb"
+    if user:
+        author = str(user)
+    else:
+        author = "anon"
+    title = "Your tree"
+    description = "PhyloJSON Tree Generated at PhyloBox"
+    view_mode = 0
+    root = None
+    width = 1
+    htulabels = False
+    branchlabels = False
+    leaflabels = False
+    node_radius = 1
+    
+    tree = PhyloXMLtoTree(treefile,color=color)
+    tree.load()
+    if tree.title is not None:
+        title = tree.title
+    if tree.rooted is not None:
+        root = tree.root
+    out = ''
+    output = []
+    #output = {}
+    for a,b in tree.objtree.tree.items():
+        if a != 0:
+            output.append(b.json())
+            #output[a]= b.json()
+            
+    treefile = {}
+    treefile['v'] = 1
+    treefile['date'] = str(datetime.datetime.now())
+    treefile['author'] = author
+    treefile['title'] = title
+    treefile['description'] = description
+    treefile['root'] = root
+    treefile['environment'] = {}
+    treefile['environment']['root'] = tree.root
+    treefile['environment']['viewmode'] = view_mode
+    treefile['environment']['branchlenghts'] = True
+    treefile['environment']['3D'] = False
+    treefile['environment']['color'] = background
+    treefile['environment']['angvel'] = {'x':None,'y':None,'z':None}
+    treefile['environment']['offset'] = {'dx':0.0,'dy':0.0,'dz':None,'ax':0.0,'ay':0.0,'az':0.0}
+    treefile['environment']['width'] = width
+    treefile['environment']['radius'] = node_radius
+    treefile['environment']['htulabels'] = htulabels
+    treefile['environment']['branchlabels'] = branchlabels
+    treefile['environment']['leaflabels'] = leaflabels
+    treefile['environment']['primaryuri'] = None
+    treefile['tree'] = output
+    treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
+    
+    #self.response.out.write(treefile)
+    
+    k = self.request.params.get('k', None)
+    
+    if k is None:
+        version = os.environ['CURRENT_VERSION_ID'].split('.')
+        version = str(version[0])
+        k = "tmp-phylobox-"+version+"-"+str(uuid.uuid4())
+        
+    #zip the string
+    treefile = ZipFiles(treefile)
+    
+    #i have removed a temp table from the data store
+    #now i just store tmp trees in memcache for 10 or so days
+    memcache.set("tree-data-"+k, treefile, 360000)
+    
+        
+    template_values = {
+            'key':k,
+            'tmp':True,
+            'user':user,
+            'url': url,
+            'url_linktext': url_linktext,
+            'collaborators': [],
+            }
+                
+    path = os.path.join(os.path.dirname(__file__), 'templates/header.html')
+    header = str(template.render(path, template_values))
+    
+    path = os.path.join(os.path.dirname(__file__), 'templates/testtoolMenu.html')
+    toolMenu = str(template.render(path, template_values))
+    
+    path = os.path.join(os.path.dirname(__file__), 'templates/optionsPanel.html')
+    optionsPanel = str(template.render(path, template_values))
+    
+    template_values['header'] = header
+    template_values['toolMenu'] = toolMenu
+    template_values['optionsPanel'] = optionsPanel
+    
+    path = os.path.join(os.path.dirname(__file__), 'templates/newEngine.html')
+    
+    #render the final page HTML
+    data = template.render(path, template_values)
+    #store the final page in memcache
+    #write the page
+    self.response.out.write(data)
+    
+    
+    
+  def get(self):
+    user,url,url_linktext = GetCurrentUser(self)
+    #print url
+    #Default, view the Baeolophus tree from GeoPhylo
+    #use POST above to allow users to upload their own files
+    k = self.request.params.get('k', None)
+    if k is None:
+        k = EXAMPLE_PHYLOBOX_KEY
+        treefile = open("examplejson",'r').read()
+        
+    #check memcache for the page first
+    data = memcache.get("tree-edit-"+k)
+    #return it if it exists
+    if data is not None:
+        self.response.out.write(data)
+    #else build the page
+    else:
+        
+        tmp = False
+        if cmp('tmp',k[:3])==0:
+            tmp=True
+            
+            
+        collaborators = []
+        results = treeOwners.gql("WHERE objId = :objId",
+                        objId=k).fetch(100)
+        for res in results:
+            collaborators.append(str(res.userName))
+            
+        template_values = {
+                'key':k,
+                'tmp':tmp,
+                'user':user,
+                'url': url,
+                'url_linktext': url_linktext,
+                'collaborators': collaborators
+                }
+                
+        path = os.path.join(os.path.dirname(__file__), 'templates/header.html')
+        header = str(template.render(path, template_values))
+        
+        path = os.path.join(os.path.dirname(__file__), 'templates/testtoolMenu.html')
+        toolMenu = str(template.render(path, template_values))
+        
+        path = os.path.join(os.path.dirname(__file__), 'templates/optionsPanel.html')
+        optionsPanel = str(template.render(path, template_values))
+        
+        template_values['header'] = header
+        template_values['toolMenu'] = toolMenu
+        template_values['optionsPanel'] = optionsPanel
+        
+        path = os.path.join(os.path.dirname(__file__), 'templates/newEngine.html')
+        
+        #render the final page HTML
+        data = template.render(path, template_values)
+            #store the final page in memcache
+        #memcache.set("tree-edit-"+k, data, 5)
+        
+        #store the final page in memcache
+        #write the page
+        self.response.out.write(data)
 
 
 ################################################################ BETA
@@ -1239,7 +1239,7 @@ application = webapp.WSGIApplication(
                                       ('/signout', SignOut),
                                       ('/projects', ProjectViewer),
                                       #('/tree/oldold', OldTreeEditor),
-                                      #('/tree/edit', TreeEditor),
+                                      ('/tree/edit', TreeEditor),
                                       #('/tree/old', OldEditor),
                                       #('/tree/sander', SanderTest),
                                       ('/tree/fullscreen', TreeFullscreen),

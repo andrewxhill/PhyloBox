@@ -123,7 +123,7 @@ div.menu ul li a:active, a.menu-submit-active { color:black; background:rgba(255
 div.tree-holder { width:100%; height:100%; min-height:100px; min-width:100px; border-bottom:5px solid white; position:relative; }
 div.tree-holder:last-child { border-bottom:none !important; }
 
-p.tree-title { position:absolute; display:block; background:rgba(255,255,255,0.5); font-family:"Plain",Arial,sans-serif; font-size:8px; }
+p.tree-title { position:absolute; background:rgba(255,255,255,0.5); font-family:"Plain",Arial,sans-serif; font-size:8px; padding:0 4px; }
 
 table { width:100%; border-bottom:1px solid #D3D3D3; color:#333; margin:0 0 8px 0; }
 caption { font-weight:bold; white-space:nowrap; display:block; padding:0 0 8px 10px; }
