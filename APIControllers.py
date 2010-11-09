@@ -216,17 +216,7 @@ class TmpTest(webapp.RequestHandler):
     out.append(self.request.params.get('permanent', None))
     out.append(self.request.params.get('response', None))
     k = 'tmp-phylobox-2-0-448180af-56b0-44a0-904e-6740fc042b22'
-    self.response.out.write("""
-        <body>
-        <div width="400" 
-             height="385"
-             style="width:400px;height:385px;"
-             id="%s"
-             class="phylobox_embed_parent"> <a href="http://phylobox.appspot.com"> <img src="http://phylobox.appspot.com/static/images/widget/holder_425.png" width="375" height"344" /> </a> </div> 
-        <script type="text/javascript" src="http://phylobox.appspot.com/static/javascript/WidgetControllers/latest/InsertWidget.js"> </script> <script type="text/javascript"> if (PHYLOBOX) PHYLOBOX.renderPhylo();</script> <noscript> Sorry, we haven't spent much time with IE, maybe that is why you are not seeing anything here?</noscript> 
-                    
-        </body>
-        """ % (k))
+    self.response.out.write(out)
 class UserInfo(webapp.RequestHandler):
   def get(self):
     self.post()
@@ -252,7 +242,9 @@ class AddNewTree(webapp.RequestHandler):
       
   def post(self):
     user,url,url_linktext = GetCurrentUser(self)
+    
     treefile = self.request.params.get('phyloFile', None)
+        
     if treefile is not None:
         version = os.environ['CURRENT_VERSION_ID'].split('.')
         version = str(version[0])
@@ -264,7 +256,6 @@ class AddNewTree(webapp.RequestHandler):
             author = str(user)
         else:
             author = "anon"
-        title = "Your tree"
         description = "PhyloJSON Tree Generated at PhyloBox"
         view_mode = 'Dendrogram'.lower()
         root = None
@@ -279,7 +270,7 @@ class AddNewTree(webapp.RequestHandler):
         icon = "http://geophylo.appspot.com/static_files/icons/a99.png"
         proximity = 2
         alt_grow = 15000
-        title = "Created with Phylobox"
+        title = "Untitled Tree"
         
         try:
             #parse a PhyloXML file
@@ -332,22 +323,47 @@ class AddNewTree(webapp.RequestHandler):
 
         #i have removed a temp table from the data store
         #now i just store tmp trees in memcache for 10 or so days
-        memcache.set("tree-data-"+k, treefilezip, 360000)
         
-    if self.request.params.get('permanant', None):
-        #do some long term storage here
-        pass
+        #handle storage time for the new tree
+        stored = False
+        if self.request.params.get('store', None):
+            #do some long term storage here
+            time = 2678400
+            try:
+                time = int(self.request.params.get('store', None))*86400 #number of days * sec/day
+            except:
+                if 'permanent' == self.request.params.get('store', None):
+                    tmpEntry = treeStore(key_name=k,
+                              objId = k,
+                              objBlob = treefilezip,
+                              userName = user,
+                              treeTitle = title,
+                              originalAuthor = user,
+                              version = version
+                              )
+                    tmpEntry.put()
+                    
+                    tmpEntry = treeOwners(objId = k,
+                              userName = user
+                              )
+                    tmpEntry.put()
+                    stored = True
+                    
+            memcache.set("tree-data-"+k, treefilezip, time)
+        else:
+            memcache.set("tree-data-"+k, treefilezip, 2678400)
         
         
+    self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
-        self.response.out.write(k)
-    if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "widget":
-        self.response.out.write("""
-        <div id="PhyloboxEmbed" >
-           <div width="375" height="344" style="width:375px;height:344px;" id="%s" class="phylobox_embed_parent"><a href="http://2-0.latest.phylobox.appspot.com"><img src="http://2-0.latest.phylobox.appspot.com/api/image.png?k=%s" width="375" height="344" /></a>
-           </div>
-        </div>
-        """ % (k,k))
+        out = {"key":k,"url":"http://phylobox.appspot.com/?%s" % (k)}
+        self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
+    elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "widget":
+        self.response.out.write(403)
+    elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "png":
+        self.response.out.write(403)
+    elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "link":
+        self.response.out.write("http://phylobox.appspot.com/?%s" % (k))
     else:
         self.response.out.write(treefile)
 
@@ -631,4 +647,138 @@ class APIServices(webapp.RequestHandler):
     self.response.out.write(out)  
       
          
+class TreeSave(webapp.RequestHandler):
+  def post(self):
+    user,url,url_linktext = GetCurrentUser(self)
+    
+    
+    k = self.request.params.get('key', None)
+    title = self.request.params.get('title', None)
+    png = self.request.params.get('png', None)
+    if png is not None:
+        #ng = png.split(",")[1][0:-1]
+        png = db.Blob(str(png)[1:-1])
+        #png=base64.decodestring(png)
+    if k is None:
+        self.response.out.write(None)
+    
+    treefile = simplejson.loads(self.request.params.get('tree', None))
+    
+    if treefile is None:
+        self.response.out.write(None)
+        
+    version = os.environ['CURRENT_VERSION_ID'].split('.')
+    version = str(version[0])
+    
+    treefile = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+    
+    if user is not None:
+        #if the user is signed in, give them ownership of the tree object
+        projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
+                            objId=k, userName = user).fetch(1)
+                            
+        
+        if len(projects)==0:
+            #if the user is trying to store a tree that isn't theirs, fork it as a new tree
+            #but retain the name of the originalAuthor
+            trees = treeStore.gql("WHERE objId = :objId",
+                                objId=k).fetch(1)
+            newk = "phylobox-"+version+"-"+str(uuid.uuid4())
+            
+            for tree in trees:
+                tmpEntry = treeStore(key_name=newk,
+                          objId = newk,
+                          objBlob = treefile,
+                          objPng = png,
+                          treeTitle = title,
+                          userName = user,
+                          forkedObj = k,
+                          originalAuthor = tree.originalAuthor,
+                          version = version
+                          )
+                tmpEntry.put()
+    
+                tmpEntry = treeOwners(objId = newk,
+                                      userName = user
+                                      )
+                tmpEntry.put()
+            k = newk
+        else:
+            fork = self.request.params.get('fork', None)
+            if fork is not None:
+                #If the fork variable is sent, then we create a new
+                #key for the tree and send it back to the user
+                newk = "phylobox-"+version+"-"+str(uuid.uuid4())
+                trees = treeStore.gql("WHERE objId = :objId ",
+                                objId=k).fetch(1)
+                #if the user is the owner of the tree, update it.
+                for tree in trees:
+                    tmpEntry = treeStore(key_name=newk,
+                              objId = newk,
+                              objBlob = treefile,
+                              objPng = png,
+                              userName = user,
+                              treeTitle = title,
+                              forkedObj = k,
+                              originalAuthor = tree.originalAuthor,
+                              version = version
+                              )
+                    tmpEntry.put()
+        
+                    tmpEntry = treeOwners(objId = newk,
+                                          userName = user
+                                          )
+                    tmpEntry.put()
+                k = newk
+            else:
+                #if we are not forking the tree, just store it
+                trees = treeStore.gql("WHERE objId = :objId ",
+                                objId=k).fetch(1)
+                #if the user is the owner of the tree, update it.
+                for tree in trees:
+                    tree.objBlob = treefile
+                    tree.objPng = png
+                    tree.treeTitle = title
+                    tree.last_update_date = datetime.datetime.now()
+                    tree.put()
+                
+    else:
+        """ Store the forked tree as Anon """
+                    
+        trees = treeStore.gql("WHERE objId = :objId",
+                            objId=k).fetch(1)
+        newk = "phylobox-"+version+"-"+str(uuid.uuid4())
+        for tree in trees:
+            tmpEntry = treeStore(objId = newk,
+                      objBlob = treefile,
+                      objPng = png,
+                      userName = user,
+                      forkedObj = k,
+                      treeTitle = title,
+                      originalAuthor = tree.originalAuthor,
+                      version = version
+                      )
+            tmpEntry.put()
+
+            tmpEntry = treeOwners(objId = newk,
+                      userName = user
+                      )
+            tmpEntry.put()
+            k = newk
+        
+        #self.response.out.write('you are trying to fork a tree when not signed in')
+
+    memcache.set("tree-data-"+k, treefile, 60)
+
+    try:
+        memcache.set("png-data-"+k, png, 60)
+    except:
+        pass
+    #return the old (if not forked) or new key string (if forked or first save) to the user
+    
+    
+    self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
+    out = {"key":k}
+    self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
+    
 
