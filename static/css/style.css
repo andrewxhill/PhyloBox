@@ -116,6 +116,10 @@ div.menu ul li:last-child a { margin-bottom:5px; }
 div.menu ul li a:hover, a.menu-submit-hover { color:white; background:rgba(0,0,0,0.5); }
 div.menu ul li a:active, a.menu-submit-active { color:black; background:rgba(255,255,255,0.5); }
 
+a.menu-item-off { color:silver !important; }
+a.menu-item-off:hover { color:silver !important; background:none !important; }
+a.menu-item-off:active { color:silver !important; background:none !important; }
+
 #file-menu { top:29px; left:200px; }
 #edit-menu { top:29px; left:257px; }
 #share-menu { top:29px; left:315px; }
@@ -123,7 +127,7 @@ div.menu ul li a:active, a.menu-submit-active { color:black; background:rgba(255
 div.tree-holder { width:100%; height:100%; min-height:100px; min-width:100px; border-bottom:5px solid white; position:relative; }
 div.tree-holder:last-child { border-bottom:none !important; }
 
-p.tree-title { position:absolute; display:block; background:rgba(255,255,255,0.5); font-family:"Plain",Arial,sans-serif; font-size:8px; }
+p.tree-title { position:absolute; background:rgba(255,255,255,0.5); font-family:"Plain",Arial,sans-serif; font-size:8px; padding:0 4px; }
 
 table { width:100%; border-bottom:1px solid #D3D3D3; color:#333; margin:0 0 8px 0; }
 caption { font-weight:bold; white-space:nowrap; display:block; padding:0 0 8px 10px; }
@@ -145,6 +149,9 @@ img.nav-arrow { padding:0 0 0 10px; }
 
 #head-right { float:right; width:88px; height:30px; }
 #head-right > nav { float:right; }
+
+#perma-link { position:absolute; top:10px;  }
+#perma-link > input {  }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 

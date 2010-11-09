@@ -14,7 +14,9 @@
 '--------------------------------------------------------------------------*/
 var PhyloBox = {};
 // constants
-PhyloBox.API = "/lookup";
+PhyloBox.API_TREE = "/lookup";
+PhyloBox.API_GROUP = "/group";
+PhyloBox.API_NEW = "/new";
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -290,9 +292,7 @@ PhyloBox.Interface = {
 			// add load event to iframe
 			$("#uploader").bind("load",uploaded);
 			// create the upload form
-			var form = "<form id='file-form' action='/new' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'>";
-			form += 		"<input type='hidden' name='method' value='phyloxml' />";
-			form += 	"</form>";
+			var form = "<form id='file-form' action='"+PhyloBox.API_NEW+"' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
 			// add to doc
 		    $(form).appendTo("body");
 			// change form's target to the iframe (this is what simulates ajax)
@@ -873,23 +873,52 @@ PhyloBox.Interface = {
 ###########################################################################*/
 PhyloBox.Document = {
 	// private vars
-	_trees:[],
+	_io:null, _trees:[],
 	// constructor
-	init:function() {  },
+	init:function() {
+		// initialize io
+		this._io = new IO(this,PhyloBox.API_GROUP,"json","#doc-loader");
+	},
 	// private methods
 	_error:function(e) { console.log("Document: "+e); },
 	// public methods
-	load:function(data) {
-		// create a tree type
-		var t = new Tree();
-		// save it
-		this._trees.push(t);
-		// set age
-		t.age(this._trees.length-1);
-		// set to active
-		PhyloBox.Interface.activeTree(t.age());
-		// go
-		t.begin(data);
+	load:function(data,group) {
+		// check group
+		if(group)
+			// get the tree keys from the api
+			this._io.request("load","g="+data);
+		else {
+			// create a tree type
+			var t = new Tree();
+			// save it
+			this._trees.push(t);
+			// set age
+			t.age(this._trees.length-1);
+			// set to active
+			PhyloBox.Interface.activeTree(t.age());
+			// go
+			t.begin(data);
+		}
+	},
+	receive:function(type,data) {
+		// do something
+		switch(type) {
+			case "load" :
+				// loop over trees
+				for(var k in data) {
+					// create a tree type
+					var t = new Tree();
+					// save it
+					this._trees.push(t);
+					// set age
+					t.age(this._trees.length-1);
+					// set to active
+					PhyloBox.Interface.activeTree(t.age());
+					// go
+					t.begin(data[k]);
+				}
+				break;
+		}
 	},
 	// get & set vars
 	tree:function(v) { return this._trees[v]; },
@@ -1093,7 +1122,7 @@ var Tree = Class.extend({
 		// create view
 		this._view = new View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
 		// initialize io
-		this._io = new IO(this,PhyloBox.API,"json","#tree-loader-"+this._view.id());
+		this._io = new IO(this,PhyloBox.API_TREE,"json","#tree-loader-"+this._view.id());
 		// load data if present otherwise go on
 		typeof data == "string" ? this._io.request("load","k="+this._key) : this.receive("load",data);
 	},
@@ -1158,7 +1187,9 @@ $(function() {
 	PhyloBox.Interface.init();
 	PhyloBox.Document.init();
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
-	console.log(__user__);
-	if(__key__!=="0") PhyloBox.Document.load(__key__);
+	console.log(__group_key__,__single_key__);
+	if(__group_key__!=="0") PhyloBox.Document.load(__group_key__);
+	else if(__single_key__!=="0") PhyloBox.Document.load(__single_key__);
+	else alert("This is a blank document. Please upload your phylogeny via the File menu.");
 });
 //####################################################################### END
