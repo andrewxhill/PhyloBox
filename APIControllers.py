@@ -580,7 +580,43 @@ class TreeGroup(webapp.RequestHandler):
   def get(self):
     self.post()
   def post(self):
-    pass  
+    callback = self.request.params.get('callback', None)
+    g = self.request.params.get('g', None)
+    ks = []
+    if g is None:
+        ct = 0
+        while ct != None:
+            k = self.request.params.get('k%s'%ct, None)
+            if k is None:
+                ct = None
+            else:
+                ks.append(str(k))
+                ct+=1
+        if len(ks) > 0:
+            title = self.request.params.get('title', "Untitled Group")
+            desc = self.request.params.get('desc', "Untitled Group Created in PhyloBox")
+            g = str(hash(str(ks).lower()))
+            gr = treeGroup(key_name=g,
+                      gid=g,
+                      title=title,
+                      description=desc,
+                      ids= ks)
+            gr.put()
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.out.write(simplejson.dumps({"group":g}).replace('\\/','/'))
+        else:
+            self.response.out.write(500)  
+    else:
+        key = db.Key.from_path('treeGroup',g.lower())
+        ent = treeGroup.get(key)
+        out = {"group":g.lower(),
+               "title":ent.title,
+               "description":ent.description,
+               "ids":ent.ids}
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(simplejson.dumps({"group":out}).replace('\\/','/'))
+   
+        
     
         
 class APIServices(webapp.RequestHandler):
