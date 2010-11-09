@@ -20,6 +20,11 @@ class treeStore(db.Model):
   inTrash = db.BooleanProperty(default=False) #Track how popular the tree is
   version = db.StringProperty(default="1-0") #The version of our app that made this tree
 
+class treeGroup(db.Model):
+  groupId = db.StringProperty() #name of group
+  groupTitle = db.StringProperty() #name of group
+  groupDescription = db.StringProperty() #name of group
+  groupIDs = db.StringListProperty() #name of group
   
 class treeOwners(db.Model):
   objId = db.StringProperty() #The unique key for the object, perm9c63a1c1-9d89-4562-97cf-b1a479e56460

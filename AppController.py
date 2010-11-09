@@ -1,6 +1,6 @@
 """
 Controls the automatic update of our product queue
-Copyright (C)  2010 Andrew Hill, Sander Pick, Ken Izawa
+Copyright (C)  2010 Andrew Hill, Sander Pick
 """
 import cgi
 from google.appengine.api import users
@@ -737,8 +737,10 @@ class Beta(webapp.RequestHandler):
   def post(self):
     user,url,url_linktext = GetCurrentUser(self)
                 
-    #phyloxml = open(self.request.POST.get('phyloxml'),'r').read()
     treefile = UnzipFiles(self.request.POST.get('phyloxml'))
+    """temporary fix for crappy uploader to new uploader, should remove 'phyloxml in future"""
+    if treefile is None:
+        treefile = UnzipFiles(self.request.POST.get('tree-file'))
     
     method = self.request.params.get('method', None)
     if method=="newick":
@@ -1235,6 +1237,9 @@ class MobileFullscreen(webapp.RequestHandler):
 application = webapp.WSGIApplication(
                                      [('/', Beta),
                                       ('/new', AddNewTree),
+                                      ('/group', TreeGroup),
+                                      ('/user', UserInfo),
+                                      ('/test', TmpTest),
                                       ('/signin', SignIn),
                                       ('/signout', SignOut),
                                       ('/projects', ProjectViewer),
