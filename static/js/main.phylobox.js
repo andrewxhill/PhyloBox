@@ -280,7 +280,8 @@ PhyloBox.Interface = {
 				// remove load event
 				$("#uploader").unbind("load",uploaded);
 				// get data
-				var data = JSON.parse($("#uploader").contents().find("body").html());
+                //eval("("+$("#uploader").contents().find("body").html()+")");
+				var data = JSON.parse($("#uploader").contents().find("pre").html());
 				// make a tree
 				PhyloBox.Document.load(data);
 				// clean up -- safari needs the delay
@@ -1176,20 +1177,22 @@ var Tree = Class.extend({
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
-$(function() {
+PhyloBox.Go = function(phylobox_container_div_id) {
+    
+    this.Holder = phylobox_container_div_id || null;
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– EXTEND UTILS
 	// on jquery
 	$.extend({  });
 	// on jquery objects
 	$.fn.extend({  });
 	//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– APP SETUP
-	PhyloBox.System.init();
-	PhyloBox.Interface.init();
-	PhyloBox.Document.init();
+	this.System.init();
+	this.Interface.init();
+	this.Document.init();
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
 	console.log(__group_key__,__single_key__);
-	if(__group_key__) PhyloBox.Document.load(__group_key__);
-	else if(__single_key__) PhyloBox.Document.load(__single_key__);
+	if(__group_key__) this.Document.load(__group_key__);
+	else if(__single_key__) this.Document.load(__single_key__);
 	else alert("This is a blank document. Please upload your phylogeny via the File menu.");
-});
+}
 //####################################################################### END
