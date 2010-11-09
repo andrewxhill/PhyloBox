@@ -21,6 +21,7 @@ import logging
 from DataStore import *
 from GenericMethods import *
 from phyloxml import *
+from NewickParser import *
  
  
 class PngOutput(webapp.RequestHandler):
@@ -206,7 +207,45 @@ class LookUp(webapp.RequestHandler):
 
 
 ############################
-
+class TmpTest(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    out = []
+    out.append(self.request.params.get('phyloFile', None))
+    out.append(self.request.params.get('permanent', None))
+    out.append(self.request.params.get('response', None))
+    k = 'tmp-phylobox-2-0-448180af-56b0-44a0-904e-6740fc042b22'
+    self.response.out.write("""
+        <body>
+        <div width="400" 
+             height="385"
+             style="width:400px;height:385px;"
+             id="%s"
+             class="phylobox_embed_parent"> <a href="http://phylobox.appspot.com"> <img src="http://phylobox.appspot.com/static/images/widget/holder_425.png" width="375" height"344" /> </a> </div> 
+        <script type="text/javascript" src="http://phylobox.appspot.com/static/javascript/WidgetControllers/latest/InsertWidget.js"> </script> <script type="text/javascript"> if (PHYLOBOX) PHYLOBOX.renderPhylo();</script> <noscript> Sorry, we haven't spent much time with IE, maybe that is why you are not seeing anything here?</noscript> 
+                    
+        </body>
+        """ % (k))
+class UserInfo(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    if users.get_current_user():
+        d = {"user":users.get_current_user().nickname(),
+             "email":users.get_current_user().email(),
+             "endpoint": users.create_logout_url(self.request.uri)
+            }
+    else:
+        d = {"user":None,
+             "email":None,
+             "endpoint": users.create_login_url(self.request.uri)
+            }
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.out.write(simplejson.dumps(d).replace('\\/','/'))
+             
+    
+    
 class AddNewTree(webapp.RequestHandler):
   def get(self):
     self.response.out.write(404)  
@@ -217,7 +256,7 @@ class AddNewTree(webapp.RequestHandler):
     if treefile is not None:
         version = os.environ['CURRENT_VERSION_ID'].split('.')
         version = str(version[0])
-        k = "tmp-phylobox-"+version+"-"+str(uuid.uuid4())
+        k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
         background = "23232F"
         color = "FFFFCC"
@@ -242,7 +281,15 @@ class AddNewTree(webapp.RequestHandler):
         alt_grow = 15000
         title = "Created with Phylobox"
         
-        tree = PhyloXMLtoTree(treefile,color=color)
+        try:
+            #parse a PhyloXML file
+            tree = PhyloXMLtoTree(treefile,color=color)
+        except:
+            #if xml parsing fails, assume file was Newick. Sophistication needed for future development
+            treefile = ParseNewick(str(treefile))
+            tree = PhyloXMLtoTree(treefile,color=color)
+            
+            
         tree.load()
         if tree.title is not None:
             title = tree.title
@@ -287,7 +334,22 @@ class AddNewTree(webapp.RequestHandler):
         #now i just store tmp trees in memcache for 10 or so days
         memcache.set("tree-data-"+k, treefilezip, 360000)
         
-    self.response.out.write(treefile)
+    if self.request.params.get('permanant', None):
+        #do some long term storage here
+        pass
+        
+        
+    if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
+        self.response.out.write(k)
+    if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "widget":
+        self.response.out.write("""
+        <div id="PhyloboxEmbed" >
+           <div width="375" height="344" style="width:375px;height:344px;" id="%s" class="phylobox_embed_parent"><a href="http://2-0.latest.phylobox.appspot.com"><img src="http://2-0.latest.phylobox.appspot.com/api/image.png?k=%s" width="375" height="344" /></a>
+           </div>
+        </div>
+        """ % (k,k))
+    else:
+        self.response.out.write(treefile)
 
 ############################
 
@@ -514,6 +576,11 @@ class CreatePhyloBox(webapp.RequestHandler):
         # ...
         self.response.out.write("error")  
         
+class TreeGroup(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    pass  
     
         
 class APIServices(webapp.RequestHandler):
