@@ -354,8 +354,10 @@ class AddNewTree(webapp.RequestHandler):
             memcache.set("tree-data-"+k, treefilezip, 2678400)
         
         
+    self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
-        self.response.out.write(k)
+        out = {"key":k,"url":"http://phylobox.appspot.com/?%s" % (k)}
+        self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
     elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "widget":
         self.response.out.write(403)
     elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "png":
@@ -670,45 +672,53 @@ class TreeSave(webapp.RequestHandler):
     
     treefile = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
     
-    if cmp('tmp',k[:3])==0:
-        k = "phylobox-"+version+"-"+str(uuid.uuid4())
-        tmpEntry = treeStore(key_name=newk,
-                  objId = k,
-                  objBlob = treefile,
-                  userName = user,
-                  objPng = png,
-                  treeTitle = title,
-                  originalAuthor = user,
-                  version = version
-                  )
-        tmpEntry.put()
+    if user is not None:
+        #if the user is signed in, give them ownership of the tree object
+        projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
+                            objId=k, userName = user).fetch(1)
+                            
         
-        tmpEntry = treeOwners(objId = k,
-                  userName = user
-                  )
-        tmpEntry.put()
-        
-    else:
-        if user is not None:
-            #if the user is signed in, give them ownership of the tree object
-            projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
-                                objId=k, userName = user).fetch(1)
-                                
+        if len(projects)==0:
+            #if the user is trying to store a tree that isn't theirs, fork it as a new tree
+            #but retain the name of the originalAuthor
+            trees = treeStore.gql("WHERE objId = :objId",
+                                objId=k).fetch(1)
+            newk = "phylobox-"+version+"-"+str(uuid.uuid4())
             
-            if len(projects)==0:
-                #if the user is trying to store a tree that isn't theirs, fork it as a new tree
-                #but retain the name of the originalAuthor
-                trees = treeStore.gql("WHERE objId = :objId",
-                                    objId=k).fetch(1)
+            for tree in trees:
+                tmpEntry = treeStore(key_name=newk,
+                          objId = newk,
+                          objBlob = treefile,
+                          objPng = png,
+                          treeTitle = title,
+                          userName = user,
+                          forkedObj = k,
+                          originalAuthor = tree.originalAuthor,
+                          version = version
+                          )
+                tmpEntry.put()
+    
+                tmpEntry = treeOwners(objId = newk,
+                                      userName = user
+                                      )
+                tmpEntry.put()
+            k = newk
+        else:
+            fork = self.request.params.get('fork', None)
+            if fork is not None:
+                #If the fork variable is sent, then we create a new
+                #key for the tree and send it back to the user
                 newk = "phylobox-"+version+"-"+str(uuid.uuid4())
-                
+                trees = treeStore.gql("WHERE objId = :objId ",
+                                objId=k).fetch(1)
+                #if the user is the owner of the tree, update it.
                 for tree in trees:
                     tmpEntry = treeStore(key_name=newk,
                               objId = newk,
                               objBlob = treefile,
                               objPng = png,
-                              treeTitle = title,
                               userName = user,
+                              treeTitle = title,
                               forkedObj = k,
                               originalAuthor = tree.originalAuthor,
                               version = version
@@ -721,70 +731,43 @@ class TreeSave(webapp.RequestHandler):
                     tmpEntry.put()
                 k = newk
             else:
-                fork = self.request.params.get('fork', None)
-                if fork is not None:
-                    #If the fork variable is sent, then we create a new
-                    #key for the tree and send it back to the user
-                    newk = "phylobox-"+version+"-"+str(uuid.uuid4())
-                    trees = treeStore.gql("WHERE objId = :objId ",
-                                    objId=k).fetch(1)
-                    #if the user is the owner of the tree, update it.
-                    for tree in trees:
-                        tmpEntry = treeStore(key_name=newk,
-                                  objId = newk,
-                                  objBlob = treefile,
-                                  objPng = png,
-                                  userName = user,
-                                  treeTitle = title,
-                                  forkedObj = k,
-                                  originalAuthor = tree.originalAuthor,
-                                  version = version
-                                  )
-                        tmpEntry.put()
-            
-                        tmpEntry = treeOwners(objId = newk,
-                                              userName = user
-                                              )
-                        tmpEntry.put()
-                    k = newk
-                else:
-                    #if we are not forking the tree, just store it
-                    trees = treeStore.gql("WHERE objId = :objId ",
-                                    objId=k).fetch(1)
-                    #if the user is the owner of the tree, update it.
-                    for tree in trees:
-                        tree.objBlob = treefile
-                        tree.objPng = png
-                        tree.treeTitle = title
-                        tree.last_update_date = datetime.datetime.now()
-                        tree.put()
-                    
-        else:
-            """ Store the forked tree as Anon """
-                        
-            trees = treeStore.gql("WHERE objId = :objId",
+                #if we are not forking the tree, just store it
+                trees = treeStore.gql("WHERE objId = :objId ",
                                 objId=k).fetch(1)
-            newk = "phylobox-"+version+"-"+str(uuid.uuid4())
-            for tree in trees:
-                tmpEntry = treeStore(objId = newk,
-                          objBlob = treefile,
-                          objPng = png,
-                          userName = user,
-                          forkedObj = k,
-                          treeTitle = title,
-                          originalAuthor = tree.originalAuthor,
-                          version = version
-                          )
-                tmpEntry.put()
-    
-                tmpEntry = treeOwners(objId = newk,
-                          userName = user
-                          )
-                tmpEntry.put()
-                k = newk
-            
-            #self.response.out.write('you are trying to fork a tree when not signed in')
-    
+                #if the user is the owner of the tree, update it.
+                for tree in trees:
+                    tree.objBlob = treefile
+                    tree.objPng = png
+                    tree.treeTitle = title
+                    tree.last_update_date = datetime.datetime.now()
+                    tree.put()
+                
+    else:
+        """ Store the forked tree as Anon """
+                    
+        trees = treeStore.gql("WHERE objId = :objId",
+                            objId=k).fetch(1)
+        newk = "phylobox-"+version+"-"+str(uuid.uuid4())
+        for tree in trees:
+            tmpEntry = treeStore(objId = newk,
+                      objBlob = treefile,
+                      objPng = png,
+                      userName = user,
+                      forkedObj = k,
+                      treeTitle = title,
+                      originalAuthor = tree.originalAuthor,
+                      version = version
+                      )
+            tmpEntry.put()
+
+            tmpEntry = treeOwners(objId = newk,
+                      userName = user
+                      )
+            tmpEntry.put()
+            k = newk
+        
+        #self.response.out.write('you are trying to fork a tree when not signed in')
+
     memcache.set("tree-data-"+k, treefile, 60)
 
     try:
@@ -792,6 +775,10 @@ class TreeSave(webapp.RequestHandler):
     except:
         pass
     #return the old (if not forked) or new key string (if forked or first save) to the user
-    self.response.out.write(k)
+    
+    
+    self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
+    out = {"key":k}
+    self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
     
 
