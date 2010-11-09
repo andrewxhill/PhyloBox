@@ -116,6 +116,10 @@ div.menu ul li:last-child a { margin-bottom:5px; }
 div.menu ul li a:hover, a.menu-submit-hover { color:white; background:rgba(0,0,0,0.5); }
 div.menu ul li a:active, a.menu-submit-active { color:black; background:rgba(255,255,255,0.5); }
 
+a.menu-item-off { color:silver !important; }
+a.menu-item-off:hover { color:silver !important; background:none !important; }
+a.menu-item-off:active { color:silver !important; background:none !important; }
+
 #file-menu { top:29px; left:200px; }
 #edit-menu { top:29px; left:257px; }
 #share-menu { top:29px; left:315px; }
@@ -145,6 +149,9 @@ img.nav-arrow { padding:0 0 0 10px; }
 
 #head-right { float:right; width:88px; height:30px; }
 #head-right > nav { float:right; }
+
+#perma-link { position:absolute; top:10px;  }
+#perma-link > input {  }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 

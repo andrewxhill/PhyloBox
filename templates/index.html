@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 	<script type="text/javascript">
-		var __key__ = '{{ key }}',
-			__user__ = '{{ user }}';
+		// get keys
+		var __group_key__ = '{{ 0 }}',
+			__single_key__ = '{{ key }}';
 	</script>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>PhyloBox</title>
@@ -29,6 +30,10 @@
 </head>
 <body>
 	<header id="head">
+		<!-- <div id="perma-link">
+			<p>workspace perma-link:</p>
+			<input type="text" value="http://localhost:8080/?k=tmp-phylobox-2-0-911a4b5b-2bbb-4015-87ed-ef30dc240bf4" />
+		</div> -->
 		<div id="head-right">
 			<div class="separator separator-left">
 				<img src="static/gfx/line.png" alt="line" width="3" height="30" />
@@ -52,24 +57,24 @@
 									<input type="file" id="file-menu-new-fi" class="menu-submit-file" size="1" name="phyloFile" />
 									<a href="javascript:;" id="" class="menu-item">New</a>
 								</li>
-								<li><a href="javascript:;" id="" class="menu-item">Open...</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Close</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Open...</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Close</a></li>
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Save</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Fork...</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Save</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Fork...</a></li>
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Export as PhyloJson</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Export as SVG</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Export as JPEG</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Export as PNG</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as PhyloJson</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as SVG</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as JPEG</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as PNG</a></li>
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Print</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Print</a></li>
 							</ul>
 						</div>
 					</li>
@@ -77,16 +82,16 @@
 						<a href="javascript:;" class="menu-butt">Edit<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
 						<div id="edit-menu" class="menu">
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Option 1</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Option 2</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Option 3</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 1</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 2</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 3</a></li>
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Option 4</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Option 5</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Option 6</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Option 7</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 4</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 5</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 6</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 7</a></li>
 							</ul>
 						</div>
 					</li>
@@ -94,12 +99,12 @@
 						<a href="javascript:;" class="menu-butt">Share<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
 						<div id="share-menu" class="menu">
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Option 1</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Option 2</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 1</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 2</a></li>
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item">Option 3</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 3</a></li>
 							</ul>
 						</div>
 					</li>
