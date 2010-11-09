@@ -865,7 +865,7 @@ class Beta(webapp.RequestHandler):
         #k = "tmp-phylobox-"+version+"-"+str(uuid.uuid4())
         #treefile = open("examplejson",'r').read()
         template_values = {
-                'key':0,
+                #'key':0,
                 'user':user,
                 'url': url,
                 'url_linktext': url_linktext,

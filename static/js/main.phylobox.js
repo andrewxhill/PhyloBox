@@ -1132,6 +1132,7 @@ var Tree = Class.extend({
 			case "load" :
 				// make tree
 				this._make(data);
+				console.log(data);
 				// bind handler for tree ready
 				$("#"+this._view.id()).bind("viewready",function(e) {
 					// unbind
@@ -1188,8 +1189,8 @@ $(function() {
 	PhyloBox.Document.init();
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
 	console.log(__group_key__,__single_key__);
-	if(__group_key__!=="0") PhyloBox.Document.load(__group_key__);
-	else if(__single_key__!=="0") PhyloBox.Document.load(__single_key__);
+	if(__group_key__) PhyloBox.Document.load(__group_key__);
+	else if(__single_key__) PhyloBox.Document.load(__single_key__);
 	else alert("This is a blank document. Please upload your phylogeny via the File menu.");
 });
 //####################################################################### END
