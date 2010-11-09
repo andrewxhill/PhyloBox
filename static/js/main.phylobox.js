@@ -1132,7 +1132,6 @@ var Tree = Class.extend({
 			case "load" :
 				// make tree
 				this._make(data);
-				console.log(data);
 				// bind handler for tree ready
 				$("#"+this._view.id()).bind("viewready",function(e) {
 					// unbind
