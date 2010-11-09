@@ -17,6 +17,7 @@ var PhyloBox = {};
 PhyloBox.API_TREE = "/lookup";
 PhyloBox.API_GROUP = "/group";
 PhyloBox.API_NEW = "/new";
+PhyloBox.API_SAVE_TREE = "/save";
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -249,19 +250,19 @@ PhyloBox.Interface = {
 			}
 		});
 		// menu file events
-		$(".menu-submit-file").live("mouseenter",function() {
+		$("#file-menu-new-file").live("mouseenter",function() {
 			$(this.nextElementSibling).addClass("menu-submit-hover");
 		});
-		$(".menu-submit-file").live("mouseleave",function() {
+		$("#file-menu-new-file").live("mouseleave",function() {
 			$(this.nextElementSibling).removeClass("menu-submit-hover");
 		});
-		$(".menu-submit-file").live("mousedown",function() {
+		$("#file-menu-new-file").live("mousedown",function() {
 			$(this.nextElementSibling).addClass("menu-submit-active");
 		});
-		$(".menu-submit-file").live("mouseup",function() {
+		$("#file-menu-new-file").live("mouseup",function() {
 			$(this.nextElementSibling).removeClass("menu-submit-active");
 		});
-		$(".menu-submit-file").live("change",function() {
+		$("#file-menu-new-file").live("change",function() {
 			// hide menu
 			$(document).unbind("click",__this._killMenu);
 			$(__this._activeMenu).removeClass("menu-butt-active");
@@ -306,6 +307,18 @@ PhyloBox.Interface = {
 			// ensure single submit
 			return false;
 		});
+		// save active tree
+		$("#file-menu-save-tree").live("click",function() {
+			// save active tree
+			PhyloBox.Document.tree(__this._activeTree).save();
+		});
+		// sharing info
+		// $("#share-menu-share-tree").live("click",function() {
+		// 	$.fancybox({
+		// 		content:$("#perma-link").html(),
+		// 	});
+		// 	return false;
+		// });
 	},
 	_addToolEvents:function() {
 		// save ref
@@ -720,10 +733,8 @@ PhyloBox.Interface = {
 		if(is_clade) $("#node > section").html(clade+uri); else $("#node > section").html(uri);
 	},
 	setTree:function() {
-		// use active tree
-		var tree = PhyloBox.Document.tree(this._activeTree);
-		// title
-		//$(".panel-head",$("#trees")).text("Tree - "+tree.title());
+		// permalink
+		//$("#perma-link-address").val();
 		// grid the trees
 		$(".tree-holder").each(function(i) {
 			$(this).css("height",(100 / PhyloBox.Document.trees().length)+"%");
@@ -942,11 +953,12 @@ var IO = Class.extend({
 	_loading:function(vis) { (vis) ? $(this._loader).fadeIn("fast") : $(this._loader).fadeOut("slow",function() { $(this).hide(); }); },
 	_error:function(e) { console.log("IO: "+e); },
 	// public methods
-	request:function(a,q) {
-		this._loading(true);		
+	request:function(a,q,s) {
+		this._loading(true);
+		var server = s || this._server;		
 		var __this = this;
 		$.ajax({
-  			type:"POST", url:__this._server, data:q, dataType:__this._dataType,
+  			type:"POST", url:server, data:q, dataType:__this._dataType,
 			complete:function(request) { },
   			success:function(json) {
 				__this._loading(false);
@@ -1003,7 +1015,7 @@ var Node = Class.extend({
 var Tree = Class.extend({
 	// private vars
 	_key:null, _view:null, _io:null, _age:null,
-	_data:[], _data_clone:[], _json:[], _node_list:[], _nodes:[],
+	_data:[], _data_clone:[], _tree_data:[], _node_list:[], _nodes:[],
 	_n_leaves:0, _n_layers:0, _title:null, _environment:null,
 	// constructor
 	init:function() {  },
@@ -1019,17 +1031,17 @@ var Tree = Class.extend({
 		// root node?
 		if(!rid) { this._error("no root node provided for nest..."); return false; }
 		// get the root json object
-		var root = this._find(this._json,"id",rid);
+		var root = this._find(this._tree_data,"id",rid);
 		// exit if invalid
 		if(!root) { this._error("invalid tree root id"); return false; }
 		// ensure proper tree direction
 		if(root.parent_id) {
 			// if root is leaf, root's parent becomes root
-			if(!root.children) root = this._find(this._json,"id",root.parent_id);
+			if(!root.children) root = this._find(this._tree_data,"id",root.parent_id);
 			// parent -> child
 			root.children.push({ "id":root.parent_id });
 			// child -> parent
-			var parent = this._find(this._json,"id",root.parent_id);
+			var parent = this._find(this._tree_data,"id",root.parent_id);
 			for(var c in parent.children) if(parent.children[c].id==root.id) parent.children.splice(parent.children.indexOf(parent.children[c]),1);
 			//for(c in parent.children) if(parent.children[c].id==root.id) delete parent.children[c];
 			if(parent.children.length==0) parent.children = null;
@@ -1060,13 +1072,13 @@ var Tree = Class.extend({
 		// ensure proper tree direction
 		for(var c in d.children) {
 			if(!d.children[c]) continue;
-			var cd = this._find(this._json,"id",d.children[c].id);
+			var cd = this._find(this._tree_data,"id",d.children[c].id);
 			//if(cd.parent_id && cd.parent_id!=d.id) {
 			if(cd.parent_id!=d.id) {
 				// parent -> child
 				cd.children.push({ "id":cd.parent_id });
 				// child -> parent
-				var cpd = this._find(this._json,"id",cd.parent_id);
+				var cpd = this._find(this._tree_data,"id",cd.parent_id);
 				for(var cc in cpd.children) if(cpd.children[cc].id==cd.id) cpd.children.splice(cpd.children.indexOf(cpd.children[cc]),1);
 				//for(cc in cpd.children) if(cpd.children[cc].id==cd.id) delete cpd.children[cc];
 				if(cpd.children.length==0) cpd.children = null;
@@ -1098,7 +1110,7 @@ var Tree = Class.extend({
 			n.add_child(cn);
 			cn.parent(n);
 			cn.n_parents(n.n_parents()+1);
-			this._branch(cn,this._find(this._json,"id",cn.id()));
+			this._branch(cn,this._find(this._tree_data,"id",cn.id()));
 		}
 		// max number parents = tree's layer count
 		if(this._n_layers <= n.n_parents()) this._n_layers = n.n_parents()+1;
@@ -1150,18 +1162,35 @@ var Tree = Class.extend({
 				// go
 				this._view.begin();
 				break;
+			case "save" :
+				alert("Your tree has been saved. Sick!");
+				break;
 		}
 	},
 	nest:function(rid) {
 		// clone the original data
 		this._data_clone = $.extend(true,{},this._data);
 		// define usable objects
-		this._json = this._data_clone.tree;
-		this._title = this._data_clone.title;
-		this._environment = this._data_clone.environment;
+		this._tree_data = this._data.tree;
+		this._title = this._data.title;
+		this._environment = this._data.environment;
 		this._environment.root = rid;
 		// (re)nest
 		this._nest(rid);
+	},
+	save:function() {
+		// update phyloJSON nodes with Node properties
+		for(var n in this._node_list) {
+			var pj_node = this._find(this._tree_data,"id",this._node_list[n].id());
+			pj_node.color = this._node_list[n].color();
+	        pj_node.visibility = this._node_list[n].visibility();
+		}
+		// stringify the data
+		var save = JSON.stringify(this._data);
+		// save an image
+   	    var png = JSON.stringify(this._view.canvas()[0].toDataURL("image/png"));
+		// save
+		this._io.request("save",{ key:this._key, tree:save, title:this._title, png:png }, PhyloBox.API_SAVE_TREE);
 	},
 	// get vars
 	nodes:function() { return this._nodes; },
@@ -1171,6 +1200,7 @@ var Tree = Class.extend({
 	title:function(v) { if(v!==undefined) this._title = v; else return this._title; },
 	environment:function() { return this._environment; },
 	view:function(v) { if(v!==undefined) this._view = v; else return this._view; },
+	io:function() { return this._io; },
 	age:function(v) { if(v!==undefined) this._age = v; else return this._age; },
 });
 /*###########################################################################
@@ -1187,9 +1217,9 @@ $(function() {
 	PhyloBox.Interface.init();
 	PhyloBox.Document.init();
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
-	console.log(__group_key__,__single_key__);
+	//console.log(__group_key__,__single_key__);
 	if(__group_key__) PhyloBox.Document.load(__group_key__);
 	else if(__single_key__) PhyloBox.Document.load(__single_key__);
-	else alert("This is a blank document. Please upload your phylogeny via the File menu.");
+	//else alert("This is a blank document. Please upload your phylogeny via the File menu.");
 });
 //####################################################################### END

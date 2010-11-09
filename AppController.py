@@ -1248,7 +1248,7 @@ application = webapp.WSGIApplication(
                                       #('/tree/old', OldEditor),
                                       #('/tree/sander', SanderTest),
                                       ('/tree/fullscreen', TreeFullscreen),
-                                      ('/tree/save', TreeSave),
+                                      ('/save', TreeSave),
                                       ('/tree/adduser', AddUser),
                                       #('/tree/widget', WidgetViewer),
                                       ('/help', HelpDirectory),
