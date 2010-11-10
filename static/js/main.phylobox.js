@@ -1,5 +1,9 @@
 /*--------------------------------------------------------------------------.
+<<<<<<< HEAD
 |  Software: PhyloBox                                                       |
+=======
+|  Software: PhyloBox MAIN                                                  |
+>>>>>>> 5f19b8ee79eba124ee140d01cf8f8156f7166968
 |   Version: 2.0                                                            |
 |   Contact: andrewxhill@gmail.com || sander@digijoi.com                    |
 | ------------------------------------------------------------------------- |
@@ -13,6 +17,8 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+	// map jQuery
+	$ = jQuery;
 	// use native container if none given here
     this.Holder = phylobox_container_div_id || null;
 	// save ref

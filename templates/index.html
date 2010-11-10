@@ -6,34 +6,23 @@
     <!--[if IE]>
         <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
-	<link type="text/css" rel="stylesheet" href="static/css/style.css" />
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<meta name="keywords" content="" />
 	<meta name="description" content="Something here." />
 	<!--[if lt IE 9]>
 		<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js">IE7_PNG_SUFFIX=".png";</script>
 	<![endif]-->
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
-	<!--<script type="text/javascript" src="static/js/jquery.tools.min.js"></script>-->
-	<script type="text/javascript" src="static/js/jquery.easing.1.3.js"></script>
-	<script type="text/javascript" src="static/js/jquery.scrollTo-1.4.2.js"></script>
-	<script type="text/javascript" src="static/js/date.format.js"></script>
-	<script type="text/javascript" src="static/js/jquery.hotkeys.js"></script>
-    <!--<script type="text/javascript" src="static/fancybox/jquery.fancybox-1.3.1.pack.js"></script>-->
-	<script type="text/javascript" src="static/js/class.phylobox.js"></script>
-	<script type="text/javascript" src="static/js/main.phylobox.js"></script>
+	<script type="text/javascript" src="static/js/widget.phylobox.js"></script>
 	<!--<script type="text/javascript" src="static/js/engine.phylobox.js"></script>-->
     <script type="text/javascript" >
-        $(document).ready(function() {
-			//var type = __group_key__!="" ? "group" : __single_key__!="" ? "key" : false;
-			//var my_pb = new PhyloBox().drawTree("key",__single_key__);
-			var my_pb = new PhyloBox().drawTree();
-			
-			var 
-        });
+        function initiation(){
+			var my_pb = new PhyloBox();
+			my_pb.drawTree();
+			// PhyloBox.Go();
+        };
     </script>
 </head>
-<body>
+<body onload="initiation()">
 	<header id="head">
 		<div id="perma-link">
 			<p>Permalink:</p>

@@ -15,10 +15,10 @@ class treeStore(db.Model): #keyname treekeyh
   last_update_date = db.DateTimeProperty(auto_now_add=True)
   creation_date = db.DateTimeProperty(auto_now_add=True)
   downloadCt = db.IntegerProperty(default=1) #Track how popular the tree is
-  hasWidget = db.BooleanProperty(default=False) #Track how popular the tree is
   canFork = db.BooleanProperty(default=True) #Track how popular the tree is
+  isWiki = db.BooleanProperty(default=False) #Track how popular the tree is
   inTrash = db.BooleanProperty(default=False) #Track how popular the tree is
-  version = db.StringProperty(default="1-0") #The version of our app that made this tree
+  version = db.StringProperty(default="2-0") #The version of our app that made this tree
 
 class treeGroup(db.Model): #keyname groupkey
   groupId = db.StringProperty() #name of group
