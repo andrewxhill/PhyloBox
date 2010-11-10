@@ -5,7 +5,7 @@
     var style = document.createElement("link");
     style.type = "text/css";
     style.rel = "stylesheet";
-    style.href = "http://"+version+"/static/css/widget.style.css";
+    style.href = version+"/static/css/widget.style.css";
     style.media = "screen";
     head.appendChild(style);
     
