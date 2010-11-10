@@ -5,11 +5,11 @@
     var style = document.createElement("link");
     style.type = "text/css";
     style.rel = "stylesheet";
-    style.href = version+"/static/css/widget.style.css";
+    style.href = version+"/static/css/2-0/widget.style.css";
     style.media = "screen";
     head.appendChild(style);
     
-    
+     
     var script = document.createElement("script");
     script.type = "text/javascript";
     script.src = "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js";
@@ -17,12 +17,8 @@
     head.appendChild(script);
     
     var scripts = [
-             version+"/static/js/jquery.easing.1.3.js",
-             version+"/static/js/jquery.scrollTo-1.4.2.js",
-             version+"/static/js/date.format.js",
-             version+"/static/js/jquery.hotkeys.js",
-             version+"/static/js/class.phylobox.js",
-             version+"/static/js/main.phylobox.js"
+             version+"/static/js/2-0/class.phylobox.js",
+             version+"/static/js/2-0/main.phylobox.js"
              ];
 
     //var addScript = function(url){

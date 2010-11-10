@@ -29,6 +29,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 	this.API_NEW = "/new";
 	this.API_SAVE_TREE = "/save";
 	this.RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+	this.HEX = function(c){ var hex = /^([0-9a-f]{1,2}){3}$/i; hex.test(c) ? c = "#"+c : c = c; return c };
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -1144,13 +1145,17 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			var holder = $("<div class='tree-holder' />");
 			holder.appendTo("#trees > section");
 			// create view
-			this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
-			// initialize io
+            if ( typeof data == "string" ) {
+                this._key = (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+            } 
+            this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
+			
+            // initialize io
 			this._io = new pB.IO(this,pB.API_TREE,"json","#tree-loader-"+this._view.id());
 			// load data if present otherwise go on
 			typeof data == "string" ? 
 				pB.RX_URL.test(data) ? 
-					this._io.request("load","phyloUrl="+this._key) : 
+					this._io.request("load","phyloUrl="+data, pB.API_NEW) : 
 					this._io.request("load","k="+this._key) : 
 				this.receive("load",data);
 		},
@@ -1179,6 +1184,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 					this._view.begin();
 					break;
 				case "save" :
+                    window.location.hash = this._key;;
 					alert("Your tree has been saved. Sick!");
 					break;
 			}
@@ -1306,7 +1312,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				// scale radius on depth
 				var scale = (this._point.z()+3000) / 6000;
 		        // set styles
-		        ctx.fillStyle = "#"+this._node.color();
+                ctx.fillStyle = pB.HEX(this._node.color());
+                
 				ctx.globalAlpha = scale;
 		        // draw the line
 		        ctx.beginPath();
@@ -1379,7 +1386,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// check link
 			if(!this._view.update_links()) return false;
 			// set link color
-			$("div.dot",this._node.link()).css("background","#"+this._node.color());
+			$("div.dot",this._node.link()).css("background", pB.HEX(this._node.color()));
 			// set link visibility
 			if(!this._node.visibility()) $("div.ex",this._node.link()).show();
 			else $("div.ex",this._node.link()).hide();
@@ -1582,7 +1589,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// check visibility
 	        if(!this._node.visibility()) return false;
 	     	// set styles
-	        ctx.strokeStyle = "#"+this._node.color();	
+	        ctx.strokeStyle = pB.HEX(this._node.color());	
 	        ctx.globalAlpha = this._getLightFactor();
 	        ctx.lineWidth  = this._view.tree().environment().width;
 			// draw the line
@@ -1727,7 +1734,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._tree.environment().offset.dz += this._dz;
 		},
 		_render:function() {
-			this._ctx.fillStyle = "#"+this._tree.environment().color;
+			this._ctx.fillStyle = pB.HEX(this._tree.environment().color);
 			this._ctx.lineWidth = 1;
 			this._ctx.font = "6px Plain";
 			this._ctx.globalAlpha = 1;
@@ -1914,7 +1921,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			 	this._cp[cp].rotateZ(local.az);
 			}
 			// first render
-			this._ctx.fillStyle = "#"+this._tree.environment().color;
+			this._ctx.fillStyle = pB.HEX(this._tree.environment().color);
 			this._ctx.lineWidth = 1;
 			this._ctx.font = "6px Plain";
 			this._ctx.globalAlpha = 1;
@@ -2158,10 +2165,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			case "group" :
 				pB.Document.load(value,true);
 				break;
-			case "key" :
-				//pB.Document.load(value);
-				break
-			case "url" :
+			case "key" : case "url":
 				pB.Document.load(value);
 				break
 			default : alert("This is a blank document. Please upload your phylogeny via the File menu.");
