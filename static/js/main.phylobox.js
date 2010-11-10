@@ -1,9 +1,5 @@
 /*--------------------------------------------------------------------------.
-<<<<<<< HEAD
 |  Software: PhyloBox                                                       |
-=======
-|  Software: PhyloBox MAIN                                                  |
->>>>>>> 5f19b8ee79eba124ee140d01cf8f8156f7166968
 |   Version: 2.0                                                            |
 |   Contact: andrewxhill@gmail.com || sander@digijoi.com                    |
 | ------------------------------------------------------------------------- |
@@ -16,11 +12,11 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylobox_event_handlers) {
 	// map jQuery
 	$ = jQuery;
 	// use native container if none given here
-    this.Holder = phylobox_container_div_id || null;
+    this.C = phylobox_container_div || $("body");
 	// save ref
 	var pB = this;
 	// constants
@@ -90,7 +86,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// miscellaneous setup
 			if(!window.console) window.console = { log:function() {} };
 			$(window).load(function() {
-				$(".menu").each(function(i) {
+				$(".menu",pB.C).each(function(i) {
 					$(this).css("left",$(this.parentNode).offset().left);
 				});
 			});
@@ -106,19 +102,19 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 		// private methods
 		_fit:function() {
 			// size panels to fit window height
-			$(".panel").each(function(i) {
+			$(".panel",pB.C).each(function(i) {
 				var h = $(window).height() - 76;
 				$(this).height(h);
 			});
-			$("section").each(function(i) {
+			$("section",pB.C).each(function(i) {
 				var h = this.parentNode.id!="trees" ? $(window).height() - 111 : $(window).height() - 101;
 				$(this).height(h);
 			});
-			$(".handle > div").each(function(i) {
+			$(".handle > div",pB.C).each(function(i) {
 				var h = $(window).height() - 101;
 				$(this).height(h);
 			});
-			$(".handle > div > img").each(function(i) {
+			$(".handle > div > img",pB.C).each(function(i) {
 				var t = ($(window).height() - 125) / 2;
 				$(this).css("top",t);
 			});
@@ -143,7 +139,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				__this._fit(); 
 			}); __this._fit();
 			// resize panels
-			$(".handle > div > img").bind("mousedown",function(e) {
+			$(".handle > div > img",pB.C).bind("mousedown",function(e) {
 				// prevent image drag behavior
 				if(e.preventDefault) e.preventDefault();
 				// save reference
@@ -234,7 +230,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// save ref
 			var __this = this;
 			// menu events
-			$(".menu-butt").live("click",function() {
+			$(".menu-butt",pB.C).live("click",function() {
 				// set active
 				__this._activeMenu = this;
 				// add style and show menu
@@ -243,7 +239,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				// hide when click out	
 				$(document).bind("click",{ ref:__this },__this._killMenu);
 			});
-			$(".menu-butt").live("mouseenter",function() {
+			$(".menu-butt",pB.C).live("mouseenter",function() {
 				// check if active
 				if(__this._activeMenu) {
 					// remove first document listener
@@ -261,19 +257,19 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				}
 			});
 			// menu file events
-			$("#file-menu-new-file").live("mouseenter",function() {
+			$("#file-menu-new-file",pB.C).live("mouseenter",function() {
 				$(this.nextElementSibling).addClass("menu-submit-hover");
 			});
-			$("#file-menu-new-file").live("mouseleave",function() {
+			$("#file-menu-new-file",pB.C).live("mouseleave",function() {
 				$(this.nextElementSibling).removeClass("menu-submit-hover");
 			});
-			$("#file-menu-new-file").live("mousedown",function() {
+			$("#file-menu-new-file",pB.C).live("mousedown",function() {
 				$(this.nextElementSibling).addClass("menu-submit-active");
 			});
-			$("#file-menu-new-file").live("mouseup",function() {
+			$("#file-menu-new-file",pB.C).live("mouseup",function() {
 				$(this.nextElementSibling).removeClass("menu-submit-active");
 			});
-			$("#file-menu-new-file").live("change",function() {
+			$("#file-menu-new-file",pB.C).live("change",function() {
 				// hide menu
 				$(document).unbind("click",__this._killMenu);
 				$(__this._activeMenu).removeClass("menu-butt-active");
@@ -286,46 +282,46 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				// create an iframe
 				var iframe = $("<iframe id='uploader' name='uploader' style='display:none;' />");
 				// add to doc
-			    iframe.appendTo("body");
+			    iframe.appendTo(pB.C);
 				// iframe event handling
 				var uploaded = function(e) {
 					// remove load event
-					$("#uploader").unbind("load",uploaded);
+					$("#uploader",pB.C).unbind("load",uploaded);
 					// get data
-	                //eval("("+$("#uploader").contents().find("body").html()+")");
-					var data = JSON.parse($("#uploader").contents().find("pre").html());
+	                //eval("("+$("#uploader",pB.C).contents().find("body").html()+")");
+					var data = JSON.parse($("#uploader",pB.C).contents().find("pre").html());
 					// make a tree
 					pB.Document.load(data);
 					// clean up -- safari needs the delay
 					setTimeout(function() {
-						$("#uploader").remove();
-						$("#file-form").remove();
+						$("#uploader",pB.C).remove();
+						$("#file-form",pB.C).remove();
 					},1000);
 				}
 				// add load event to iframe
-				$("#uploader").bind("load",uploaded);
+				$("#uploader",pB.C).bind("load",uploaded);
 				// create the upload form
 				var form = "<form id='file-form' action='"+pB.API_NEW+"' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
 				// add to doc
-			    $(form).appendTo("body");
+			    $(form).appendTo(pB.C);
 				// change form's target to the iframe (this is what simulates ajax)
-			    $("#file-form").attr("target","uploader");
+			    $("#file-form",pB.C).attr("target","uploader");
 				// add the file input to the form
-				$(this).appendTo("#file-form");
+				$(this).appendTo("#file-form",pB.C);
 				// submit form
-			    $("#file-form").submit();
+			    $("#file-form",pB.C).submit();
 				// re-attach input field
 				$(this).prependTo(parent);
 				// ensure single submit
 				return false;
 			});
 			// save active tree
-			$("#file-menu-save-tree").live("click",function() {
+			$("#file-menu-save-tree",pB.C).live("click",function() {
 				// save active tree
 				pB.Document.tree(__this._activeTree).save();
 			});
 			// sharing info
-			$("#share-menu-share-tree").live("click",function() {
+			$("#share-menu-share-tree",pB.C).live("click",function() {
 				// $.fancybox({
 				// 	content:$("#perma-link").html(),
 				// });
@@ -336,24 +332,24 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// save ref
 			var __this = this;
 			// tools
-			$(".tool").live("click",function() {
+			$(".tool",pB.C).live("click",function() {
 				// check unavailable
 				if($(this).hasClass("tool-off")) return false;
 				// check already active
 				if($(this).hasClass("tool-active")) return false;
 				// clear styles
-				$(".tool").each(function(i) { $(this).removeClass("tool-active"); });
+				$(".tool",pB.C).each(function(i) { $(this).removeClass("tool-active"); });
 				// add style
 				$(this).addClass("tool-active");
 				// set to active
 				__this._activeTool = this.id;
 			});
-			$(".tool").live("mousedown",function(e) {
+			$(".tool",pB.C).live("mousedown",function(e) {
 				// prevent image drag behavior
 				if(e.preventDefault) e.preventDefault();
 			});
 			// get all
-			var canvases = $("#trees canvas");
+			var canvases = $("#trees canvas",pB.C);
 			// canvas tools
 			canvases.live("click",function(e) {
 				// set active if not
@@ -439,7 +435,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// save ref
 			var __this = this;
 			// editable cells
-			$(".editable").live("click",function() {
+			$(".editable",pB.C).live("click",function() {
 				// save ref
 				var __this = this;
 				// return if already editing
@@ -461,62 +457,62 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				$(this.nextElementSibling).bind("keyup","return",done);
 			});
 			// change background color
-			$("#tree-prop-name").live("change",function() {
+			$("#tree-prop-name",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).title($(this).val());
 				pB.Document.tree(__this._activeTree).view().replot();
 			});
 			// change background color
-			$("#tree-prop-bg").live("change",function() {
+			$("#tree-prop-bg",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().color = $(this).val();
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// change branch width
-			$("#tree-prop-bw").live("change",function() {
+			$("#tree-prop-bw",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().width = $(this).val();
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// change node radius width
-			$("#tree-prop-nr").live("change",function() {
+			$("#tree-prop-nr",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().radius = $(this).val();
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// change tree type
-			$("#tree-prop-vm").live("change",function() {
+			$("#tree-prop-vm",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().viewmode = parseInt($(this).val());
 				pB.Document.tree(__this._activeTree).view().replot();
 			});
 			// change branch length option
-			$("#tree-prop-bl").live("change",function() {
+			$("#tree-prop-bl",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().branchlenghts = !pB.Document.tree(__this._activeTree).environment().branchlenghts;
 				pB.Document.tree(__this._activeTree).view().replot();
 			});
 			// change 3d option
-			$("#tree-prop-3d").live("change",function() {
+			$("#tree-prop-3d",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().threeD = !pB.Document.tree(__this._activeTree).environment().threeD;
 				pB.Document.tree(__this._activeTree).view().replot();
 			});
 			// change boundaries option
-			$("#tree-prop-bn").live("change",function() {
+			$("#tree-prop-bn",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).view().boundaries(!pB.Document.tree(__this._activeTree).view().boundaries());
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// leaf labels
-			$("#tree-prop-ll").live("change",function() {
+			$("#tree-prop-ll",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().leaflabels = !pB.Document.tree(__this._activeTree).environment().leaflabels;
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// htu labels
-			$("#tree-prop-hl").live("change",function() {
+			$("#tree-prop-hl",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().htulabels = !pB.Document.tree(__this._activeTree).environment().htulabels;
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// branch labels
-			$("#tree-prop-bl").live("change",function() {
+			$("#tree-prop-bl",pB.C).live("change",function() {
 				pB.Document.tree(__this._activeTree).environment().branchlabels = !pB.Document.tree(__this._activeTree).environment().branchlabels;
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// hover node in list
-			$(".taxa-link").live("mouseenter",function() {
+			$(".taxa-link",pB.C).live("mouseenter",function() {
 				// get node
 				var node = $(this).data("node");
 				// set hover
@@ -524,7 +520,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				// refresh view
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
-			$(".taxa-link").live("mouseleave",function() {
+			$(".taxa-link",pB.C).live("mouseleave",function() {
 				// get node
 				var node = $(this).data("node");
 				// set hover
@@ -533,16 +529,16 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// click node in list
-			$(".taxa-link").live("click",function() {
+			$(".taxa-link",pB.C).live("click",function() {
 				// get node
 				var node = $(this).data("node");
 				// parse node properties
 				__this.setNode(node);
 			});
 			// change clade color
-			$("#node-prop-cl").live("change",function() {
+			$("#node-prop-cl",pB.C).live("change",function() {
 				// get node
-				var node = $("#node").data("node");
+				var node = $("#node",pB.C).data("node");
 				// set color
 				node.color($(this).val());
 				// walk kids
@@ -557,9 +553,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				pB.Document.tree(__this._activeTree).view().refresh();
 			});
 			// clade toggle
-			$("#node-prop-vb").live("change",function() {
+			$("#node-prop-vb",pB.C).live("change",function() {
 				// get node
-				var node = $("#node").data("node");
+				var node = $("#node",pB.C).data("node");
 				// toggle
 				node.visibility(!node.visibility());
 				// walk kids
@@ -600,7 +596,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 		},
 		_navTo:function(n) {
 			// go to it
-			$("#taxa > section").scrollTo("#"+n.link().attr("id"),100,{ offset:-45 });
+			$("#taxa > section",pB.C).scrollTo("#"+n.link().attr("id"),100,{ offset:-45 });
 		},
 		_clearNode:function(props) {
 			// get selected
@@ -612,7 +608,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// clear style
 			node.link().removeClass("taxa-link-selected");
 			// clear child style
-			$(".taxa-link").each(function(i) {
+			$(".taxa-link",pB.C).each(function(i) {
 				$(this).css("padding-left","0");
 			});
 			// clear node panel
@@ -623,9 +619,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			view.refresh();
 			view.selecting(false);
 			// title
-			$(".panel-head",$("#node")).text("Node");
+			$(".panel-head",$("#node",pB.C)).text("Node");
 			// body
-			$("#node > section").html("<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>");
+			$("#node > section",pB.C).html("<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>");
 		},
 		_error:function(e) { console.log("Interface: "+e); },
 		// public methods
@@ -637,7 +633,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			for(var i=0;i<node_list.length;i++) nodes[i] = node_list[i];
 			nodes.sort(function(a,b) { return a.id() - b.id(); });
 			// get taxa list
-			var taxa = $("#taxa > section > ul");
+			var taxa = $("#taxa > section > ul",pB.C);
 			// empty taxa
 			taxa.empty();
 			// walk nodes
@@ -661,7 +657,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				// add to doc
 				taxa.append("<li><a href='javascript:;' id='nl-"+node.id()+"' class='taxa-link'>"+name+info+"</a></li>");
 				// add node as data to link
-				var l = $("#nl-"+node.id());
+				var l = $("#nl-"+node.id(),pB.C);
 				l.data("node",node);
 				// save link to node
 				node.link(l);
@@ -686,10 +682,10 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// refresh view
 			pB.Document.tree(this._activeTree).view().refresh();
 			// save data
-			$("#node").data("node",node);
+			$("#node",pB.C).data("node",node);
 			// set node title
 			var title = node.link().text();
-			$(".panel-head",$("#node")).text("Node - "+title.substring(3,title.length-1));
+			$(".panel-head",$("#node",pB.C)).text("Node - "+title.substring(3,title.length-1));
 			// check parent
 			var vis = node.parent() && node.parent().visibility() ? "" : "disabled='disabled'";
 			// check kids
@@ -742,13 +738,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			uri += 	"</tbody>";
 			uri += "</table>";
 			// add to doc
-			if(is_clade) $("#node > section").html(clade+uri); else $("#node > section").html(uri);
+			if(is_clade) $("#node > section",pB.C).html(clade+uri); else $("#node > section",pB.C).html(uri);
 		},
 		setTree:function() {
 			// permalink
 			//$("#perma-link-address").val();
 			// grid the trees
-			$(".tree-holder").each(function(i) {
+			$(".tree-holder",pB.C).each(function(i) {
 				$(this).css("height",(100 / pB.Document.trees().length)+"%");
 			});
 			// auto-fit
@@ -864,13 +860,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			labels += 	"</tbody>";
 			labels += "</table>";
 			// add to doc
-			$("#doc > section").html(name+visual+viewing+labels);
+			$("#doc > section",pB.C).html(name+visual+viewing+labels);
 		},
 		setTools:function() {
 			// don't if a tree exists already
 			if(pB.Document.trees().length > 1) return false;
 			// default tool is select
-			$("#select").addClass("tool-active");
+			$("#select",pB.C).addClass("tool-active");
 			this._activeTool = "select";
 		},
 		hoverNode:function(n) {
@@ -1142,7 +1138,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._key = typeof data == "string" ? data : data.k;
 			// make and attach a tree holder
 			var holder = $("<div class='tree-holder' />");
-			holder.appendTo("#trees > section");
+			
+			if(pB.C.tagName == "BODY" || pB.C[0].tagName == "BODY") holder.appendTo("#trees > section");
+			else holder.appendTo(pB.C);
 			// create view
 			this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
 			// initialize io
@@ -2131,9 +2129,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 	});
 	//************ Statc Properties ************//
 	this.Engine.View.DENDROGRAM = 0; // dendrogram
-	this.Engine.View.CLADOGRAM = 1; // smooth dendrogram
+	this.Engine.View.CLADOGRAM = 1; // circular dendrogram
 	this.Engine.View.CIRC_DENDROGRAM = 2; // cladogram
-	this.Engine.View.CIRC_CLADOGRAM = 3; // circular dendrogram
+	this.Engine.View.CIRC_CLADOGRAM = 3; // circular cladogram
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
@@ -2158,10 +2156,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			case "group" :
 				pB.Document.load(value,true);
 				break;
-			case "key" :
-				//pB.Document.load(value);
-				break
-			case "url" :
+			case "key" : case "url" :
 				pB.Document.load(value);
 				break
 			default : alert("This is a blank document. Please upload your phylogeny via the File menu.");
