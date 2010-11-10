@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------.
 |  Software: PhyloBox MAIN                                                  |
-|   Version: 1.0                                                            |
+|   Version: 2.0                                                            |
 |   Contact: andrewxhill@gmail.com || sander@digijoi.com                    |
 | ------------------------------------------------------------------------- |
 |     Admin: Andrew Hill (project admininistrator)                          |
@@ -12,7 +12,8 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PhyloBox = function() {
+PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+    $ = jQuery;
 	// save ref
 	var pB = this;
 	// constants
@@ -2124,7 +2125,7 @@ PhyloBox = function() {
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
-	this.Go = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+	this.drawTree = function(type,value) {
 	    // use native container if none given here
 	    pB.Holder = phylobox_container_div_id || null;
 		//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– UTILS

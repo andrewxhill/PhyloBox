@@ -133,6 +133,7 @@ class TmpTest(webapp.RequestHandler):
     out.append(self.request.params.get('response', None))
     k = 'tmp-phylobox-2-0-448180af-56b0-44a0-904e-6740fc042b22'
     self.response.out.write(out)
+    
 class UserInfo(webapp.RequestHandler):
   def get(self):
     self.post()
@@ -149,7 +150,6 @@ class UserInfo(webapp.RequestHandler):
             }
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(simplejson.dumps(d).replace('\\/','/'))
-             
     
     
 class AddNewTree(webapp.RequestHandler):
@@ -184,7 +184,7 @@ class AddNewTree(webapp.RequestHandler):
         else:
             author = "anon"
         description = "PhyloJSON Tree Generated at PhyloBox"
-        view_mode = 'Dendrogram'.lower()
+        view_mode = 'dendrogram'
         root = None
         width = 1
         htulabels = False
@@ -221,7 +221,7 @@ class AddNewTree(webapp.RequestHandler):
                 output.append(b.json())
                 
         treefile = {}
-        treefile['v'] = 1
+        treefile['v'] = 2
         treefile['k'] = k
         treefile['date'] = str(datetime.datetime.now())
         treefile['author'] = author
