@@ -314,7 +314,7 @@ class TreeGroup(webapp.RequestHandler):
         if len(ks) > 0:
             title = self.request.params.get('title', "Untitled Group")
             desc = self.request.params.get('desc', "Untitled Group Created in PhyloBox")
-            g = str(hash(str(ks)))
+            g = "group-"+str(hash(str(ks)))
             gr = treeGroup(
                       key=db.Key.from_path('treeGroup', g),
                       gid=g,
