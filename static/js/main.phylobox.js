@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------.
-|  Software: PhyloBox MAIN                                                  |
-|   Version: 1.0                                                            |
+|  Software: PhyloBox                                                       |
+|   Version: 2.0                                                            |
 |   Contact: andrewxhill@gmail.com || sander@digijoi.com                    |
 | ------------------------------------------------------------------------- |
 |     Admin: Andrew Hill (project admininistrator)                          |
@@ -12,7 +12,9 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PhyloBox = function() {
+PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+	// use native container if none given here
+    this.Holder = phylobox_container_div_id || null;
 	// save ref
 	var pB = this;
 	// constants
@@ -20,6 +22,7 @@ PhyloBox = function() {
 	this.API_GROUP = "/group";
 	this.API_NEW = "/new";
 	this.API_SAVE_TREE = "/save";
+	this.RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -1139,7 +1142,11 @@ PhyloBox = function() {
 			// initialize io
 			this._io = new pB.IO(this,pB.API_TREE,"json","#tree-loader-"+this._view.id());
 			// load data if present otherwise go on
-			typeof data == "string" ? this._io.request("load","k="+this._key) : this.receive("load",data);
+			typeof data == "string" ? 
+				pB.RX_URL.test(data) ? 
+					this._io.request("load","phyloUrl="+this._key) : 
+					this._io.request("load","k="+this._key) : 
+				this.receive("load",data);
 		},
 		receive:function(type,data) {
 			// do something
@@ -1207,7 +1214,7 @@ PhyloBox = function() {
 		age:function(v) { if(v!==undefined) this._age = v; else return this._age; },
 	});
 /*###########################################################################
-############################################################# ENGINE POINT 3D
+###################################################################### ENGINE
 ###########################################################################*/
 	this.Engine = {};
 /*###########################################################################
@@ -2124,9 +2131,7 @@ PhyloBox = function() {
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
-	this.Go = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
-	    // use native container if none given here
-	    pB.Holder = phylobox_container_div_id || null;
+	this.drawTree = function(type,value) {
 		//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– UTILS
 		CanvasRenderingContext2D.prototype.dottedArc = function(x,y,radius,startAngle,endAngle,anticlockwise) {
 			var g = Math.PI / radius / 2, sa = startAngle, ea = startAngle + g;
@@ -2143,9 +2148,18 @@ PhyloBox = function() {
 		pB.Interface.init();
 		pB.Document.init();
 		//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– GET DATA
-		if(__group_key__) pB.Document.load(__group_key__);
-		else if(__single_key__) pB.Document.load(__single_key__);
-		else alert("This is a blank document. Please upload your phylogeny via the File menu.");
+		switch(type) {
+			case "group" :
+				pB.Document.load(value,true);
+				break;
+			case "key" :
+				//pB.Document.load(value);
+				break
+			case "url" :
+				pB.Document.load(value);
+				break
+			default : alert("This is a blank document. Please upload your phylogeny via the File menu.");
+		}
 	}
 //####################################################################### END
 }

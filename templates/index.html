@@ -1,11 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en">
 <head>
-	<script type="text/javascript">
-		// get keys
-		var __group_key__ = '{{ group }}',
-			__single_key__ = '{{ key }}';
-	</script>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>PhyloBox</title>    
     <!--[if IE]>
@@ -29,11 +24,12 @@
 	<script type="text/javascript" src="static/js/main.phylobox.js"></script>
 	<!--<script type="text/javascript" src="static/js/engine.phylobox.js"></script>-->
     <script type="text/javascript" >
-        $(document).ready(function(){
-            
-			var my_pb = new PhyloBox();
-			my_pb.Go();
-			// PhyloBox.Go();
+        $(document).ready(function() {
+			//var type = __group_key__!="" ? "group" : __single_key__!="" ? "key" : false;
+			//var my_pb = new PhyloBox().drawTree("key",__single_key__);
+			var my_pb = new PhyloBox().drawTree();
+			
+			var 
         });
     </script>
 </head>
