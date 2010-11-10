@@ -159,7 +159,18 @@ class AddNewTree(webapp.RequestHandler):
   def post(self):
     user,url,url_linktext = GetCurrentUser(self)
     
-    treefile = self.request.params.get('phyloFile', None)
+    if self.request.params.get('phyloFile', None) is None:
+        if self.request.params.get('phyloUrl', None) is not None:
+            url = str(self.request.params.get('phyloUrl', None)).strip()
+            treefile = memcache.get("tree-data-"+url)
+            if treefile is None:
+                result = urlfetch.fetch(url=url)
+                if result.status_code == 200:
+                    treefile = result.content
+                    memcache.set("tree-data-"+url, treefile, 86400)
+            
+    else:
+        treefile = self.request.params.get('phyloFile', None)
         
     if treefile is not None:
         version = os.environ['CURRENT_VERSION_ID'].split('.')
