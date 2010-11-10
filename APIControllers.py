@@ -21,105 +21,14 @@ import logging
 from DataStore import *
 from GenericMethods import *
 from phyloxml import *
-from NewickParser import *
- 
- 
-class PngOutput(webapp.RequestHandler):
-  def allrequests(self):
-    k = self.request.params.get('k', None)
-    if k is None:
-        out = "<p>"
-        out += "POST or GET Params: <br>\r\n"
-        out += "k: the UUID for the phylogeny project (example: phylobox-1-0-2c9a4f37-1019-4a17-a6b8-79969c3f1bbb)  <br>\r\n"
-        
-        out += "</p><p>"
-        out += "Response Params: <br>\r\n"
-        out += "PNG image object<br>\r\n"
-        out += "</p>"
-        self.response.out.write(out)  
-    else:
-        #try memcache
-        data = memcache.get("png-data-"+k)
-        #return it if it is there
-        if data is not None:
-            data.lstrip('"')
-            data.rstrip('"')
-            data.replace("\"",'')
-            data.replace('"','')
-            data = data.split(',')[1]
-            self.response.headers['Content-Type'] = 'image/png'
-            self.response.out.write(base64.b64decode(data))
-        else:
-            query = treeStore.gql("WHERE objId = :objId", objId=k)
-            res = query.fetch(1)
-            output = []
-            ct = 1
-            comma = ""
-            png = ""
-            for r in res:
-                data = r.objPng
-                if data is not None:
-                    png = data
-                    png.lstrip('"')
-                    png.rstrip('"')
-                    png.replace("\"",'')
-                    png.replace('"','')
-                    png = png.split(',')[1]
-            
-            #add it to memcache
-            try:
-                memcache.set("png-data-"+k,data,300)
-            except:
-                pass
-            
-            #return it to the user
-            self.response.headers['Content-Type'] = 'image/png'
-            self.response.out.write(base64.b64decode(png))
-
-    #self.response.out.write('<image src="'+png+'" />')
-  def post(self):
-    self.allrequests()
-  def get(self):
-    self.allrequests()
- 
-class AuthorLineage(webapp.RequestHandler):
-  def allrequests(self):
-    k = str(self.request.params.get('k', None)).strip()
-    query = treeStore.gql("WHERE forkedObj = :objId", objId=k)
-    res = query.fetch(100)
-    output = []
-    ct = 1
-    comma = ""
-    for r in res:
-        out = {}
-        out["rowCount"] = ct
-        out["userName"] = r.userName
-        out["downloadCt"] = str(r.downloadCt)
-        out["lastUpdate"] = str(r.last_update_date).split(' ')[0]
-        out["treeId"] = str(r.objId)
-        out["viewLink"] = "/tree/edit?k="+str(r.objId)
-        output.append(out)
-        comma = ",\n"
-        ct+=1
-    
-    #self.response.out.write(simplejson.dumps(simplejson.loads(str(output))))
-    self.response.out.write(simplejson.dumps(output))
-        
-        
-        
-            
-  def post(self):
-    self.allrequests()
-  def get(self):
-    self.allrequests()
-        
-    
-      
+from NewickParser import * 
       
 class LookUp(webapp.RequestHandler):
   def allrequests(self):
     memtime = 300
     k = str(self.request.params.get('k', None)).strip()
+    
+    
     if k is None:
         self.response.out.write(200)
         
@@ -129,6 +38,10 @@ class LookUp(webapp.RequestHandler):
         return treefile
         
     else:
+        #hotfix, delete anytime after 12/10
+        if k == "phylobox-2-0-818fbb99-50b6-4740-bb6f-f3f7b0fa7e53":
+            k = "phylobox-2-0-c410fdb2-2e85-4248-9e01-a9e7657f35f5"
+        
         #check memcache
         data = memcache.get("tree-data-"+k)
         #if exists return the data
@@ -147,42 +60,45 @@ class LookUp(webapp.RequestHandler):
             return result
         #else, query datastore
         else:
-            if cmp(k[:3],"tmp")==0:
-                self.response.out.write(404)
-            else:
-                query = treeStore.gql("WHERE objId = :objId",
-                                    objId=k)
-                    
-                #result = db.GqlQuery(query)
-                results = query.fetch(1)
                 
-                try:
-                    result = UnzipFiles(StringIO.StringIO(results[0].objBlob),iszip=True)
-                    
-                    #get any downloads that have happened since the last request
-                    dlcount = memcache.get("tree-download-ct-"+k)
-                    if dlcount is None:
-                        dlcount = 0
-                    #add them to the stored value
-                    dlcount += results[0].downloadCt + 1 #the 1 represents this access
-                    results[0].last_access_date = datetime.datetime.now()
-                    results[0].downloadCt = dlcount
-                    results[0].put()
-                    
-                    #create a count iterator in memcache
-                    memcache.set("tree-download-ct-"+k, 0, 1500000)
-                    
-                    #add tree to memcache
-                    memcache.set("tree-data-"+k, results[0].objBlob, memtime)
-                    
-                    return result
-                except:
-                    out = '<p>POST:<br>k: your_phylobox_key</p>'
-                    if k:
-                        out += "<p>"+k+"</p>"
-                    return out
-        
-        
+            key = db.Key.from_path('treeStore',k)
+            r = treeStore.get(key)
+            """
+            query = treeStore.gql("WHERE objId = :objId",
+                                objId=k)
+            results = query.fetch(1)
+            """
+            if r is None:
+                key = db.Key.from_path('Species',"phylobox-2-0-224efed9-f4bf-4f62-a386-24dd3afe3a5a")
+                r = Species.get(key)
+                
+            try:
+                result = UnzipFiles(StringIO.StringIO(r.objBlob),iszip=True)
+                
+                #get any downloads that have happened since the last request
+                dlcount = memcache.get("tree-download-ct-"+k)
+                if dlcount is None:
+                    dlcount = 0
+                #add them to the stored value
+                dlcount += r.downloadCt + 1 #the 1 represents this access
+                r.last_access_date = datetime.datetime.now()
+                r.downloadCt = dlcount
+                r.put()
+                
+                #create a count iterator in memcache
+                memcache.set("tree-download-ct-"+k, 0, 1500000)
+                
+                #add tree to memcache
+                memcache.set("tree-data-"+k, r.objBlob, memtime)
+                
+                return result
+            except:
+                out = '<p>POST:<br>k: your_phylobox_key</p>'
+                if k:
+                    out += "<p>"+k+"</p>"
+                return out
+    
+    
             
   def post(self):
     out = self.allrequests()
@@ -368,230 +284,6 @@ class AddNewTree(webapp.RequestHandler):
         self.response.out.write(treefile)
 
 ############################
-
-        
-class ConvertToPhyloJSON(webapp.RequestHandler):
-  def get(self):
-    out = "<p>"
-    out += "POST Params: <br>\r\n"
-    out += "type: default=PhyloXML. File type to convert, only PhyloXML supported now<br>\r\n"
-    out += "callback: see <a href='http://developer.yahoo.com/common/json.html'>here</a>, default None <br>\r\n"
-    out += "phyloFile: your phylogeny file (normal or zipped), we only have PhyloXML support on the API for now  <br>\r\n"
-    
-    out += "</p><p>"
-    out += "Response Params: <br>\r\n"
-    out += "PhyloJSON object (wrapped in callback if called) <br>\r\n"
-    out += "*we will open up perminent storage through the API very soon<br>\r\n"
-    out += "</p>"
-    self.response.out.write(out)  
-      
-  def post(self):
-    callback = self.request.params.get('callback', None)
-    treefile = self.request.params.get('phyloFile', None)
-    if treefile is not None:
-        treefile = UnzipFiles(treefile)
-        background = "1d1d1d"
-        color = "75a0cb"
-        if user:
-            author = str(user)
-        else:
-            author = "anon"
-        title = "Your tree"
-        description = "PhyloJSON Tree Generated at PhyloBox"
-        view_mode = 'Dendrogram'.lower()
-        root = None
-        width = 1
-        htulabels = False
-        branchlabels = False
-        leaflabels = False
-        node_radius = 1
-        #set defaults
-        branch_color = "FFFFFFFF"
-        branch_width = 1.5
-        icon = "http://geophylo.appspot.com/static_files/icons/a99.png"
-        proximity = 2
-        alt_grow = 15000
-        title = "Created with Phylobox"
-        
-        tree = PhyloXMLtoTree(treefile,color=color)
-        tree.load()
-        if tree.title is not None:
-            title = tree.title
-        if tree.rooted is not None:
-            root = tree.root
-        out = ''
-        output = []
-        #output = {}
-        for a,b in tree.objtree.tree.items():
-            if a != 0:
-                output.append(b.json())
-                
-        treefile = {}
-        treefile['v'] = 1
-        treefile['date'] = str(datetime.datetime.now())
-        treefile['author'] = author
-        treefile['title'] = title
-        treefile['description'] = description
-        treefile['root'] = root
-        treefile['environment'] = {}
-        treefile['environment']['root'] = tree.root
-        treefile['environment']['viewmode'] = 0
-        treefile['environment']['branchlenghts'] = True
-        treefile['environment']['3D'] = False
-        treefile['environment']['color'] = background
-        treefile['environment']['angvel'] = {'x':None,'y':None,'z':None}
-        treefile['environment']['offset'] = {'dx':0.0,'dy':0.0,'dz':None,'ax':0.0,'ay':0.0,'az':0.0}
-        treefile['environment']['width'] = width
-        treefile['environment']['radius'] = node_radius
-        treefile['environment']['htulabels'] = htulabels
-        treefile['environment']['branchlabels'] = branchlabels
-        treefile['environment']['leaflabels'] = leaflabels
-        treefile['environment']['primaryuri'] = None
-        treefile['tree'] = output
-        treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
-        
-    self.response.out.write(treefile)  
-        
-class TestSpec(webapp.RequestHandler):
-  def get(self):
-    callback = self.request.params.get('callback', None)
-    treefile = open('Baeolophus_np.xml','r').read()
-    treefile = UnzipFiles(treefile)
-    #set defaults
-    background = "1d1d1d"
-    color = "75a0cb"
-    author = "anon"
-    title = "Your tree"
-    description = "PhyloJSON Tree Generated at PhyloBox"
-    view_mode = 'Dendrogram'.lower()
-    focus = None
-    zoom = 0
-    width = 1
-    htulabels = False
-    branchlabels = False
-    leaflabels = False
-    
-    tree = PhyloXMLtoTree(treefile,color=color)
-    tree.load()
-    out = ''
-    output = []
-    for a,b in tree.objtree.tree.items():
-        if a != 0:
-            output.append(b.json())
-    
-    treefile = {}
-    treefile['v'] = 1
-    treefile['date'] = str(datetime.datetime.now())
-    treefile['author'] = author
-    treefile['title'] = title
-    treefile['description'] = description
-    treefile['root'] = tree.root
-    treefile['environment'] = {}
-    treefile['environment']['root'] = tree.root
-    treefile['environment']['view_mode'] = view_mode
-    treefile['environment']['color'] = background
-    treefile['environment']['focus'] = focus
-    treefile['environment']['zoom'] = zoom
-    treefile['environment']['width'] = width
-    treefile['environment']['htulabels'] = htulabels
-    treefile['environment']['branchlabels'] = branchlabels
-    treefile['environment']['leaflabels'] = leaflabels
-    treefile['tree'] = output
-    
-    treefile = simplejson.dumps(treefile, indent=4)
-    self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
-    self.response.out.write(treefile.replace('\\/','/')) 
-        
-class CreatePhyloBox(webapp.RequestHandler):
-  def get(self):
-    out = "<p>"
-    out += "REQUIRES OAUTH<br>\r\n"
-    out += "POST Params: <br>\r\n"
-    out += "callback: see JSON <br>\r\n"
-    out += "phyloFile: your phylogeny, we only have PhyloXML support on the API for now  <br>\r\n"
-    
-    out += "</p><p>"
-    out += "Response Params: <br>\r\n"
-    out += "JSON Object {key:your_temp_key_value}  (wrapped in callback if called)<br>\r\n"
-    out += "*we will open up perminent storage through the API very soon<br>\r\n"
-    out += "</p>"
-    self.response.out.write(out)  
-      
-  def post(self):
-    try:
-        # Get the db.User that represents the user on whose behalf the
-        # consumer is making this request.
-        user = oauth.get_current_user()
-            
-        callback = self.request.params.get('callback', None)
-        key = self.request.params.get('k', None)
-        treefile = self.request.params.get('phyloFile', None)
-        treefile = UnzipFiles(treefile)
-        if key is None:
-            key = "phylobox-"+version+"-"+str(uuid.uuid4())
-        self.response.out.write('not quite ready yet')  
-        """
-        query = treeStore.gql("WHERE objId = :objId ",
-                            objId=key)
-        results = query.fetch(1)
-        
-        if len(results)==0:
-            treefile = str(urllib.unquote(treefile))
-            background = "1d1d1d"
-            color = "75a0cb"
-            author = "anon"
-            title = "Your tree"
-            description = "PhyloJSON Tree Generated at PhyloBox"
-            view_mode = 'Dendrogram'.lower()
-            focus = None
-            zoom = 0
-            width = 1
-            htulabels = False
-            branchlabels = False
-            leaflabels = False
-            
-            tree = PhyloXMLtoTree(treefile,color=color)
-            tree.load()
-            out = ''
-            output = []
-            for a,b in tree.objtree.tree.items():
-                if a != 0:
-                    output.append(b.json())
-                    
-            treefile = {}
-            treefile['v'] = 1
-            treefile['date'] = str(datetime.datetime.now())
-            treefile['author'] = author
-            treefile['title'] = title
-            treefile['description'] = description
-            treefile['root'] = tree.root
-            treefile['environment'] = {}
-            treefile['environment']['root'] = tree.root
-            treefile['environment']['view_mode'] = view_mode
-            treefile['environment']['color'] = background
-            treefile['environment']['focus'] = focus
-            treefile['environment']['zoom'] = zoom
-            treefile['environment']['width'] = width
-            treefile['environment']['htulabels'] = htulabels
-            treefile['environment']['branchlabels'] = branchlabels
-            treefile['environment']['leaflabels'] = leaflabels
-            treefile['tree'] = output
-            treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
-            tmpEntry = treeStore(objId = key,
-                             objBlob = ZipFiles(treefile))
-            tmpEntry.put()
-            
-        result = simplejson.dumps({"key":key})
-        
-        if callback is not None:
-            result = str(callback)+"("+result+")"
-        self.response.out.write(result)  
-        """
-    except oauth.OAuthRequestError, e:
-        # The request was not a valid OAuth request.
-        # ...
-        self.response.out.write("error")  
-        
 class TreeGroup(webapp.RequestHandler):
   def get(self):
     self.post()
@@ -611,8 +303,9 @@ class TreeGroup(webapp.RequestHandler):
         if len(ks) > 0:
             title = self.request.params.get('title', "Untitled Group")
             desc = self.request.params.get('desc', "Untitled Group Created in PhyloBox")
-            g = str(hash(str(ks).lower()))
-            gr = treeGroup(key_name=g,
+            g = str(hash(str(ks)))
+            gr = treeGroup(
+                      key=db.Key.from_path('treeGroup', g),
                       gid=g,
                       title=title,
                       description=desc,
@@ -623,7 +316,7 @@ class TreeGroup(webapp.RequestHandler):
         else:
             self.response.out.write(500)  
     else:
-        key = db.Key.from_path('treeGroup',g.lower())
+        key = db.Key.from_path('treeGroup',g)
         ent = treeGroup.get(key)
         out = {"group":g.lower(),
                "title":ent.title,
@@ -631,21 +324,6 @@ class TreeGroup(webapp.RequestHandler):
                "ids":ent.ids}
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(simplejson.dumps({"group":out}).replace('\\/','/'))
-   
-        
-    
-        
-class APIServices(webapp.RequestHandler):
-  def get(self):
-    out = "<p>"
-    out += "This is the growing API: <br>\r\n"
-    out += "Convert to PhyloJSON: <a href='/api/convert'>/api/convert</a> <br>\r\n"
-    out += "Generate PhyloBox (not ready): <a href='/api/create'>/api/create</a> <br>\r\n"
-    out += "Get stored PhyloBox tree: <a href='/api/lookup'>/api/lookup</a> <br>\r\n"
-    out += "Get image/png of PhyloBox tree: <a href='/api/image.png'>/api/image.png</a> <br>\r\n"
-    out += "</p>"
-    self.response.out.write(out)  
-      
          
 class TreeSave(webapp.RequestHandler):
   def post(self):
@@ -686,7 +364,8 @@ class TreeSave(webapp.RequestHandler):
             newk = "phylobox-"+version+"-"+str(uuid.uuid4())
             
             for tree in trees:
-                tmpEntry = treeStore(key_name=newk,
+                tmpEntry = treeStore(
+                          key=db.Key.from_path('treeStore', newk),
                           objId = newk,
                           objBlob = treefile,
                           objPng = png,
@@ -698,9 +377,10 @@ class TreeSave(webapp.RequestHandler):
                           )
                 tmpEntry.put()
     
-                tmpEntry = treeOwners(objId = newk,
-                                      userName = user
-                                      )
+                tmpEntry = treeOwners(
+                              objId = newk,
+                              userName = user
+                              )
                 tmpEntry.put()
             k = newk
         else:
@@ -713,7 +393,8 @@ class TreeSave(webapp.RequestHandler):
                                 objId=k).fetch(1)
                 #if the user is the owner of the tree, update it.
                 for tree in trees:
-                    tmpEntry = treeStore(key_name=newk,
+                    tmpEntry = treeStore(
+                              key=db.Key.from_path('treeStore', newk),
                               objId = newk,
                               objBlob = treefile,
                               objPng = png,
@@ -725,9 +406,10 @@ class TreeSave(webapp.RequestHandler):
                               )
                     tmpEntry.put()
         
-                    tmpEntry = treeOwners(objId = newk,
-                                          userName = user
-                                          )
+                    tmpEntry = treeOwners(
+                                  objId = newk,
+                                  userName = user
+                                  )
                     tmpEntry.put()
                 k = newk
             else:
@@ -744,34 +426,62 @@ class TreeSave(webapp.RequestHandler):
                 
     else:
         """ Store the forked tree as Anon """
-                    
+        
+        newk = "phylobox-"+version+"-"+str(uuid.uuid4())
         trees = treeStore.gql("WHERE objId = :objId",
                             objId=k).fetch(1)
-        newk = "phylobox-"+version+"-"+str(uuid.uuid4())
-        for tree in trees:
-            tmpEntry = treeStore(objId = newk,
+        
+        if len(trees)==0:
+            tmpEntry = treeStore(
+                      key=db.Key.from_path('treeStore', newk),
+                      objId = newk,
                       objBlob = treefile,
                       objPng = png,
                       userName = user,
                       forkedObj = k,
                       treeTitle = title,
-                      originalAuthor = tree.originalAuthor,
                       version = version
                       )
             tmpEntry.put()
-
-            tmpEntry = treeOwners(objId = newk,
+            """
+            p = db.Key.from_path('treeStore',newk)
+            ent = treeStore.get(p)
+            logging.error(ent.treeTitle)
+            """
+            tmpEntry = treeOwners(
+                      objId = newk,
                       userName = user
                       )
             tmpEntry.put()
             k = newk
+        else:
+            for tree in trees:
+                tmpEntry = treeStore(
+                          key=db.Key.from_path('treeStore', newk),
+                          objId = newk,
+                          objBlob = treefile,
+                          objPng = png,
+                          userName = user,
+                          forkedObj = k,
+                          treeTitle = title,
+                          originalAuthor = tree.originalAuthor,
+                          version = version
+                          )
+                tmpEntry.put()
+
+                tmpEntry = treeOwners(
+                              objId = newk,
+                              userName = user
+                              )
+                tmpEntry.put()
+                k = newk
         
         #self.response.out.write('you are trying to fork a tree when not signed in')
 
-    memcache.set("tree-data-"+k, treefile, 60)
+    memcache.set("tree-data-"+k, treefile, 60000)
 
     try:
-        memcache.set("png-data-"+k, png, 60)
+        memcache.set("png-data-"+k, png, 60000)
     except:
         pass
     #return the old (if not forked) or new key string (if forked or first save) to the user

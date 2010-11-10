@@ -1207,9 +1207,9 @@ var Tree = Class.extend({
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
-PhyloBox.Go = function(phylobox_container_div_id) {
+PhyloBox.Go = function(phylobox_container_div_id, phylobox_environment_options) {
     
-    this.Holder = phylobox_container_div_id || null;
+    //this.Holder = phylobox_container_div_id || null;
 	//–––––––––––––––––––––––––––––––––––––––––––––––––––––––––– EXTEND UTILS
 	// on jquery
 	$.extend({  });
