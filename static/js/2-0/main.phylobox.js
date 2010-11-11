@@ -25,7 +25,6 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 	this.API_NEW = "/new";
 	this.API_SAVE_TREE = "/save";
 	this.RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-	this.HEX = function(c){ var hex = /^([0-9a-f]{1,2}){3}$/i; hex.test(c) ? c = "#"+c : c = c; return c };
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -1737,7 +1736,7 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 		},
 		_render:function() {
 			this._ctx.fillStyle = pB.HEX(this._tree.environment().color);
-			this._ctx.lineWidth = 1;
+            this._ctx.lineWidth = 1;
 			this._ctx.font = "6px Plain";
 			this._ctx.globalAlpha = 1;
 			this._ctx.fillRect(0,0,this._c_width(),this._c_height());
@@ -2143,6 +2142,31 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 	this.Engine.View.CLADOGRAM = 1; // circular dendrogram
 	this.Engine.View.CIRC_DENDROGRAM = 2; // cladogram
 	this.Engine.View.CIRC_CLADOGRAM = 3; // circular cladogram
+    
+/*###########################################################################
+####################################################################### UTILS
+###########################################################################*/
+	this.HEX = function(c){ var hex = /^([0-9a-f]{1,2}){3}$/i; hex.test(c) ? c = "#"+c : c = c; return c };
+    this.COMP_HEX = function(orig){
+        c = orig;
+        function HexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
+        function HexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
+        function HexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
+        function cutHex(h) {return (h.charAt(0)=="#") ? h.substring(1,7):h} 
+        hex = "";
+        c = cutHex(c);
+        HexToR(c) < 128 ?
+            hex = hex+"FF" :
+            hex = hex+"00" ;
+        HexToG(c) < 128 ?
+            hex = hex+"FF" :
+            hex = hex+"00" ;
+        HexToB(c) < 128 ?
+            hex = hex+"FF" :
+            hex = hex+"00" ;
+        if (hex.length < orig.length) { hex = "#"+hex };
+        return hex
+    };
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
