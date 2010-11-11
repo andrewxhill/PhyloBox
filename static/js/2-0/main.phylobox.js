@@ -16,13 +16,24 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 	// save ref
 	var pB = this;
 	// map jQuery
-	$ = jQuery;
+    $ = jQuery;
 	// widget or full app
     this.WIDGET = phylobox_container_div_id ? true : false;
 	// use native container if none given here
 	this.C = this.WIDGET ? $("#"+phylobox_container_div_id) : $("body");
 	// options
-	this.widget_o = phylobox_environment_options;
+    this.Options = $.extend({
+        background: null,
+        viewMode: null,
+        threeD: null,
+        htuLabels: null,
+        nodeLabels: null,
+        branchColor: null,
+        branchWidth: null,
+        nodeRadius: null,
+        title: true
+    },phylobox_environment_options);
+    console.log(this.Options.background);
 	this.widget_h = phylobox_event_handlers;
 	// constants
 	this.API_TREE = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/lookup" : "/lookup";
@@ -982,6 +993,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 					__this._caller.receive(a,json);
 				},
 				error:function(e) {
+                    console.log(json);
 					__this._loading(false);
 					__this._error(e['responseText']);
 				}
@@ -1205,6 +1217,33 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._environment.root = rid;
 			// (re)nest
 			this._nest(rid);
+            
+            if(pB.WIDGET){
+                this._data.environment.color = pB.Options.background == null ? this._data.environment.color : pB.Options.background;
+                this._data.environment.radius = pB.Options.nodeRadius == null ? this._data.environment.radius : pB.Options.nodeRadius;
+                this._data.environment.width = pB.Options.branchWidth == null ? this._data.environment.width : pB.Options.branchWidth;
+                this._data.environment.htulabels = pB.Options.htuLabels == null ? this._data.environment.htulabels : pB.Options.htuLabels;
+                this._data.environment.branchlabels = pB.Options.branchLabels == null ? this._data.environment.branchlabels : pB.Options.branchLabels;
+                this._data.environment.threeD = pB.Options.threeD == null ? this._data.environment.threeD : pB.Options.threeD;
+                this._title = pB.Options.title == true ? this._title : pB.Options.title;
+                switch(pB.Options.viewMode){
+                    case "dendrogram":
+                        this._data.environment.viewmode = 0;
+                        break;
+                    case "cladogram":
+                        this._data.environment.viewmode = 1;
+                        break;
+                    case "circular dendrogram":
+                        this._data.environment.viewmode = 2;
+                        break;
+                    case "circular cladogram":
+                        this._data.environment.viewmode = 3;
+                        break;
+                }
+                    
+                
+                //console.log(this._title);
+            }
 		},
 		save:function() {
 			// update phyloJSON nodes with Node properties
@@ -1740,7 +1779,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._tree.environment().offset.dz += this._dz;
 		},
 		_render:function() {
-			this._ctx.fillStyle = pB.HEX(this._tree.environment().color);
+            this._ctx.fillStyle = !(this._tree.environment().color) ? "rgba(0,0,0,0.0)" : pB.HEX(this._tree.environment().color);
             this._ctx.lineWidth = 1;
 			this._ctx.font = "6px Plain";
 			this._ctx.globalAlpha = 1;
@@ -1819,8 +1858,10 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			if(tree && !this._tree) {
 				this._tree = tree;
 				// add the title
-				this._title = $("<p class='tree-title' id='"+this._id+"-title'>"+this._tree.title()+"</p>");
-				this._title.appendTo(this._holder);
+                if (this._tree.title()) {
+                    this._title = $("<p class='tree-title' id='"+this._id+"-title'>"+this._tree.title()+"</p>");
+                    this._title.appendTo(this._holder);
+                }
 			}
 			// local offsets
 			var local = { 
@@ -1927,8 +1968,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			 	this._cp[cp].rotateZ(local.az);
 			}
 			// first render
-			this._ctx.fillStyle = pB.HEX(this._tree.environment().color);
-			this._ctx.lineWidth = 1;
+            this._ctx.fillStyle = !(this._tree.environment().color) ? "rgba(0,0,0,0.0)" : pB.HEX(this._tree.environment().color);
+            this._ctx.lineWidth = 1;
 			this._ctx.font = "6px Plain";
 			this._ctx.globalAlpha = 1;
 			this._ctx.fillRect(0,0,this._c_width(),this._c_height());
@@ -1940,7 +1981,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// check boundaries
 			if(this._boundaries) this._showBounds();
 			// update and position title
-			this._title.text(this._tree.title()).css({ bottom:0,right:0 });
+			if (this._title) {
+                this._title.text(this._tree.title()).css({ bottom:0,right:0 });
+            }
 		},
 		replot:function() {
 			// pause time

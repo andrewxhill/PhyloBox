@@ -29,6 +29,7 @@ class LookUp(webapp.RequestHandler):
     k = str(self.request.params.get('k', None)).strip()
     
     
+    self.response.headers['Content-Type'] = 'application/json'
     if k is None:
         self.response.out.write(200)
         
@@ -93,7 +94,7 @@ class LookUp(webapp.RequestHandler):
                 
                 return result
             except:
-                out = '<p>POST:<br>k: your_phylobox_key</p>'
+                out = '{"error":"nothing found"}'
                 if k:
                     out += "<p>"+k+"</p>"
                 return out
@@ -154,7 +155,8 @@ class UserInfo(webapp.RequestHandler):
     
 class AddNewTree(webapp.RequestHandler):
   def get(self):
-    self.response.out.write(404)  
+    #self.response.out.write(404)  
+    self.post()
       
   def post(self):
     user,url,url_linktext = GetCurrentUser(self)
@@ -278,9 +280,9 @@ class AddNewTree(webapp.RequestHandler):
         memcache.set("tree-data-"+k, treefilezip, cachetime)
                     
             #memcache.set("tree-data-"+k, treefilezip, time)
-    
-    
-    self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
+    self.response.headers['Content-Type'] = 'application/json'
+    if self.request.params.get('callback', None) is not None:
+        self.response.out.write(self.request.params.get('callback', None) + "(")
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
         out = {"key":k,"url":"http://phylobox.appspot.com/?%s" % (k)}
         self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
@@ -292,6 +294,8 @@ class AddNewTree(webapp.RequestHandler):
         self.response.out.write("http://phylobox.appspot.com/?%s" % (k))
     else:
         self.response.out.write(treefile)
+    if self.request.params.get('callback', None) is not None:
+        self.response.out.write(")")
 
 ############################
 class TreeGroup(webapp.RequestHandler):
