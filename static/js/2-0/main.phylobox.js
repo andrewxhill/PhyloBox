@@ -1420,6 +1420,7 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 		},
 		// get & set vars
 		point:function() { return this._point; },
+		node:function() { return this._node; },
 	});
 /*###########################################################################
 ################################################################# ENGINE LINE

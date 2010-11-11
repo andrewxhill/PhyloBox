@@ -1,5 +1,5 @@
 /*--------------------------------------------------------------------------.
-|  Software: PhyloBox Events Wrapper                                        |
+|  Software: PhyloBox API                                                   |
 |   Version: 2.0                                                            |
 |   Contact: andrewxhill@gmail.com || sanderpick@gmail.com                  |
 | ------------------------------------------------------------------------- |
@@ -12,39 +12,36 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PbEvent = {
-	// supported phylobox events
-	_events:[
-		"pb-nodeclick",
-		"pb-nodekill",
-		"pb-nodeflip",
-		"pb-nodechange",
-		"pb-pan",
-		"pb-zoom"
-	],
-	// register an event with phylobox
-	addListener : function( pB, t, h ) {
+PbAPI = {
+	//
+	rotate : function( pB, d ) {
 		if ( ! pB )
 			return this._error("you must supply a valid PhyloBox object...");
-		if ( this._isValidType(t) ) 
-			pB.addListener(t,h);
-		else 
-			return this._error("invalid PhyloBox event requested...");
+		// do something to pB with d
 	},
-	// remove an event with phylobox
-	removeListener : function( pB, t, h ) {
+	//
+	translate : function( pB, d ) {
 		if ( ! pB )
 			return this._error("you must supply a valid PhyloBox object...");
-		if ( this._isValidType(t) ) 
-			pB.removeListener(t,h);
-		else 
-			return this._error("invalid PhyloBox event requested...");
+		// do something to pB with d
 	},
-	// checks if valid event type
-	_isValidType : function(t) {
-		for ( var e in this._events )
-			if ( t == this._events[e] )
-				return true;
+	//
+	zoom : function( pB, d ) {
+		if ( ! pB )
+			return this._error("you must supply a valid PhyloBox object...");
+		// do something to pB with d
+	},
+	//
+	killNode : function( pB, d ) {
+		if ( ! pB )
+			return this._error("you must supply a valid PhyloBox object...");
+		// do something to pB with d
+	},
+	//
+	flipNode : function( pB, d ) {
+		if ( ! pB )
+			return this._error("you must supply a valid PhyloBox object...");
+		// do something to pB with d
 	},
 	// throw and error to console and exit
 	_error: function(e) {
