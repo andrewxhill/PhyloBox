@@ -1357,6 +1357,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				// scale radius on depth
 				var scale = (this._point.z()+3000) / 6000;
 		        // set styles
+                
                 ctx.fillStyle = pB.HEX(this._node.color());
                 
 				ctx.globalAlpha = scale;
@@ -1438,6 +1439,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 		},
 		// get & set vars
 		point:function() { return this._point; },
+        node:function() { return this._node; },
 	});
 /*###########################################################################
 ################################################################# ENGINE LINE
@@ -1959,6 +1961,11 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			 	this._d[d].point().rotateY(local.ay);
 			 	this._d[d].point().rotateZ(local.az);
 			}
+            if (pB.Options.branchColor != null){
+                for(var d in this._d) {
+                    this._d[d].node().color(pB.HEX(pB.Options.branchColor));
+                }
+            }
 			for(var cp in this._cp) {
 				this._cp[cp].x(this._cp[cp].x()+local.dx);
 			 	this._cp[cp].y(this._cp[cp].y()+local.dy);
