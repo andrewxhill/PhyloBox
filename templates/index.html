@@ -21,15 +21,13 @@
 	<script type="text/javascript" src="/static/js/2-0/class.phylobox.js"></script>
 	<script type="text/javascript" src="/static/js/2-0/main.phylobox.js"></script>
     <script type="text/javascript" >
-        function init(){
+        function init() {
             var key;
             var my_pb = new PhyloBox();
             if (location.href.indexOf('#') != -1) {
                 key = window.location.hash.substr(1);
                 my_pb.drawTree('key',key);
-            } else {
-                my_pb.drawTree();
-            }
+            } else my_pb.drawTree();
         };
     </script>
 </head>
