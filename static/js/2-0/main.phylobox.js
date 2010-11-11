@@ -12,7 +12,7 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
 	// save ref
 	var pB = this;
 	// map jQuery
@@ -96,13 +96,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				});
 			});
 			// add resize events
-			if(!pB.WIDGET) this._addResizeEvents();
+			this._addResizeEvents();
 			// add menu events
-			if(!pB.WIDGET) this._addMenuEvents();
+			this._addMenuEvents();
 			// add tool event dispatching
 			this._addToolEvents();
 			// add property events
-			if(!pB.WIDGET) this._addPropertyEvents();
+			this._addPropertyEvents();
 		},
 		// private methods
 		_fit:function() {
@@ -134,6 +134,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			}
 		},
 		_addResizeEvents:function() {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// save ref
 			var __this = this;
 			// set window and resizes
@@ -232,6 +234,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			});
 		},
 		_addMenuEvents:function() {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// save ref
 			var __this = this;
 			// menu events
@@ -354,7 +358,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				if(e.preventDefault) e.preventDefault();
 			});
 			// get all
-			var canvases = $("#trees canvas",pB.C);
+			var canvases = $(".tree-holder canvas",pB.C);
 			// canvas tools
 			canvases.live("click",function(e) {
 				// set active if not
@@ -437,6 +441,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			});
 		},
 		_addPropertyEvents:function() {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// save ref
 			var __this = this;
 			// editable cells
@@ -631,6 +637,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 		_error:function(e) { console.log("Interface: "+e); },
 		// public methods
 		setTaxa:function() {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// use active tree
 			var node_list = pB.Document.tree(this._activeTree).node_list();
 			// order nodes by id
@@ -669,6 +677,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			}
 		},
 		setNode:function(node,found) {
+			// notify and exit if widget mode
+			if(pB.WIDGET) {
+				// notify registered listeners
+				pB.C.trigger("pb-nodeclick",[{ node:node }]);
+				// exit
+				return false;
+			}
 			// clear first
 			this._clearNode();
 			// set selected
@@ -756,6 +771,8 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			$(window).trigger("resize");
 		},
 		setProperties:function() {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// use active tree
 			var tree = pB.Document.tree(this._activeTree);
 			// init html
@@ -875,12 +892,16 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._activeTool = "select";
 		},
 		hoverNode:function(n) {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// set style
 			n.link().addClass("taxa-link-hover");
 			// go to it
 			this._navTo(n);
 		},
 		unhoverNode:function(n) {
+			// exit if widget mode
+			if(pB.WIDGET) return false;
 			// check n
 			if(!n) return false;
 			// set style
@@ -1172,11 +1193,11 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 						// unbind
 						$(e.target).unbind("viewready",arguments.callee);
 						// set taxa list
-						if(!pB.WIDGET) pB.Interface.setTaxa();
+						pB.Interface.setTaxa();
 						// set trees
 						pB.Interface.setTree();
 						// set properties
-						if(!pB.WIDGET) pB.Interface.setProperties();
+						pB.Interface.setProperties();
 						// set tools
 						pB.Interface.setTools();
 					});
@@ -2147,7 +2168,6 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 	this.Engine.View.CLADOGRAM = 1; // circular dendrogram
 	this.Engine.View.CIRC_DENDROGRAM = 2; // cladogram
 	this.Engine.View.CIRC_CLADOGRAM = 3; // circular cladogram
-    
 /*###########################################################################
 ####################################################################### UTILS
 ###########################################################################*/
@@ -2172,6 +2192,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
         if (hex.length < orig.length) { hex = "#"+hex };
         return hex
     };
+	// extend natives
     CanvasRenderingContext2D.prototype.dottedArc = function(x,y,radius,startAngle,endAngle,anticlockwise) {
 		var g = Math.PI / radius / 2, sa = startAngle, ea = startAngle + g;
 		while(ea < endAngle) {
@@ -2183,8 +2204,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 		}
 	};
 /*###########################################################################
-################################################################### DOC READY  
+############################################################## PUBLIC METHODS  
 ###########################################################################*/
+	// adds a tree which will get focus
 	this.drawTree = function(type,value) {
 		//––––––––––––––––––––––––––––––––––––––––––––––––––––––––– APP SETUP
 		pB.System.init();
@@ -2201,5 +2223,9 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			default : alert("This is a blank document. Please upload your phylogeny via the File menu.");
 		}
 	}
+	// registers an event with a PhyloBox instance
+	this.addListener = function(t,h) { pB.C.bind(t,h); }
+	// removes an event with a PhyloBox instance
+	this.removeListener = function(t,h) { pB.C.unbind(t,h); }
 //####################################################################### END
 }

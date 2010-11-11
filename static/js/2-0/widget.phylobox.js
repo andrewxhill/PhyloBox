@@ -28,14 +28,15 @@
 	head.appendChild(script);
 	var scripts = [
 		version+"static/js/2-0/class.phylobox.js",
-	    version+"static/js/2-0/main.phylobox.js"
+	    version+"static/js/2-0/main.phylobox.js",
+		version+"static/js/2-0/event.phylobox.js"
 	];
 	for(var i in scripts) {
 	    var url = scripts[i];
 	    var script = document.createElement("script");
 	    script.type = "text/javascript";
 	    script.src = url;
-		script.onload = i == scripts.length - 1 ? initialize : function() { console.log("done..."); };
+		script.onload = i == scripts.length - 1 ? initialize : function() {};
 	    head.appendChild(script);
 	}
 })();
