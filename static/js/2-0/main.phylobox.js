@@ -1243,6 +1243,7 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
                 this._data.environment.radius = pB.Options.nodeRadius == null ? this._data.environment.radius : pB.Options.nodeRadius;
                 this._data.environment.width = pB.Options.branchWidth == null ? this._data.environment.width : pB.Options.branchWidth;
                 this._data.environment.htulabels = pB.Options.htuLabels == null ? this._data.environment.htulabels : pB.Options.htuLabels;
+                this._data.environment.leaflabels = pB.Options.leafLabels == null ? this._data.environment.leaflabels : pB.Options.leafLabels;
                 this._data.environment.branchlabels = pB.Options.branchLabels == null ? this._data.environment.branchlabels : pB.Options.branchLabels;
                 this._data.environment.threeD = pB.Options.threeD == null ? this._data.environment.threeD : pB.Options.threeD;
                 this._title = pB.Options.title == true ? this._title : pB.Options.title;
