@@ -201,12 +201,12 @@ img.nav-arrow { padding:0 0 0 10px; }
 
 @font-face {
 	font-family:"Plain";
-	src:url("../fonts/stan0755.ttf");
+	src:url("../../fonts/stan0755.ttf");
 }
 
 @font-face {
 	font-family:"Logo";
-	src:url("../fonts/-BRANDON-02_erc_july_2008.ttf");
+	src:url("../../fonts/-BRANDON-02_erc_july_2008.ttf");
 }
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/

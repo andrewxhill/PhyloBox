@@ -12,15 +12,15 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylobox_event_handlers) {
+PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
 	// map jQuery
 	$ = jQuery;
 	// use native container if none given here
-    this.C = phylobox_container_div || $("body");
+    this.C = $("#"+phylobox_container_div_id) || $("body");
 	// save ref
 	var pB = this;
 	// constants
-	this.API_TREE = "/lookup";
+	this.API_TREE = "http://localhost:8080/lookup";
 	this.API_GROUP = "/group";
 	this.API_NEW = "/new";
 	this.API_SAVE_TREE = "/save";
@@ -962,14 +962,16 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 		_loading:function(vis) { (vis) ? $(this._loader).fadeIn("fast") : $(this._loader).fadeOut("slow",function() { $(this).hide(); }); },
 		_error:function(e) { console.log("IO: "+e); },
 		// public methods
-		request:function(a,q,s) {
+		request:function(a,q,s,x) {
 			this._loading(true);
-			var server = s || this._server;		
-			var __this = this;
+			var __this = this,
+				type = x ? undefined : "POST";
+				server = s || this._server,
+				query = x ? q+"&callback=?" : q;
 			$.ajax({
-	  			type:"POST", url:server, data:q, dataType:__this._dataType,
+	  			type:type, url:server, data:query, dataType:__this._dataType,
 				complete:function(request) { },
-	  			success:function(json) {
+				success:function(json) {
 					__this._loading(false);
 					if(!json) { __this._error("nothing received..."); return false; }
 					else if(json==404) { __this._error("nothing received..."); return false; }
@@ -1143,7 +1145,7 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 			if(pB.C.tagName == "BODY" || pB.C[0].tagName == "BODY") holder.appendTo("#trees > section");
 			else holder.appendTo(pB.C);
 			// create view
-            if ( typeof data == "string" ) {
+            if ( typeof data == "string" && pB.RX_URL.test(data) ) {
                 this._key = (((1+Math.random())*0x10000)|0).toString(16).substring(1);
             } 
             this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
@@ -1154,7 +1156,7 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 			typeof data == "string" ? 
 				pB.RX_URL.test(data) ? 
 					this._io.request("load","phyloUrl="+data, pB.API_NEW) : 
-					this._io.request("load","k="+this._key) : 
+					this._io.request("load","k="+this._key, false, true) : 
 				this.receive("load",data);
 		},
 		receive:function(type,data) {
@@ -2169,5 +2171,6 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 			default : alert("This is a blank document. Please upload your phylogeny via the File menu.");
 		}
 	}
+	//$(document).trigger("pb-ready");
 //####################################################################### END
 }
