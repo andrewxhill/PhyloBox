@@ -38,7 +38,7 @@
             var script = document.createElement("script");
             script.type = "text/javascript";
             script.src = url;
-            script.onload = i == scripts.length - 1 ? initialize : function() { console.log("done..."); };
+            script.onload = i == scripts.length - 1 ? initialize : function() {};
             head.appendChild(script);
         }
     };

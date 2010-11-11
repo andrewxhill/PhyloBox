@@ -33,7 +33,6 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
         nodeRadius: null,
         title: true
     },phylobox_environment_options);
-    console.log(this.Options.background);
 	this.widget_h = phylobox_event_handlers;
 	// constants
 	this.API_TREE = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/lookup" : "/lookup";
