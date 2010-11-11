@@ -2147,7 +2147,6 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 	this.Engine.View.CLADOGRAM = 1; // circular dendrogram
 	this.Engine.View.CIRC_DENDROGRAM = 2; // cladogram
 	this.Engine.View.CIRC_CLADOGRAM = 3; // circular cladogram
-<<<<<<< HEAD
     
 /*###########################################################################
 ####################################################################### UTILS
@@ -2173,9 +2172,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
         if (hex.length < orig.length) { hex = "#"+hex };
         return hex
     };
-=======
-	//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– UTILS
-	CanvasRenderingContext2D.prototype.dottedArc = function(x,y,radius,startAngle,endAngle,anticlockwise) {
+    CanvasRenderingContext2D.prototype.dottedArc = function(x,y,radius,startAngle,endAngle,anticlockwise) {
 		var g = Math.PI / radius / 2, sa = startAngle, ea = startAngle + g;
 		while(ea < endAngle) {
 			this.beginPath();
@@ -2185,7 +2182,6 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			ea = sa + g;
 		}
 	};
->>>>>>> 8484f8da26b2f7a10612363194655255b343471c
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
