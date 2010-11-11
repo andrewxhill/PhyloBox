@@ -1,7 +1,7 @@
 /*--------------------------------------------------------------------------.
 |  Software: PhyloBox                                                       |
 |   Version: 2.0                                                            |
-|   Contact: andrewxhill@gmail.com || sander@digijoi.com                    |
+|   Contact: andrewxhill@gmail.com || sanderpick@gmail.com                  |
 | ------------------------------------------------------------------------- |
 |     Admin: Andrew Hill (project admininistrator)                          |
 |   Authors: Sander Pick, Andrew Hill                                    	|                     
@@ -13,17 +13,22 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
-	// map jQuery
-	$ = jQuery;
-	// use native container if none given here
-    this.C = $("#"+phylobox_container_div_id) || $("body");
 	// save ref
 	var pB = this;
+	// map jQuery
+	$ = jQuery;
+	// widget or full app
+    this.WIDGET = phylobox_container_div_id ? true : false;
+	// use native container if none given here
+	this.C = this.WIDGET ? $("#"+phylobox_container_div_id) : $("body");
+	// options
+	this.widget_o = phylobox_environment_options;
+	this.widget_h = phylobox_event_handlers;
 	// constants
-	this.API_TREE = "http://localhost:8080/lookup";
-	this.API_GROUP = "/group";
-	this.API_NEW = "/new";
-	this.API_SAVE_TREE = "/save";
+	this.API_TREE = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/lookup" : "/lookup";
+	this.API_GROUP = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/group" : "/group";
+	this.API_NEW = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/new" : "/new";
+	this.API_SAVE_TREE = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/save" : "/save";
 	this.RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 	this.HEX = function(c){ var hex = /^([0-9a-f]{1,2}){3}$/i; hex.test(c) ? c = "#"+c : c = c; return c };
 /*###########################################################################
@@ -92,13 +97,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 				});
 			});
 			// add resize events
-			this._addResizeEvents();
+			if(!pB.WIDGET) this._addResizeEvents();
 			// add menu events
-			this._addMenuEvents();
+			if(!pB.WIDGET) this._addMenuEvents();
 			// add tool event dispatching
 			this._addToolEvents();
 			// add property events
-			this._addPropertyEvents();
+			if(!pB.WIDGET) this._addPropertyEvents();
 		},
 		// private methods
 		_fit:function() {
@@ -959,15 +964,15 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._loader = l;
 		},
 		// private methods
-		_loading:function(vis) { (vis) ? $(this._loader).fadeIn("fast") : $(this._loader).fadeOut("slow",function() { $(this).hide(); }); },
+		_loading:function(vis) { (vis) ? $(this._loader,pB.C).fadeIn("fast") : $(this._loader,pB.C).fadeOut("slow",function() { $(this).hide(); }); },
 		_error:function(e) { console.log("IO: "+e); },
 		// public methods
-		request:function(a,q,s,x) {
+		request:function(a,q,s) {
 			this._loading(true);
 			var __this = this,
-				type = x ? undefined : "POST";
+				type = pB.WIDGET ? undefined : "POST";
 				server = s || this._server,
-				query = x ? q+"&callback=?" : q;
+				query = pB.WIDGET ? q+"&callback=?" : q;
 			$.ajax({
 	  			type:type, url:server, data:query, dataType:__this._dataType,
 				complete:function(request) { },
@@ -1141,7 +1146,6 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._key = typeof data == "string" ? data : data.k;
 			// make and attach a tree holder
 			var holder = $("<div class='tree-holder' />");
-			
 			if(pB.C.tagName == "BODY" || pB.C[0].tagName == "BODY") holder.appendTo("#trees > section");
 			else holder.appendTo(pB.C);
 			// create view
@@ -1149,14 +1153,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
                 this._key = (((1+Math.random())*0x10000)|0).toString(16).substring(1);
             } 
             this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
-			
             // initialize io
 			this._io = new pB.IO(this,pB.API_TREE,"json","#tree-loader-"+this._view.id());
 			// load data if present otherwise go on
 			typeof data == "string" ? 
 				pB.RX_URL.test(data) ? 
-					this._io.request("load","phyloUrl="+data, pB.API_NEW) : 
-					this._io.request("load","k="+this._key, false, true) : 
+					this._io.request("load","phyloUrl="+data,pB.API_NEW) : 
+					this._io.request("load","k="+this._key) : 
 				this.receive("load",data);
 		},
 		receive:function(type,data) {
@@ -1166,15 +1169,15 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 					// make tree
 					this._make(data);
 					// bind handler for tree ready
-					$("#"+this._view.id()).bind("viewready",function(e) {
+					$("#"+this._view.id(),pB.C).bind("viewready",function(e) {
 						// unbind
 						$(e.target).unbind("viewready",arguments.callee);
 						// set taxa list
-						pB.Interface.setTaxa();
+						if(!pB.WIDGET) pB.Interface.setTaxa();
 						// set trees
 						pB.Interface.setTree();
 						// set properties
-						pB.Interface.setProperties();
+						if(!pB.WIDGET) pB.Interface.setProperties();
 						// set tools
 						pB.Interface.setTools();
 					});
@@ -1182,9 +1185,13 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 					this._view.plot(this);
 					// go
 					this._view.begin();
+                    // change the url hash to the new destination
+                    if(!pB.WIDGET)
+						pB.RX_URL(window.location.hash.substr(1)) ?
+                        	window.location.hash = window.location.hash.substr(1) :
+                        	window.location.hash = this._key;
 					break;
 				case "save" :
-                    window.location.hash = this._key;;
 					alert("Your tree has been saved. Sick!");
 					break;
 			}
@@ -1657,16 +1664,16 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			this._canvas.bind("pb-zin",this._zin);
 			this._canvas.bind("pb-zout",this._zout);
 			// get context
-			this._ctx = $("#"+this._id)[0].getContext('2d');
+			this._ctx = $("#"+this._id,pB.C)[0].getContext('2d');
 			// window resize on full
 			if(full) $(document).bind("pb-treeresize",function(e) {
 				__this._width = __this._holder.width() - __this._padding.l - __this._padding.r;
 				__this._height = __this._holder.height() - __this._padding.t - __this._padding.b;
-				$("#"+__this._id).attr({ width:__this._c_width(), height:__this._c_height() });
+				$("#"+__this._id,pB.C).attr({ width:__this._c_width(), height:__this._c_height() });
 				if(__this._inited) __this.replot();
 			});
 			// hide
-			$("#"+this._id).hide();
+			$("#"+this._id,pB.C).hide();
 			// initialized
 			this._inited = true;
 		},
@@ -1806,7 +1813,7 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			// begin
 			if(!this._single) this._start();
 			// dispatch ready event and show
-			$("#"+this._id).trigger("viewready").fadeIn("fast");
+			$("#"+this._id,pB.C).trigger("viewready").fadeIn("fast");
 		},
 		plot:function(tree) {
 			// save tree on first pass
@@ -2141,21 +2148,21 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 	this.Engine.View.CLADOGRAM = 1; // circular dendrogram
 	this.Engine.View.CIRC_DENDROGRAM = 2; // cladogram
 	this.Engine.View.CIRC_CLADOGRAM = 3; // circular cladogram
+	//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– UTILS
+	CanvasRenderingContext2D.prototype.dottedArc = function(x,y,radius,startAngle,endAngle,anticlockwise) {
+		var g = Math.PI / radius / 2, sa = startAngle, ea = startAngle + g;
+		while(ea < endAngle) {
+			this.beginPath();
+			this.arc(x,y,radius,sa,ea,anticlockwise);
+			this.stroke(); 
+			sa = ea + g;
+			ea = sa + g;
+		}
+	};
 /*###########################################################################
 ################################################################### DOC READY  
 ###########################################################################*/
 	this.drawTree = function(type,value) {
-		//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– UTILS
-		CanvasRenderingContext2D.prototype.dottedArc = function(x,y,radius,startAngle,endAngle,anticlockwise) {
-			var g = Math.PI / radius / 2, sa = startAngle, ea = startAngle + g;
-			while(ea < endAngle) {
-				this.beginPath();
-				this.arc(x,y,radius,sa,ea,anticlockwise);
-				this.stroke(); 
-				sa = ea + g;
-				ea = sa + g;
-			}
-		};
 		//––––––––––––––––––––––––––––––––––––––––––––––––––––––––– APP SETUP
 		pB.System.init();
 		pB.Interface.init();
@@ -2171,6 +2178,5 @@ PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phy
 			default : alert("This is a blank document. Please upload your phylogeny via the File menu.");
 		}
 	}
-	//$(document).trigger("pb-ready");
 //####################################################################### END
 }
