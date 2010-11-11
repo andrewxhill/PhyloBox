@@ -69,8 +69,8 @@ class LookUp(webapp.RequestHandler):
             results = query.fetch(1)
             """
             if r is None:
-                key = db.Key.from_path('Species',"phylobox-2-0-224efed9-f4bf-4f62-a386-24dd3afe3a5a")
-                r = Species.get(key)
+                key = db.Key.from_path('treeStore',"phylobox-2-0-224efed9-f4bf-4f62-a386-24dd3afe3a5a")
+                r = treeStore.get(key)
                 
             try:
                 result = UnzipFiles(StringIO.StringIO(r.objBlob),iszip=True)
@@ -158,23 +158,24 @@ class AddNewTree(webapp.RequestHandler):
       
   def post(self):
     user,url,url_linktext = GetCurrentUser(self)
+    version = os.environ['CURRENT_VERSION_ID'].split('.')
+    version = str(version[0])
+    cachetime = 9000
     
-    if self.request.params.get('phyloFile', None) is None:
-        if self.request.params.get('phyloUrl', None) is not None:
-            url = str(self.request.params.get('phyloUrl', None)).strip()
-            treefile = memcache.get("tree-data-"+url)
-            if treefile is None:
-                result = urlfetch.fetch(url=url)
-                if result.status_code == 200:
-                    treefile = result.content
-                    memcache.set("tree-data-"+url, treefile, 86400)
-            
+    #if self.request.params.get('phyloFile', None) is None:
+    if self.request.params.get('phyloUrl', None) is not None:
+        fileurl = str(self.request.params.get('phyloUrl', None)).strip()
+        treefile = memcache.get("tree-data-"+str(fileurl).lower())
+        if treefile is None:
+            result = urlfetch.fetch(url=fileurl)
+            if result.status_code == 200:
+                treefile = result.content
+                k=str(fileurl).lower()
+                memcache.set("tree-data-"+k, treefile, cachetime)
     else:
         treefile = self.request.params.get('phyloFile', None)
         
     if treefile is not None:
-        version = os.environ['CURRENT_VERSION_ID'].split('.')
-        version = str(version[0])
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
         background = "23232F"
@@ -255,9 +256,8 @@ class AddNewTree(webapp.RequestHandler):
         stored = False
         if self.request.params.get('store', None):
             #do some long term storage here
-            time = 2678400
             try:
-                time = int(self.request.params.get('store', None))*86400 #number of days * sec/day
+                cachetime = 30 #number of days * sec/day
             except:
                 if 'permanent' == self.request.params.get('store', None):
                     tmpEntry = treeStore(key_name=k,
@@ -275,12 +275,11 @@ class AddNewTree(webapp.RequestHandler):
                               )
                     tmpEntry.put()
                     stored = True
+        memcache.set("tree-data-"+k, treefilezip, cachetime)
                     
-            memcache.set("tree-data-"+k, treefilezip, time)
-        else:
-            memcache.set("tree-data-"+k, treefilezip, 2678400)
-        
-        
+            #memcache.set("tree-data-"+k, treefilezip, time)
+    
+    
     self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
         out = {"key":k,"url":"http://phylobox.appspot.com/?%s" % (k)}

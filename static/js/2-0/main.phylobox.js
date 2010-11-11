@@ -1143,7 +1143,7 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 			if(pB.C.tagName == "BODY" || pB.C[0].tagName == "BODY") holder.appendTo("#trees > section");
 			else holder.appendTo(pB.C);
 			// create view
-            if ( typeof data == "string" ) {
+            if ( typeof data == "string" && pB.RX_URL.test(data)) {
                 this._key = (((1+Math.random())*0x10000)|0).toString(16).substring(1);
             } 
             this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
@@ -1180,9 +1180,13 @@ PhyloBox = function(phylobox_container_div, phylobox_environment_options, phylob
 					this._view.plot(this);
 					// go
 					this._view.begin();
+                    // change the url hash to the new destination
+                    pB.RX_URL(window.location.hash.substr(1)) ?
+                        window.location.hash = window.location.hash.substr(1) :
+                        window.location.hash = this._key;
+                        
 					break;
 				case "save" :
-                    window.location.hash = this._key;;
 					alert("Your tree has been saved. Sick!");
 					break;
 			}
