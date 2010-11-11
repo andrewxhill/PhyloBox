@@ -1802,11 +1802,15 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 			this._tree.environment().offset.dz += this._dz;
 		},
 		_render:function() {
-            this._ctx.fillStyle = !(this._tree.environment().color) ? "rgba(0,0,0,0.0)" : pB.HEX(this._tree.environment().color);
-            this._ctx.lineWidth = 1;
+            this._ctx.fillStyle = !this._tree.environment().color ? "rgba(0,0,0,0.0)" : pB.HEX(this._tree.environment().color);
+            //this._ctx.fillStyle = this._tree.environment().color;
+			this._ctx.lineWidth = 1;
 			this._ctx.font = "6px Plain";
 			this._ctx.globalAlpha = 1;
-			this._ctx.fillRect(0,0,this._c_width(),this._c_height());
+			if(this._tree.environment().color === false)
+				this._ctx.clearRect(0,0,this._c_width(),this._c_height());
+			else 
+				this._ctx.fillRect(0,0,this._c_width(),this._c_height());
 			// draw objects
 			for(var d in this._d) this._d[d].draw(this._ctx);
 			for(var l in this._l) this._l[l].draw(this._ctx);
