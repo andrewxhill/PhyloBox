@@ -1247,6 +1247,7 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
                 this._data.environment.branchlabels = pB.Options.branchLabels == null ? this._data.environment.branchlabels : pB.Options.branchLabels;
                 this._data.environment.threeD = pB.Options.threeD == null ? this._data.environment.threeD : pB.Options.threeD;
                 this._title = pB.Options.title == true ? this._title : pB.Options.title;
+                        console.log(this._data.environment.width);
                 switch(pB.Options.viewMode){
                     case "dendrogram":
                         this._data.environment.viewmode = 0;
@@ -1256,6 +1257,7 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
                         break;
                     case "circular dendrogram":
                         this._data.environment.viewmode = 2;
+                        
                         break;
                     case "circular cladogram":
                         this._data.environment.viewmode = 3;

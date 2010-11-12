@@ -280,7 +280,7 @@ class AddNewTree(webapp.RequestHandler):
         memcache.set("tree-data-"+k, treefilezip, cachetime)
                     
             #memcache.set("tree-data-"+k, treefilezip, time)
-    self.response.headers['Content-Type'] = 'application/json'
+    self.response.headers['Content-Type'] = 'text/javascript'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
