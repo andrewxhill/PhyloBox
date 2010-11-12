@@ -44,7 +44,7 @@ PbAPI = {
 		// do something to pB with d
 	},
 	// throw and error to console and exit
-	_error: function(e) {
+	_error: function( e ) {
 		console.log("PhyloBox Error: "+e);
 		return false;
 	}

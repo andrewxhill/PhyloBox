@@ -12,7 +12,7 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options, phylobox_event_handlers) {
+var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options) {
 	// save ref
 	var pB = this;
 	// map jQuery
@@ -33,12 +33,12 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
         nodeRadius: null,
         title: true
     },phylobox_environment_options);
-	this.widget_h = phylobox_event_handlers;
 	// constants
-	this.API_TREE = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/lookup" : "/lookup";
-	this.API_GROUP = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/group" : "/group";
-	this.API_NEW = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/new" : "/new";
-	this.API_SAVE_TREE = this.WIDGET ? "http://2-0.latest.phylobox.appspot.com/save" : "/save";
+	this.LIVE = "http://2-0.latest.phylobox.appspot.com/";
+	this.API_TREE = this.WIDGET ? this.LIVE+"lookup" : "/lookup";
+	this.API_GROUP = this.WIDGET ? this.LIVE+"group" : "/group";
+	this.API_NEW = this.WIDGET ? this.LIVE+"new" : "/new";
+	this.API_SAVE_TREE = this.WIDGET ? this.LIVE+"save" : "/save";
 	this.RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 /*###########################################################################
 ###################################################################### SYSTEM
@@ -295,7 +295,7 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 				$(__this._activeMenu.nextElementSibling).hide();
 				__this._activeMenu = null;
 				// show loading gif
-			
+				
 				// save ref to parent
 				var parent = this.parentNode;
 				// create an iframe
@@ -307,8 +307,8 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 					// remove load event
 					$("#uploader",pB.C).unbind("load",uploaded);
 					// get data
-	                //eval("("+$("#uploader",pB.C).contents().find("body").html()+")");
 					var data = JSON.parse($("#uploader",pB.C).contents().find("pre").html());
+					if(!data) data = JSON.parse($("#uploader",pB.C).contents().find("body").html());
 					// make a tree
 					pB.Document.load(data);
 					// clean up -- safari needs the delay
@@ -410,22 +410,23 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 					$(this).css("cursor","default");
 					return false;
 				}
+				var pre = pB.WIDGET ? pB.LIVE : "";
 				// set cursor
 				switch(__this._activeTool) {
 					case "select" :
 						$(this).css("cursor","none");
 						break;
 					case "translate" :
-						$(this).css("cursor","url(static/gfx/tools/mouse-translate.png) 8 8, auto");
+						$(this).css("cursor","url("+pre+"static/gfx/tools/mouse-translate.png) 8 8, auto");
 						break;
 					case "rotate" :
-						$(this).css("cursor","url(static/gfx/tools/mouse-rotate.png) 8 8, auto");
+						$(this).css("cursor","url("+pre+"static/gfx/tools/mouse-rotate.png) 8 8, auto");
 						break;
 					case "zin" :
-						$(this).css("cursor","url(static/gfx/tools/mouse-zin.png) 6 6, auto");
+						$(this).css("cursor","url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto");
 						break;
 					case "zout" :
-						$(this).css("cursor","url(static/gfx/tools/mouse-zout.png) 6 6, auto");
+						$(this).css("cursor","url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto");
 						break;		
 				}
 			});
@@ -1179,11 +1180,13 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 			var holder = $("<div class='tree-holder' />");
 			if(pB.C.tagName == "BODY" || pB.C[0].tagName == "BODY") holder.appendTo("#trees > section");
 			else holder.appendTo(pB.C);
+			// add toolbox?
+			if(pB.WIDGET && pB.Options.tools)
+				$(toolbar).appendTo(holder);
 			// create view
-            if ( typeof data == "string" && pB.RX_URL.test(data) ) {
-                this._key = (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-            } 
-            this._view = new pB.Engine.View(this._key,holder,{t:20,r:20,b:20,l:20},true,20,true);
+            if(typeof data == "string" && pB.RX_URL.test(data)) this._key = (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+			var pt = pB.WIDGET && pB.Options.tools ? 40 : 20;
+            this._view = new pB.Engine.View(this._key,holder,{t:pt,r:20,b:20,l:20},true,20,true);
             // initialize io
 			this._io = new pB.IO(this,pB.API_TREE,"json","#tree-loader-"+this._view.id());
 			// load data if present otherwise go on
@@ -2123,6 +2126,9 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 					__this._vpy += __this._dy;
 					// draw
 					__this._update(); __this._render();
+					// notify if widget mode
+					if(pB.WIDGET)
+						pB.C.trigger("pb-pan",[{ dx:__this._dx, dy:__this._dy, }]);
 					// clear
 					__this._fm = m;
 					__this._dx = __this._dy = 0;
@@ -2160,6 +2166,9 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 							__this._az = dr * Math.sqrt(asx * asx + asy * asy) / 100;
 							// draw
 							__this._update(); __this._render();
+							// notify if widget mode
+							if(pB.WIDGET)
+								pB.C.trigger("pb-rotate",[{ ax:__this._ax, ay:__this._ay, az:__this._az }]);
 							// clear
 							__this._fm = m;
 							__this._az = 0;
@@ -2171,6 +2180,9 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options,
 							__this._ay = (m.x - __this._fm.x) / 100;
 							// draw
 							__this._update(); __this._render();
+							// notify if widget mode
+							if(pB.WIDGET)
+								pB.C.trigger("pb-rotate",[{ ax:__this._ax, ay:__this._ay, az:__this._az }]);
 							// clear
 							__this._fm = m;
 							__this._ax = __this._ay = 0;
