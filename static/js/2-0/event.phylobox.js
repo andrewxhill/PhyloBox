@@ -14,12 +14,13 @@
 '--------------------------------------------------------------------------*/
 PbEvent = {
 	// supported phylobox events
-	_events:[
+	_events : [
 		"pb-nodeclick",
 		"pb-nodekill",
 		"pb-nodeflip",
 		"pb-nodechange",
 		"pb-pan",
+		"pb-rotate",
 		"pb-zoom"
 	],
 	// register an event with phylobox
@@ -41,13 +42,13 @@ PbEvent = {
 			return this._error("invalid PhyloBox event requested...");
 	},
 	// checks if valid event type
-	_isValidType : function(t) {
+	_isValidType : function( t ) {
 		for ( var e in this._events )
 			if ( t == this._events[e] )
 				return true;
 	},
 	// throw and error to console and exit
-	_error: function(e) {
+	_error: function( e ) {
 		console.log("PhyloBox Error: "+e);
 		return false;
 	}
