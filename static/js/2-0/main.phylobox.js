@@ -628,11 +628,12 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options)
 			// clear selected
 			pB.Document.tree(this._activeTree).view().clearSelected();
 			// clear style
-			node.link().removeClass("taxa-link-selected");
+			if(!pB.WIDGET) node.link().removeClass("taxa-link-selected");
 			// clear child style
-			$(".taxa-link",pB.C).each(function(i) {
-				$(this).css("padding-left","0");
-			});
+			if(!pB.WIDGET) 
+				$(".taxa-link",pB.C).each(function(i) {
+					$(this).css("padding-left","0");
+				});
 			// clear node panel
 			if(!props) return false;
 			// refresh view
@@ -688,6 +689,10 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options)
 			}
 		},
 		setNode:function(node,found) {
+			// clear first
+			this._clearNode();
+			// set selected
+			pB.Document.tree(this._activeTree).view().setSelected(node);
 			// notify and exit if widget mode
 			if(pB.WIDGET) {
 				// notify registered listeners
@@ -695,10 +700,6 @@ var PhyloBox = function(phylobox_container_div_id, phylobox_environment_options)
 				// exit
 				return false;
 			}
-			// clear first
-			this._clearNode();
-			// set selected
-			pB.Document.tree(this._activeTree).view().setSelected(node);
 			// set style
 			node.link().addClass("taxa-link-selected");
 			// go to it

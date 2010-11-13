@@ -12,9 +12,9 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PbEvent = {
+PbEvent = function() {
 	// supported phylobox events
-	_events : [
+	var _events = [
 		"pb-nodeclick",
 		"pb-nodekill",
 		"pb-nodeflip",
@@ -23,33 +23,43 @@ PbEvent = {
 		"pb-rotate",
 		"pb-zoom"
 	],
-	// register an event with phylobox
-	addListener : function( pB, t, h ) {
-		if ( ! pB )
-			return this._error("you must supply a valid PhyloBox object...");
-		if ( this._isValidType(t) ) 
-			pB.addListener(t,h);
-		else 
-			return this._error("invalid PhyloBox event requested...");
-	},
-	// remove an event with phylobox
-	removeListener : function( pB, t, h ) {
-		if ( ! pB )
-			return this._error("you must supply a valid PhyloBox object...");
-		if ( this._isValidType(t) ) 
-			pB.removeListener(t,h);
-		else 
-			return this._error("invalid PhyloBox event requested...");
-	},
 	// checks if valid event type
-	_isValidType : function( t ) {
-		for ( var e in this._events )
-			if ( t == this._events[e] )
+	_isValidType = function( t ) {
+		for ( var e in _events )
+			if ( t == _events[e] )
 				return true;
 	},
-	// throw and error to console and exit
-	_error: function( e ) {
+	// throw an error to console and exit
+	_error = function( e ) {
 		console.log("PhyloBox Error: "+e);
 		return false;
+	};
+	// public methods
+	return {
+		// register an event with phylobox
+		addListener : function( pB, t, h ) {
+			if ( ! pB )
+				return _error("you must supply a valid PhyloBox object...");
+			if ( _isValidType(t) ) 
+				pB.addListener(t,h);
+			else 
+				return _error("invalid PhyloBox event requested...");
+		},
+		// remove an event with phylobox
+		removeListener : function( pB, t, h ) {
+			if ( ! pB )
+				return _error("you must supply a valid PhyloBox object...");
+			if ( _isValidType(t) ) 
+				pB.removeListener(t,h);
+			else 
+				return _error("invalid PhyloBox event requested...");
+		},
+		// testing
+		ball : function(s) {
+			return {
+				x : 10,
+				y : 20
+			}
+		}
 	}
-}
+}();
