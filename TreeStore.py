@@ -30,7 +30,7 @@ class Node(db.Model):
 
 class NodeIndex(db.Model):
   #key = Node.key()
-  id = db.StringProperty()
+  id = db.IntegerProperty()
   name = db.StringProperty()
   nodeColor = db.StringProperty()
   branchColor = db.StringProperty()
