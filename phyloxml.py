@@ -259,9 +259,7 @@ class PhyloXMLtoTree():
                 self.walk_tree(node.findall(NS_PXML + 'clade'),id,color=data['color'])
                 for child in node.findall(NS_PXML + 'clade'):
                     node.remove(child)
-                    
-
-
+    
     def load(self):
         self.walk_tree(self.xmlobject,None,color=self.color)
 

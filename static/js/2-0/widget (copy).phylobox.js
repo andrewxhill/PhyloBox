@@ -13,8 +13,8 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 // locaation
-//var version = "http://localhost:8080/";
-var version = "http://2-0.latest.phylobox.appspot.com/";
+var version = "http://localhost:8080/";
+//var version = "http://2-0.latest.phylobox.appspot.com/";
 // load all scripts
 (function() {
     var head = document.getElementsByTagName('head').item(0),
@@ -24,40 +24,24 @@ var version = "http://2-0.latest.phylobox.appspot.com/";
 	style.href = version+"static/css/2-0/widget.style.css";
 	style.media = "screen";
 	head.appendChild(style);
-    //document.body.appendChild(style);
 	var script = document.createElement("script");
 	head.appendChild(script);
 	script.type = "text/javascript";
 	script.src = "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js";
-    script.setAttribute('src', "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js");
-    //document.body.appendChild(script);
-    script.onload = function() { 
+	script.onload = function() { 
         jQuery.noConflict(); 
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        //script.src = version+"static/js/2-0/class.phylobox.js";
-        script.setAttribute('src', version+"static/js/2-0/class.phylobox.js");
-        //document.body.appendChild(style);
-        head.appendChild(script);
-        script.onload = function() {
+        var scripts = [
+            version+"static/js/2-0/class.phylobox.js",
+            version+"static/js/2-0/main.phylobox.js",
+			version+"static/js/2-0/event.phylobox.js"
+        ];
+        for(var i in scripts) {
+            var url = scripts[i];
             var script = document.createElement("script");
             script.type = "text/javascript";
-            //script.src = version+"static/js/2-0/main.phylobox.js";
-            script.setAttribute('src', version+"static/js/2-0/main.phylobox.js");
-            //document.body.appendChild(style);
+            script.src = url;
+            script.onload = i == scripts.length - 1 ? initialize : function() {};
             head.appendChild(script);
-            script.onload = function() {
-                var script = document.createElement("script");
-                script.type = "text/javascript";
-                //script.src = version+"static/js/2-0/event.phylobox.js";
-                script.setAttribute('src', version+"static/js/2-0/event.phylobox.js");
-                head.appendChild(script);
-                script.onload = function(){
-                    while (!PhyloBox) {};
-                    pbinit();
-                }
-            }
-            
         }
     };
 })();

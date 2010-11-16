@@ -18,7 +18,8 @@ import logging
 
 
 #project module storing all the db table models
-from DataStore import *
+from TreeStore import *
+#from DataStore import *
 from GenericMethods import *
 from phyloxml import *
 from NewickParser import * 
@@ -176,7 +177,7 @@ class AddNewTree(webapp.RequestHandler):
                 memcache.set("tree-data-"+k, treefile, cachetime)
     else:
         treefile = self.request.params.get('phyloFile', None)
-        
+    
     if treefile is not None:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
@@ -341,8 +342,9 @@ class TreeGroup(webapp.RequestHandler):
          
 class TreeSave(webapp.RequestHandler):
   def post(self):
+    self.get()
+  def get(self):
     user,url,url_linktext = GetCurrentUser(self)
-    
     
     k = self.request.params.get('key', None)
     title = self.request.params.get('title', None)
@@ -362,7 +364,103 @@ class TreeSave(webapp.RequestHandler):
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
     
-    treefile = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+    try:
+        k = treefile["key"]
+    except:
+        k = "phylobox-"+version+"-"+str(uuid.uuid4())
+        treefile["key"] = k
+        
+    
+    key = db.Key.from_path('Tree', k, "TreeIndex", k)
+    treeindex = db.get(key)
+    tree = db.get(key.parent())
+    if treeindex is None or user.lower() not in treeindex.users:
+        k = "phylobox-"+version+"-"+str(uuid.uuid4())
+        treefile["key"] = k
+        key = db.Key.from_path('Tree', k, "TreeIndex", k)
+        treeindex = TreeIndex(key=key)
+        if user is not None:
+            treeindex.users = [user.lower()]
+        tree = Tree(key = key.parent())
+        
+        
+    tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+    tree.put()
+    
+    treeindex.title = treefile["title"] if treefile["title"] else None
+    treeindex.version = str(treefile["v"]) if treefile["v"] else None
+    treeindex.date = treefile["date"] if treefile["date"] else None
+    treeindex.root = str(treefile["root"]) if treefile["root"] else None
+    treeindex.author = treefile["author"] if treefile["author"] else None
+    treeindex.description = treefile["description"] if treefile["description"] else None
+    """
+    treeindex.scientificName = treefile["scientificName"] if treefile["scientificName"] else None
+    treeindex.scientificNameId = treefile["scientificNameId"] if treefile["scientificNameId"] else None
+    treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if treefile["scientificNameAuthority"] else None
+    """
+    nodelist = []
+    
+    
+    for node in treefile["tree"]:
+        nodekey = db.Key.from_path('TreeIndex', k, 'Node', node["id"])
+        
+        indexkey = db.Key.from_path('Node', nodekey, 'NodeIndex', node["id"])
+        newnode = db.get(nodekey)
+        nodeindex = db.get(indexkey)
+        if newnode is None:
+            newnode = Node(key = nodekey)
+            nodeindex = NodeIndex(key = indexkey)
+        
+        nodelist.append(indexkey)
+            
+        newnode.visibility = node["visibility"]     #tells the viewer what to draw
+             #JSON encoded node
+        children = []
+        
+        if "children" in node.keys():
+            children = node["children"]
+            for child in children:
+                children.append(db.Key.from_path('TreeIndex', k, 'Node', child["id"]))
+        newnode.children = children
+        newnode.data = simplejson.dumps(node)  
+        newnode.put()
+        nodeindex.id = node["id"]
+        nodeindex.name = node["name"]
+        nodeindex.nodeColor = node["ncolor"]
+        nodeindex.branchColor = node["bcolor"]
+        nodeindex.branchLength = node["length"]
+        nodeindex.branchConfidence = node["conf"]
+        nodeindex.confidenceType = node["type"]
+        nodeindex.date = node["date"]
+        nodeindex.dateMin = node["dateMin"]
+        nodeindex.dateMax = node["dateMax"]
+        nodeindex.latitude = node["latitude"]
+        nodeindex.longitude = node["longitude"]
+        nodeindex.uncertainty = node["uncertainty"]
+        nodeindex.altitude = node["altitude"]
+        nodeindex.scientificName = node["scientificName"] if node["scientificName"] else None
+        nodeindex.scientificNameId = node["scientificNameId"] if node["scientificNameId"] else None
+        nodeindex.scientificNameAuthority = node["scientificNameAuthority"] if node["scientificNameAuthority"] else None
+        nodeindex.taxonomyString = node["taxonomy"]
+        nodeindex.polygon = node["polygon"]
+        uris = []
+        for uri in node["uris"]:
+            uris.append(str(uri["url"]))
+        nodeindex.uris = uris
+        nodeindex.uriString = str(node["uris"])
+        nodeindex.put()
+    
+    treeindex.nodes = nodelist
+    treeindex.put()
+    out = {"key": k}
+    out = simplejson.dumps(out,indent=4).replace('\\/','/')
+    if self.request.params.get('callback', None) is not None:
+        self.response.out.write(self.request.params.get('callback', None) + "(" + out +")") 
+    else:
+        self.response.out.write(out) 
+    
+    #self.response.out.write(str(k))
+    """
     
     if user is not None:
         #if the user is signed in, give them ownership of the tree object
@@ -439,7 +537,7 @@ class TreeSave(webapp.RequestHandler):
                     tree.put()
                 
     else:
-        """ Store the forked tree as Anon """
+        #Store the forked tree as Anon
         
         newk = "phylobox-"+version+"-"+str(uuid.uuid4())
         trees = treeStore.gql("WHERE objId = :objId",
@@ -457,11 +555,7 @@ class TreeSave(webapp.RequestHandler):
                       version = version
                       )
             tmpEntry.put()
-            """
-            p = db.Key.from_path('treeStore',newk)
-            ent = treeStore.get(p)
-            logging.error(ent.treeTitle)
-            """
+            
             tmpEntry = treeOwners(
                       objId = newk,
                       userName = user
@@ -504,5 +598,5 @@ class TreeSave(webapp.RequestHandler):
     self.response.headers['Content-Type'] = "text/javascript; charset=utf-8"
     out = {"key":k}
     self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
-    
+    """
 
