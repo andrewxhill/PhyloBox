@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script> 
+    <style>
+        body{ background: #f0f0f0; }
+        #header{ width: 750px; margin-bottom: 5px; font-color: #00001d; font-size: 1.5em; font-weight: bold; }
+        #content{ width: 750px; }
+        .pb{ border: 1px solid red; width:400px; height:400px; float: left; }
+        .cl{ overflow: auto; background: #00001d; color: #c69500; float:left; width:300px; height: 400px;  border: 1px solid red; margin-left: 15px; }
+        .info{ background: #00001d; color: #c69500; padding: 10px; font-size: 1.3em; float:left; width:695px; height: 85px;  border: 1px solid red; margin-top: 15px; }
+    </style>
+    
+    <script type="text/javascript">
+        function pbinit(){
+             var myOptions = {
+                 viewMode: "circular cladogram",
+                 threeD: true,
+                 background: "#00001d",
+                 branchColor: "#c69500",
+                 branchWidth: 2,
+                 nodeRadius: 3,
+                 title: false,
+                 tools: true
+              };
+              var myPhylobox = new PhyloBox("phylo_div", myOptions);
+              myPhylobox.drawTree("url","http://www.phyloxml.org/examples/bcl_2.xml");
+         
+              PbEvent.addListener(myPhylobox,"pb-nodeclick",
+                    function(e,data){
+                        document.getElementById('myClickDiv').innerHTML += "<br>id: " + data.node.id();
+                        document.getElementById('myClickDiv').innerHTML += "<br>color: " + data.node.color();
+                    }
+                );
+         }
+    </script>
+    <script type="text/javascript" src="http://2-0.latest.phylobox.appspot.com/static/js/2-0/widget.phylobox.js"></script>
+</head>
+<body>
+    <div id="header">Your Webpage</div>
+    <div id="content">
+        <div id="phylo_div" class="pb" ></div>
+        <div id="myClickDiv" class="cl" >Your node click history:<br></div>
+        <div id="info" class="info">This demo shows the widget on the left, and an example of registering a function to the node click event. The function simply appends the node and a small piece of information (the node color) to the div on the right. </div>
+    </div>
+</body>
+</html>

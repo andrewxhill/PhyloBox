@@ -603,4 +603,122 @@ class TreeSave(webapp.RequestHandler):
     out = {"key":k}
     self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
     """
-
+         
+class StorageTest(webapp.RequestHandler):
+  def get(self):
+    user,url,url_linktext = GetCurrentUser(self)
+    
+    k = self.request.params.get('key', None)
+    title = self.request.params.get('title', None)  
+    
+    treefile = simplejson.load(open('bcl_2.json','r'))
+        
+    version = os.environ['CURRENT_VERSION_ID'].split('.')
+    version = str(version[0])
+    
+    try:
+        k = treefile["key"]
+    except:
+        k = "phylobox-"+version+"-"+str(uuid.uuid4())
+        treefile["key"] = k
+        
+    
+    key = db.Key.from_path('Tree', k)
+    tree = db.get(key)
+    indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
+    treeindex = db.get(indexkey)
+    if treeindex is None or user.lower() not in treeindex.users:
+        k = "phylobox-"+version+"-"+str(uuid.uuid4())
+        treefile["key"] = k
+        key = db.Key.from_path('Tree', k)
+        tree = Tree(key = key)
+        indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
+        treeindex = TreeIndex(key=indexkey)
+        if user is not None:
+            treeindex.users = [user.lower()]
+        
+        
+    tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+    tree.put()
+    
+    treeindex.title = treefile["title"] if "title" in treefile.keys() else None
+    treeindex.version = str(treefile["v"]) if "v" in treefile.keys() else None
+    treeindex.date = treefile["date"] if "date" in treefile.keys() else None
+    treeindex.root = str(treefile["root"]) if "root" in treefile.keys() else None
+    treeindex.author = treefile["author"] if "author" in treefile.keys() else None
+    treeindex.description = treefile["description"] if "description" in treefile.keys() else None
+    treeindex.scientificName = treefile["scientificName"] if "scientificName" in treefile.keys() else None
+    treeindex.scientificNameId = treefile["scientificNameId"] if "scientificNameId" in treefile.keys() else None
+    treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if "scientificNameAuthority" in treefile.keys() else None
+    
+    nodelist = []
+    
+    for node in treefile["tree"]:
+        if 'id' not in node.keys() or node['id'] is None:
+            node['id'] = random.randint(0,1000000000000)
+            
+        nodekey = db.Key.from_path('Tree', k, 'Node', str(node["id"]))
+        indexkey = db.Key.from_path('Tree', k, 'Node', str(node["id"]), 'NodeIndex', str(node["id"]))
+        newnode = db.get(nodekey)
+        nodeindex = db.get(indexkey)
+        if newnode is None:
+            newnode = Node(key = nodekey)
+            nodeindex = NodeIndex(key = indexkey)
+        
+        nodelist.append(indexkey)
+            
+        newnode.visibility = node["visibility"]     #tells the viewer what to draw
+             #JSON encoded node
+        children = []
+        
+        if "children" in node.keys() and node["children"] is not None:
+            ct = len(node["children"])
+            cct = 0
+            while cct<ct:
+                child = node["children"][cct]
+                cct+=1
+                children.append(db.Key.from_path('TreeIndex', k, 'Node', str(child["id"])))
+        newnode.children = children
+        newnode.data = simplejson.dumps(node)  
+        newnode.put()
+        nodeindex.tree = tree.key()
+        nodeindex.id = node["id"]
+        nodeindex.name = node["name"] if "name" in node.keys() else None
+        nodeindex.nodeColor = node["ncolor"] if "ncolor" in node.keys() else None
+        nodeindex.branchColor = node["color"] if "color" in node.keys() else None
+        nodeindex.branchLength = node["length"] if "length" in node.keys() else None
+        nodeindex.branchConfidence = node["conf"] if "conf" in node.keys() and type(node["conf"]) == type(1) else None
+        nodeindex.confidenceType = node["type"] if "type" in node.keys() else None
+        nodeindex.date = node["date"]
+        nodeindex.dateMin = node["dateMin"] if "dateMin" in node.keys() else None
+        nodeindex.dateMax = node["dateMax"] if "dateMax" in node.keys() else None
+        nodeindex.latitude = node["latitude"] if "latitude" in node.keys() else None
+        nodeindex.longitude = node["longitude"] if "longitude" in node.keys() else None
+        nodeindex.uncertainty = node["uncertainty"] if "uncertainty" in node.keys() else None
+        nodeindex.altitude = node["altitude"] if "altitude" in node.keys() else None
+        if "taxonomy" in node.keys() and node["taxonomy"] is not None:
+            nodeindex.taxonomyString = str(node["taxonomy"])
+            nodeindex.scientificName = node["taxonomy"]["scientific_name"].lower()  if "scientific_name" in node["taxonomy"].keys() else None
+            #nodeindex.scientificNameId = node["scientificNameId"]  if "scientificNameId" in node.keys() else None
+            #nodeindex.scientificNameAuthority = node["scientificNameAuthority"]  if "scientificNameAuthority" in node.keys() else None
+        nodeindex.polygon = node["polygon"] if "polygon" in node.keys() else None
+        uris = []
+        if "uris" in node.keys():
+            for uri in node["uris"]:
+                uris.append(str(uri["url"]))
+        nodeindex.uris = uris
+        nodeindex.uriString = str(node["uris"]) if "uris" in node.keys() else None
+        nodeindex.put()
+    
+    treeindex.nodes = nodelist
+    treeindex.put()
+    
+    tree = db.get(db.Key.from_path('Tree', k))
+    self.response.out.write("%s<br>" % (tree.key()) )
+    """
+    self.response.out.write("ni: %s<br>" % (tree.NodeIndex.fetch(10))) 
+    """
+    for n in tree.nodeindex_set:
+        self.response.out.write("_%s<br>" % (n.id)) 
+        ct += 1
+    

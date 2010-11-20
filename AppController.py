@@ -169,7 +169,6 @@ class SignIn(webapp.RequestHandler):
         else:
             self.redirect(users.create_login_url(self.request.uri))
             
-            
 class ProjectViewer(webapp.RequestHandler):
   def get(self):
     user,url,url_linktext = GetCurrentUser(self)
@@ -243,6 +242,13 @@ class ProjectViewer(webapp.RequestHandler):
         self.response.out.write(template.render(path, template_values))
             
             
+class Examples(webapp.RequestHandler):
+  def get(self,name):
+        path = os.path.join(os.path.dirname(__file__), 'templates/examples/%s' % name)
+        self.response.out.write(template.render(path, {}))
+            
+            
+            
 
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
@@ -256,6 +262,8 @@ application = webapp.WSGIApplication(
                                       ('/signout', SignOut),
                                       ('/projects', ProjectViewer),
                                       ('/lookup', LookUp),
+                                      ('/examples/([^/]+)?', Examples),
+                                      ('/admin/store', StorageTest),     
                                       ('/dailycron', DailyCron)],      
                                      debug=False)
 

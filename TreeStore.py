@@ -6,8 +6,7 @@ class Tree(db.Model):  #stores JSON encoded elements of the tree, not for search
   png = db.BlobProperty()
 
 class TreeIndex(db.Model): #searchable indexes of the trees
-  #key = treeindex/unique_key
-  #parent key = trees object
+  #key = Tree.key(), something
   title = db.StringProperty()                   #tree title
   description = db.TextProperty()               #tree description
   scientificName = db.StringProperty()          #scientific name
@@ -22,14 +21,14 @@ class TreeIndex(db.Model): #searchable indexes of the trees
   
   
 class Node(db.Model):
-  #key = treeId, 
-  #parent = Node.key() of parent
+  #key = Tree.key(), something
   visibility = db.BooleanProperty()     #tells the viewer what to draw
   data = db.TextProperty()              #JSON encoded node
   children = db.ListProperty(db.Key)  #reference to all children
 
 class NodeIndex(db.Model):
-  #key = Node.key()
+  #key = Node.key(), something
+  tree = db.ReferenceProperty(Tree)
   id = db.IntegerProperty()
   name = db.StringProperty()
   nodeColor = db.StringProperty()
@@ -53,10 +52,12 @@ class NodeIndex(db.Model):
   scientificNameAuthority = db.StringProperty() #scientific name authority
   
 class Annotations(db.Model):
-  #parent = Node.key() of parent
+  #parent = Node.key(), something
+  node = db.ReferenceProperty(Node)
   branch = db.BooleanProperty()     #if False, annotation is assumed to be at node
   description = db.TextProperty()
-  type = db.StringProperty()        #a loose vocabulary for annotation types
+  catagory = db.CategoryProperty()         #uri/taxonomy/note
+  type = db.StringProperty()        #a link/doi
   value = db.TextProperty()         #annotation value
   
   
