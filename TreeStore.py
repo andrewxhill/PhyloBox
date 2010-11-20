@@ -28,7 +28,7 @@ class Node(db.Model):
 
 class NodeIndex(db.Model):
   #key = Node.key(), something
-  tree = db.ReferenceProperty(Tree)
+  tree = db.ReferenceProperty(TreeIndex)
   id = db.IntegerProperty()
   name = db.StringProperty()
   nodeColor = db.StringProperty()
@@ -53,7 +53,7 @@ class NodeIndex(db.Model):
   
 class Annotations(db.Model):
   #parent = Node.key(), something
-  node = db.ReferenceProperty(Node)
+  node = db.ReferenceProperty(NodeIndex)
   branch = db.BooleanProperty()     #if False, annotation is assumed to be at node
   description = db.TextProperty()
   catagory = db.CategoryProperty()         #uri/taxonomy/note

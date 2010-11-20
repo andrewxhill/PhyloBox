@@ -713,7 +713,7 @@ class StorageTest(webapp.RequestHandler):
     treeindex.nodes = nodelist
     treeindex.put()
     
-    tree = db.get(db.Key.from_path('Tree', k))
+    tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
     self.response.out.write("%s<br>" % (tree.key()) )
     """
     self.response.out.write("ni: %s<br>" % (tree.NodeIndex.fetch(10))) 
