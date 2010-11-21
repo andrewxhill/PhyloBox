@@ -666,20 +666,25 @@ class TreeParse(webapp.RequestHandler):
     
     tree = db.get(db.Key.from_path('Tree', k))
     treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
-        
+    
+    tree.title = treefile["title"] if "title" in treefile.keys() else None
+    tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
+    tree.author = treefile["author"] if "author" in treefile.keys() else None
+    tree.description = treefile["description"] if "description" in treefile.keys() else None
+    tree.put()
+    
     indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
     treeindex = TreeIndex(key=indexkey)
 
     treeindex.title = treefile["title"] if "title" in treefile.keys() else None
-    treeindex.version = str(treefile["v"]) if "v" in treefile.keys() else None
     treeindex.date = treefile["date"] if "date" in treefile.keys() else None
     treeindex.root = str(treefile["root"]) if "root" in treefile.keys() else None
     treeindex.author = treefile["author"] if "author" in treefile.keys() else None
-    treeindex.description = treefile["description"] if "description" in treefile.keys() else None
     treeindex.scientificName = treefile["scientificName"] if "scientificName" in treefile.keys() else None
     treeindex.scientificNameId = treefile["scientificNameId"] if "scientificNameId" in treefile.keys() else None
     treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if "scientificNameAuthority" in treefile.keys() else None
     treeindex.put()
+    
     
     for node in treefile["tree"]:
         if 'id' not in node.keys() or node['id'] is None:
@@ -824,11 +829,10 @@ class LookUp(webapp.RequestHandler):
         treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
         self.response.out.write("%s" % (treeData) )
     
-    def simulatedSubtreeSearch():
+    def simulatedSubtreeSearch(k):
         rootId = "105"
         out = []
-        env = db.get(db.Key.from_path('Tree', k)).environment
-        treeIndex = db.get(db.Key.from_path('Tree', k,'TreeIndex',k))
+        tree = db.get(db.Key.from_path('Tree', k))
         nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
         self.response.out.write("""{
             "description": "%s: subqueried at %s", 
@@ -839,13 +843,13 @@ class LookUp(webapp.RequestHandler):
             "v": 2, 
             "date": "2010-11-20 01:46:57.943914", 
             "root": %s
-            "tree": [""" % (treeIndex.title,rootId,treeIndex.author,k,treeIndex.title,env,rootId))
+            "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,rootId))
             
         for c in getChildren(nodeKey,[]):
             self.response.out.write("%s," % (c) )
         self.response.out.write("]}")
     
-    queryTreeByKey(k)
+    simulatedSubtreeSearch("phylobox-2-0-026672fe-c07a-4515-8c43-4327ffa27a92")
 
 """
 class UpdateAnnotation(webapp.RequestHandler):
