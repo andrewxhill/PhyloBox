@@ -3,6 +3,7 @@ from google.appengine.ext import db
 class Tree(db.Model):  #stores JSON encoded elements of the tree, not for searching
   #key = tree/unique_key
   data = db.BlobProperty()
+  environment = db.TextProperty()
   png = db.BlobProperty()
 
 class TreeIndex(db.Model): #searchable indexes of the trees
@@ -17,7 +18,7 @@ class TreeIndex(db.Model): #searchable indexes of the trees
   root = db.StringProperty()                    #rootnode id of the given tree
   version = db.StringProperty()
   date = db.StringProperty()
-  nodes = db.ListProperty(db.Key)              #list of all children in Nodes table
+  addtime = db.DateTimeProperty(auto_now_add=True)
   
   
 class Node(db.Model):
@@ -36,30 +37,18 @@ class NodeIndex(db.Model):
   branchLength = db.FloatProperty()
   branchConfidence = db.FloatProperty()
   confidenceType = db.StringProperty()
-  date = db.DateProperty()
-  dateMax = db.DateProperty()
-  dateMin = db.DateProperty()
-  latitude = db.FloatProperty()
-  longitude = db.FloatProperty()
-  uncertainty = db.FloatProperty()
-  altitude = db.FloatProperty()
-  polygon = db.TextProperty()
-  taxonomyString = db.TextProperty()
-  uris = db.StringListProperty()
-  uriString = db.TextProperty()
-  scientificName = db.StringProperty()          #scientific name
-  scientificNameId = db.StringProperty()        #scientific name id
-  scientificNameAuthority = db.StringProperty() #scientific name authority
+  addtime = db.DateTimeProperty(auto_now_add=True)
   
-class Annotations(db.Model):
+class Annotation(db.Model):
   #parent = Node.key(), something
   node = db.ReferenceProperty(NodeIndex)
-  branch = db.BooleanProperty()     #if False, annotation is assumed to be at node
+  branch = db.BooleanProperty(default=False)     #if False, annotation is assumed to be at node
   description = db.TextProperty()
-  catagory = db.CategoryProperty()         #uri/taxonomy/note
-  type = db.StringProperty()        #a link/doi
+  catagory = db.CategoryProperty()  #geography, uri, time, taxonomy
+  name = db.StringProperty()        #a link/doi
   value = db.TextProperty()         #annotation value
-  
+  user = db.UserProperty()
+  addtime = db.DateTimeProperty(auto_now_add=True)
   
   
   

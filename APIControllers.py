@@ -4,6 +4,9 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from google.appengine.api import memcache, urlfetch
+from google.appengine.api import users
+from google.appengine.api.labs import taskqueue
+
 
 import os, sys, string, Cookie, sha, time, random, cgi, urllib,urllib2
 import datetime, StringIO, pickle, urllib2, base64
@@ -24,7 +27,7 @@ from GenericMethods import *
 from phyloxml import *
 from NewickParser import * 
       
-class LookUp(webapp.RequestHandler):
+class OldLookUp(webapp.RequestHandler):
   def allrequests(self):
     memtime = 300
     k = str(self.request.params.get('k', None)).strip()
@@ -340,7 +343,7 @@ class TreeGroup(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(simplejson.dumps({"group":out}).replace('\\/','/'))
          
-class TreeSave(webapp.RequestHandler):
+class OldTreeSave(webapp.RequestHandler):
   def post(self):
     self.get()
   def get(self):
@@ -604,14 +607,18 @@ class TreeSave(webapp.RequestHandler):
     self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
     """
          
-class StorageTest(webapp.RequestHandler):
+class TreeSave(webapp.RequestHandler):
   def get(self):
-    user,url,url_linktext = GetCurrentUser(self)
+    self.post()
+  def post(self):
+      
+    #implement this as a taskqueue event, where just the 
+    #key of a stored tree is sent here for processing into
+    #tree, node, annotation, and index entities
     
-    k = self.request.params.get('key', None)
-    title = self.request.params.get('title', None)  
+    k = self.request.params.get('key', "abc") 
     
-    treefile = simplejson.load(open('bcl_2.json','r'))
+    treefile = self.request.params.get('',simplejson.load(open('bcl_2.json','r')))
         
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
@@ -627,20 +634,42 @@ class StorageTest(webapp.RequestHandler):
     tree = db.get(key)
     indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
     treeindex = db.get(indexkey)
-    if treeindex is None or user.lower() not in treeindex.users:
+    if treeindex is None or users.get_current_user() not in treeindex.users:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
+        #k = "phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43"
         treefile["key"] = k
         key = db.Key.from_path('Tree', k)
         tree = Tree(key = key)
-        indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
-        treeindex = TreeIndex(key=indexkey)
-        if user is not None:
-            treeindex.users = [user.lower()]
+        if users.get_current_user() is not None:
+            treeindex.users = [users.get_current_user()]
         
         
     tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+    tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
     tree.put()
+        
+    taskqueue.add(
+        url='/treeparse', 
+        params={'key': k},
+        name="treeparse-%s" % k)
+        
+    out = {'key': k}
+    self.response.out.write(simplejson.dumps(out))
     
+    
+         
+class TreeParse(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    k = self.request.params.get('key', None)
+    
+    tree = db.get(db.Key.from_path('Tree', k))
+    treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
+        
+    indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
+    treeindex = TreeIndex(key=indexkey)
+
     treeindex.title = treefile["title"] if "title" in treefile.keys() else None
     treeindex.version = str(treefile["v"]) if "v" in treefile.keys() else None
     treeindex.date = treefile["date"] if "date" in treefile.keys() else None
@@ -650,22 +679,17 @@ class StorageTest(webapp.RequestHandler):
     treeindex.scientificName = treefile["scientificName"] if "scientificName" in treefile.keys() else None
     treeindex.scientificNameId = treefile["scientificNameId"] if "scientificNameId" in treefile.keys() else None
     treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if "scientificNameAuthority" in treefile.keys() else None
-    
-    nodelist = []
+    treeindex.put()
     
     for node in treefile["tree"]:
         if 'id' not in node.keys() or node['id'] is None:
             node['id'] = random.randint(0,1000000000000)
             
         nodekey = db.Key.from_path('Tree', k, 'Node', str(node["id"]))
-        indexkey = db.Key.from_path('Tree', k, 'Node', str(node["id"]), 'NodeIndex', str(node["id"]))
         newnode = db.get(nodekey)
-        nodeindex = db.get(indexkey)
         if newnode is None:
             newnode = Node(key = nodekey)
-            nodeindex = NodeIndex(key = indexkey)
         
-        nodelist.append(indexkey)
             
         newnode.visibility = node["visibility"]     #tells the viewer what to draw
              #JSON encoded node
@@ -677,48 +701,155 @@ class StorageTest(webapp.RequestHandler):
             while cct<ct:
                 child = node["children"][cct]
                 cct+=1
-                children.append(db.Key.from_path('TreeIndex', k, 'Node', str(child["id"])))
+                children.append(db.Key.from_path('Tree', k, 'Node', str(child["id"])))
         newnode.children = children
         newnode.data = simplejson.dumps(node)  
         newnode.put()
-        nodeindex.tree = tree.key()
-        nodeindex.id = node["id"]
-        nodeindex.name = node["name"] if "name" in node.keys() else None
-        nodeindex.nodeColor = node["ncolor"] if "ncolor" in node.keys() else None
-        nodeindex.branchColor = node["color"] if "color" in node.keys() else None
-        nodeindex.branchLength = node["length"] if "length" in node.keys() else None
-        nodeindex.branchConfidence = node["conf"] if "conf" in node.keys() and type(node["conf"]) == type(1) else None
-        nodeindex.confidenceType = node["type"] if "type" in node.keys() else None
-        nodeindex.date = node["date"]
-        nodeindex.dateMin = node["dateMin"] if "dateMin" in node.keys() else None
-        nodeindex.dateMax = node["dateMax"] if "dateMax" in node.keys() else None
-        nodeindex.latitude = node["latitude"] if "latitude" in node.keys() else None
-        nodeindex.longitude = node["longitude"] if "longitude" in node.keys() else None
-        nodeindex.uncertainty = node["uncertainty"] if "uncertainty" in node.keys() else None
-        nodeindex.altitude = node["altitude"] if "altitude" in node.keys() else None
-        if "taxonomy" in node.keys() and node["taxonomy"] is not None:
-            nodeindex.taxonomyString = str(node["taxonomy"])
-            nodeindex.scientificName = node["taxonomy"]["scientific_name"].lower()  if "scientific_name" in node["taxonomy"].keys() else None
-            #nodeindex.scientificNameId = node["scientificNameId"]  if "scientificNameId" in node.keys() else None
-            #nodeindex.scientificNameAuthority = node["scientificNameAuthority"]  if "scientificNameAuthority" in node.keys() else None
-        nodeindex.polygon = node["polygon"] if "polygon" in node.keys() else None
-        uris = []
-        if "uris" in node.keys():
-            for uri in node["uris"]:
-                uris.append(str(uri["url"]))
-        nodeindex.uris = uris
-        nodeindex.uriString = str(node["uris"]) if "uris" in node.keys() else None
-        nodeindex.put()
+        
+        taskqueue.add(
+            url='/nodeparse', 
+            params={'key': k,'id':node["id"]},
+            name="nodeparse-%s-%s" % (k,node["id"]))
+        
+    return 200
     
-    treeindex.nodes = nodelist
-    treeindex.put()
+class NodeParse(webapp.RequestHandler):
+  def post(self):
+    k = self.request.params.get('key', None)
+    id = self.request.params.get('id', None)
+    indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
+    nodeindex = db.get(indexkey)
+    if nodeindex is None:
+        nodeindex = NodeIndex(key = indexkey)
     
-    tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
-    self.response.out.write("%s<br>" % (tree.key()) )
-    """
-    self.response.out.write("ni: %s<br>" % (tree.NodeIndex.fetch(10))) 
-    """
-    for n in tree.nodeindex_set:
-        self.response.out.write("_%s<br>" % (n.id)) 
-        ct += 1
+    indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
+    node = simplejson.loads(nodeindex.parent().data)
     
+    nodeindex.tree = db.Key.from_path('Tree', k)
+    nodeindex.id = node["id"]
+    nodeindex.name = node["name"] if "name" in node.keys() else None
+    nodeindex.nodeColor = node["ncolor"] if "ncolor" in node.keys() else None
+    nodeindex.branchColor = node["color"] if "color" in node.keys() else None
+    nodeindex.branchLength = node["length"] if "length" in node.keys() else None
+    nodeindex.branchConfidence = node["conf"] if "conf" in node.keys() and type(node["conf"]) == type(1) else None
+    nodeindex.confidenceType = node["type"] if "type" in node.keys() else None
+    nodeindex.put()
+
+    temporal_annotations = [
+            "data","dateMin","dateMax",]
+    geographic_annotations = [
+            "latitude","longitude","uncertainty","altitude","polygon",]
+    
+    for a in temporal_annotations:
+        if a in node.keys() and node[a] is not None:
+            annotation = Annotation(parent=nodeindex.key())
+            annotation.node = nodeindex
+            annotation.category = "time"
+            annotation.user = users.get_current_user()
+            annotation.name = a
+            annotation.value = node[a]
+            annotation.put()
+    for a in geographic_annotations:
+        if a in node.keys() and node[a] is not None:
+            annotation = Annotation(parent=nodeindex.key())
+            annotation.node = nodeindex
+            annotation.category = "geography"
+            annotation.user = users.get_current_user()
+            annotation.name = a
+            annotation.value = node[a]
+            annotation.put()
+    if 'taxonomy' in node.keys() and node['taxonomy'] is not None:
+        for a,b in node["taxonomy"].items():
+            annotation = Annotation(parent=nodeindex.key())
+            annotation.node = nodeindex
+            annotation.category = "taxonomy"
+            annotation.user = users.get_current_user()
+            annotation.name = a
+            annotation.value = b
+            annotation.put()
+    if 'uri' in node.keys() and node['uri'] is not None:
+        for a,b in node["uris"].items():
+            annotation = Annotation(parent=nodeindex.key())
+            logging.error(newnode.key())
+            annotation.node = nodeindex
+            annotation.category = "uri"
+            annotation.user = users.get_current_user()
+            annotation.name = a
+            annotation.value = b
+            annotation.put()
+                
+    return 200
+      
+      
+class LookUp(webapp.RequestHandler):
+  def post(self):
+      self.get()
+  def get(self):
+    def getChildren(childKey,output,depth=0,maxDepth=-1):
+        child = db.get(childKey)
+        output.append(child.data)
+        if len(child.children)>0:
+            for c in child.children:
+                getChildren(c,output,depth+1,maxDepth)
+        return output
+        
+    k = self.request.params.get('k',"phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43")
+    
+    #get the stored tree json object straight from the datastore
+    def queryTreeByKey(k):
+        #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
+        tree = db.get(db.Key.from_path('Tree', k))
+        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+        self.response.out.write("%s" % (treeData) )
+    
+    #get a tree from the treeIndex and return the tree json object
+    def simulatedSearch():
+        treeIndex = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
+        tree = treeIndex.parent()
+        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+        self.response.out.write("%s" % (treeData) )
+        
+    def simulatedNodeSearch():
+        node = db.get(db.Key.from_path('Tree', k, 'Node', "100"))
+        tree = node.parent()
+        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+        self.response.out.write("%s" % (treeData) )
+        
+    def simulatedAnnotationSearch():
+        query = Annotation.gql("WHERE name = 'code'")
+        result = query.fetch(1)
+        annotation = result[0]
+        nodeIndex = annotation.parent()
+        node = nodeIndex.parent()
+        tree = node.parent()
+        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+        self.response.out.write("%s" % (treeData) )
+    
+    def simulatedSubtreeSearch():
+        rootId = "105"
+        out = []
+        env = db.get(db.Key.from_path('Tree', k)).environment
+        treeIndex = db.get(db.Key.from_path('Tree', k,'TreeIndex',k))
+        nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
+        self.response.out.write("""{
+            "description": "%s: subqueried at %s", 
+            "author": "%s", 
+            "k": "%s", 
+            "title": "%s", 
+            "environment": %s,
+            "v": 2, 
+            "date": "2010-11-20 01:46:57.943914", 
+            "root": %s
+            "tree": [""" % (treeIndex.title,rootId,treeIndex.author,k,treeIndex.title,env,rootId))
+            
+        for c in getChildren(nodeKey,[]):
+            self.response.out.write("%s," % (c) )
+        self.response.out.write("]}")
+    
+    queryTreeByKey(k)
+
+"""
+class UpdateAnnotation(webapp.RequestHandler):
+  def post(self):
+    #fork join queue magic here
+"""

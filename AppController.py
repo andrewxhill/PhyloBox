@@ -1,5 +1,4 @@
 """
-Controls the automatic update of our product queue
 Copyright (C)  2010 Andrew Hill, Sander Pick
 """
 import cgi
@@ -256,6 +255,8 @@ application = webapp.WSGIApplication(
                                       ('/group', TreeGroup),
                                       ('/user', UserInfo),
                                       ('/save', TreeSave),
+                                      ('/treeparse', TreeParse),
+                                      ('/nodeparse', NodeParse),
                                       ('/adduser', AddUser),
                                       ('/test', TmpTest),
                                       ('/signin', SignIn),
@@ -263,7 +264,8 @@ application = webapp.WSGIApplication(
                                       ('/projects', ProjectViewer),
                                       ('/lookup', LookUp),
                                       ('/examples/([^/]+)?', Examples),
-                                      ('/admin/store', StorageTest),     
+                                      #('/admin/store', StorageTest),     
+                                      #('/admin/query', QueryTest),     
                                       ('/dailycron', DailyCron)],      
                                      debug=False)
 
