@@ -816,11 +816,10 @@ class LookUp(webapp.RequestHandler):
         self.response.out.write("%s" % (treeData) )
         
     def simulatedAnnotationSearch():
-        query = Annotation.gql("WHERE name = 'code'")
+        query = Annotation.all(keys_only = True).filter("name =",'code')
         result = query.fetch(1)
         annotation = result[0]
-        nodeIndex = annotation.parent()
-        node = nodeIndex.parent()
+        node = annotation.parent()
         tree = node.parent()
         treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
         self.response.out.write("%s" % (treeData) )
