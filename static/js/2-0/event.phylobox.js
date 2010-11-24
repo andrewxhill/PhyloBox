@@ -31,35 +31,28 @@ PbEvent = function() {
 	},
 	// throw an error to console and exit
 	_error = function( e ) {
-		console.log("PhyloBox Error: "+e);
+		console.log( "PhyloBox Error: " + e );
 		return false;
 	};
 	// public methods
 	return {
 		// register an event with phylobox
-		addListener : function( pB, t, h ) {
+		addListener: function( pB, t, h ) {
 			if ( ! pB )
-				return _error("you must supply a valid PhyloBox object...");
-			if ( _isValidType(t) ) 
-				pB.addListener(t,h);
+				return _error( "you must supply a valid PhyloBox object..." );
+			if ( _isValidType( t ) ) 
+				pB.addListener( t, h );
 			else 
-				return _error("invalid PhyloBox event requested...");
+				return _error( "invalid PhyloBox event requested..." );
 		},
 		// remove an event with phylobox
-		removeListener : function( pB, t, h ) {
+		removeListener: function( pB, t, h ) {
 			if ( ! pB )
-				return _error("you must supply a valid PhyloBox object...");
-			if ( _isValidType(t) ) 
-				pB.removeListener(t,h);
+				return _error( "you must supply a valid PhyloBox object..." );
+			if ( _isValidType( t ) ) 
+				pB.removeListener( t, h );
 			else 
-				return _error("invalid PhyloBox event requested...");
-		},
-		// testing
-		ball : function(s) {
-			return {
-				x : 10,
-				y : 20
-			}
+				return _error( "invalid PhyloBox event requested..." );
 		}
 	}
 }();
