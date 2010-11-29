@@ -1,4 +1,5 @@
 from google.appengine.ext import db
+import os
 
 class Tree(db.Model):  #stores JSON encoded elements of the tree, not for searching
   #key = tree/unique_key
@@ -7,10 +8,11 @@ class Tree(db.Model):  #stores JSON encoded elements of the tree, not for search
   png = db.BlobProperty()
   author = db.StringProperty()      
   title = db.StringProperty()      
-  version = db.StringProperty()   
+  version = db.StringProperty(default=str(os.environ['CURRENT_VERSION_ID'].split('.')[0]))   
   description = db.TextProperty()               
   addtime = db.DateTimeProperty(auto_now_add=True)   
-
+  users = db.StringListProperty()     #google username author of the tree
+  
 class TreeIndex(db.Model): #searchable indexes of the trees
   #key = Tree.key(), something
   title = db.StringProperty()                   #tree title

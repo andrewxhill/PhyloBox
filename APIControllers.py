@@ -632,20 +632,25 @@ class TreeSave(webapp.RequestHandler):
     
     key = db.Key.from_path('Tree', k)
     tree = db.get(key)
-    indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
-    treeindex = db.get(indexkey)
-    if treeindex is None or users.get_current_user() not in treeindex.users:
+    if tree is None or users.get_current_user() not in tree.users:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         #k = "phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43"
         treefile["key"] = k
         key = db.Key.from_path('Tree', k)
         tree = Tree(key = key)
         if users.get_current_user() is not None:
-            treeindex.users = [users.get_current_user()]
+            tree.users = [users.get_current_user()]
         
         
     tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
     tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
+    
+    treefile = simplejson.loads(treefile)
+    tree.title = treefile["title"] if "title" in treefile.keys() else None
+    tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
+    tree.author = treefile["author"] if "author" in treefile.keys() else None
+    tree.description = treefile["description"] if "description" in treefile.keys() else None
+    
     tree.put()
         
     taskqueue.add(
@@ -667,14 +672,14 @@ class TreeParse(webapp.RequestHandler):
     tree = db.get(db.Key.from_path('Tree', k))
     treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
     
-    tree.title = treefile["title"] if "title" in treefile.keys() else None
-    tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
-    tree.author = treefile["author"] if "author" in treefile.keys() else None
-    tree.description = treefile["description"] if "description" in treefile.keys() else None
-    tree.put()
-    
     indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
-    treeindex = TreeIndex(key=indexkey)
+    treeindex = db.get(indexkey)
+    if treeindex is None:
+        treeindex = TreeIndex(key=indexkey)
+        
+    if users.get_current_user() is not None:
+        if users.get_current_user() not in treeindex.users:
+            treeindex.users.append([users.get_current_user()])
 
     treeindex.title = treefile["title"] if "title" in treefile.keys() else None
     treeindex.date = treefile["date"] if "date" in treefile.keys() else None
@@ -788,7 +793,7 @@ class NodeParse(webapp.RequestHandler):
       
 class LookUp(webapp.RequestHandler):
   def post(self):
-      self.get()
+    self.get()
   def get(self):
     def getChildren(childKey,output,depth=0,maxDepth=-1):
         child = db.get(childKey)
@@ -797,8 +802,10 @@ class LookUp(webapp.RequestHandler):
             for c in child.children:
                 getChildren(c,output,depth+1,maxDepth)
         return output
-        
-    k = self.request.params.get('k',"phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43")
+    k = self.request.params.get('k',None)
+    cb = self.request.params.get('callback')
+    if cb is not None:
+        self.response.out.write("%s (" % (cb) )
     
     #get the stored tree json object straight from the datastore
     def queryTreeByKey(k):
@@ -830,7 +837,7 @@ class LookUp(webapp.RequestHandler):
         self.response.out.write("%s" % (treeData) )
     
     def simulatedSubtreeSearch(k):
-        rootId = "105"
+        rootId = "4"
         out = []
         tree = db.get(db.Key.from_path('Tree', k))
         nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
@@ -846,10 +853,13 @@ class LookUp(webapp.RequestHandler):
             "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,rootId))
             
         for c in getChildren(nodeKey,[]):
-            self.response.out.write("%s," % (c) )
+            self.response.out.write("%s," % (c) ) 
         self.response.out.write("]}")
     
-    simulatedSubtreeSearch("phylobox-2-0-026672fe-c07a-4515-8c43-4327ffa27a92")
+    simulatedSubtreeSearch(k)
+    
+    if cb is not None:
+        self.response.out.write(")")
 
 """
 class UpdateAnnotation(webapp.RequestHandler):
