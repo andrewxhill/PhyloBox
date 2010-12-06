@@ -49,9 +49,25 @@ class Annotation(db.Model):
   node = db.ReferenceProperty(NodeIndex)
   branch = db.BooleanProperty(default=False)     #if False, annotation is assumed to be at node
   description = db.TextProperty()
-  catagory = db.CategoryProperty()  #geography, uri, time, taxonomy
+  category = db.CategoryProperty()  #geography, uri, time, taxonomy
   name = db.StringProperty()        #a link/doi
   value = db.TextProperty()         #annotation value
+  user = db.UserProperty()
+  addtime = db.DateTimeProperty(auto_now_add=True)
+  
+  
+"""I'm proposing this method for enabling non-branch connections
+   between two or more nodes. What do you think? They are almost a
+   super specialized Annotation, but they need something slightly 
+   different"""
+class NodeConnection(db.Model):
+  #No Parent
+  trees = db.ListProperty(db.Key) #list of trees that contain the nodes
+  nodes = db.ListProperty(db.Key) #list of nodes that are connected by this connection
+  category = db.CategoryProperty()     #if False, annotation is assumed to be at node
+  description = db.TextProperty()
+  name = db.StringProperty()  #geography, uri, time, taxonomy
+  value = db.TextProperty()  #anything that matches what should be expected for the category
   user = db.UserProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
   
