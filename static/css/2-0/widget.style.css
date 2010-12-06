@@ -1,32 +1,82 @@
 /* PhyloBox Widget Styles */
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
-h1.logo { font-family:"Logo",Arial,sans-serif; font-size:12px; line-height:40px; color:black; padding:0 0 0 10px; float:left; cursor:default; margin:0; }
+h1.logo { 
+	font-family:"Logo",Arial,sans-serif; 
+	font-size:12px; 
+	line-height:40px; 
+	color:black; 
+	padding:0 0 0 10px; 
+	float:left; 
+	cursor:default; 
+	margin:0; 
+}
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
-div.tree-holder { width:100%; height:100%; min-height:100px; min-width:100px; border-bottom:5px solid white; position:relative; padding:0; margin:0; }
-div.tree-holder:last-child { border-bottom:none !important; }
+div.tree-holder { 
+	width:100%; 
+	height:100%; 
+	min-height:100px; 
+	min-width:100px; 
+	border-bottom:5px solid white; 
+	position:relative; 
+	padding:0;
+	margin:0; 
+}
+div.tree-holder:last-child { 
+	border-bottom:none !important; 
+}
 
-p.tree-title { position:absolute; background:rgba(255,255,255,0.5); font-family:"Plain",Arial,sans-serif; font-size:8px; padding:0 4px; margin:0; }
+p.tree-title { 
+	position:absolute; 
+	background:rgba(255,255,255,0.5); 
+	font-family:"Plain",Arial,sans-serif; 
+	font-size:8px; 
+	padding:0 4px; 
+	margin:0; 
+}
 
 #toolbar {
-	padding:0; margin:0; position:absolute;
-	width:100%; height:26px;
+	padding:0; 
+	margin:0; 
+	position:absolute;
+	width:100%; 
+	height:26px;
 	background-image:-webkit-gradient(linear,0% 100%,0% 0%,from(silver),to(white));
 	background-image:-moz-linear-gradient(center bottom,silver 0%,white 100%);
 }
-#toolbar > nav { margin:0 auto; height:26px; padding:0; }
-#toolbar ul { margin:0; padding:0; }
-#toolbar li { float:left; list-style:none; padding:0; margin:0; }
-#toolbar a {
-	background:none; padding:5px 8px; display:inline-block; width:16px; margin:0;
-	border-left:1px solid rgba(128,128,128,0); border-right:1px solid rgba(128,128,128,0);
+#toolbar > nav { 
+	margin:0 auto; 
+	height:26px; 
+	padding:0; 
 }
-#toolbar a:hover { background:rgba(51,51,51,0.1); }
+#toolbar ul { 
+	margin:0; 
+	padding:0; 
+}
+#toolbar li { 
+	float:left; 
+	list-style:none; 
+	padding:0; 
+	margin:0; 
+}
+#toolbar a {
+	background:none; 
+	padding:5px 8px; 
+	display:inline-block; 
+	width:16px; 
+	margin:0;
+	border-left:1px solid rgba(128,128,128,0); 
+	border-right:1px solid rgba(128,128,128,0);
+}
+#toolbar a:hover { 
+	background:rgba(51,51,51,0.1); 
+}
 #toolbar a:active, #toolbar a.tool-active { 
 	background:rgba(51,51,51,0.2); 
-	border-left:1px solid silver; border-right:1px solid silver;
+	border-left:1px solid silver; 
+	border-right:1px solid silver;
 }
 #toolbar a.tool-off { opacity:0.5; }
 
