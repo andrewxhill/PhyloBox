@@ -20,10 +20,10 @@ PhyloBox = function( $ ) {
 			HOST != "2-0.latest.phylobox.appspot.com",
 		LOCAL = true,
 		HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
-	var API_TREE = HOME + "lookup",
-		API_GROUP = HOME + "group",
-		API_NEW = HOME + "new",
-		API_SAVE_TREE = HOME + "save",
+	var API_TREE = HOME + "api/lookup",
+		API_GROUP = HOME + "api/group",
+		API_NEW = HOME + "api/new",
+		API_SAVE_TREE = HOME + "api/save",
 		RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 	// private parts
 /*###########################################################################
