@@ -470,7 +470,6 @@ class NodeParse(webapp.RequestHandler):
     if 'uri' in node.keys() and node['uri'] is not None:
         for a,b in node["uris"].items():
             annotation = Annotation(parent=nodeindex.key())
-            logging.error(newnode.key())
             annotation.node = nodeindex
             annotation.category = "uri"
             annotation.user = users.get_current_user()
@@ -483,6 +482,30 @@ class NodeParse(webapp.RequestHandler):
     return 200
       
       
+class Annotations(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    k = self.request.params.get('key', None)
+    node = self.request.params.get('node', None)
+    c = self.request.params.get('category', None)
+    n = self.request.params.get('name', None)
+    v = self.request.params.get('value', None)
+    
+    indexkey = db.Key.from_path('Tree', k, 'Node', str(node), 'NodeIndex', str(node))
+    nodeindex = db.get(indexkey)
+    annotation = Annotation(parent=nodeindex.key())
+    
+    annotation.node = nodeindex
+    annotation.category = c
+    annotation.user = users.get_current_user()
+    annotation.name = n
+    annotation.value = v
+    annotation.temporary = nodeindex.temporary
+    annotation.put()
+    
+    
+    
 class LookUp(webapp.RequestHandler):
   def getChildren(childKey,output,depth=0,maxDepth=-1):
     child = db.get(childKey)
@@ -493,13 +516,16 @@ class LookUp(webapp.RequestHandler):
     return output
 
   #get the stored tree json object straight from the datastore
-  def queryTreeByKey(k):
+  def queryTreeByKey(self,k):
     #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
-    tree = db.get(db.Key.from_path('Tree', k))
-    treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+    
+    data = memcache.get("tree-data-"+k)
+    if data is None:
+        data = db.get(db.Key.from_path('Tree', k)).data
+    treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
     return "%s" % treeData
     
-  def simulatedAnnotationSearch():
+  def simulatedAnnotationSearch(self):
     query = Annotation.all(keys_only = True).filter("name =",'code')
     result = query.fetch(1)
     annotation = result[0]
@@ -508,7 +534,7 @@ class LookUp(webapp.RequestHandler):
     treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
     self.response.out.write("%s" % (treeData) )
 
-  def SubtreeSearch(k,rootId):
+  def querySubtree(self,k,rootId):
     out = []
     tree = db.get(db.Key.from_path('Tree', k))
     nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
@@ -528,12 +554,11 @@ class LookUp(webapp.RequestHandler):
     output += "]}"
     return output
     
-  def post(self):
-    self.get()
+  def post(self,method):
+    self.get(method)
   def get(self,method):
-    methods = {'getChildren': getChildren(childKey,output,depth=0,maxDepth=-1),
-               'queryTreeByKey': queryTreeByKey(k),
-               'subtreeSearch': SubtreeSearch(k,rootId)}
+    methods = {'queryTreeByKey': self.queryTreeByKey,
+               'subtreeSearch': self.querySubtree}
         
     k = self.request.params.get('k',None)
     cb = self.request.params.get('callback')
@@ -553,6 +578,7 @@ application = webapp.WSGIApplication([('/api/new', AddNewTree),
                                       ('/api/treeparse', TreeParse),
                                       ('/api/nodeparse', NodeParse),
                                       ('/api/adduser', AddUser),
+                                      ('/api/annotations', Annotations),
                                       ('/api/lookup/(.*)', LookUp)],      
                                      debug=False)
 
