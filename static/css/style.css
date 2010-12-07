@@ -27,7 +27,7 @@ a.taxa-link:active, a.taxa-link-selected { background:rgba(0,255,0,0.5); color:#
 
 /*–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––*/
 
-h1.logo { font-family:"Logo",Arial,sans-serif; font-size:12px; line-height:40px; color:black; padding:0 0 0 10px; float:left; cursor:default; }
+h1.logo { font-family:"Logo",Arial,sans-serif; font-size:12px; line-height:40px; color:black; padding:0; float:left; cursor:default; }
 
 h2 { font-weight:bold; color:#333; white-space:nowrap; }
 h2.panel-head { font-family:Arial black,Arial,sans-serif; font-size:11px; line-height:25px; padding:0 0 0 10px; }
