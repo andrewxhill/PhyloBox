@@ -919,7 +919,8 @@ PhyloBox = function( $ ) {
 				// for shading
 				function _dimming() {
 					// calc dimming
-					return Math.abs(1 / _depth)*100;
+					// return Math.abs(1 / _depth)*100;
+                    return 0.4
 				}
 				// init
 				_node = nodeA;

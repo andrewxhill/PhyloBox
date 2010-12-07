@@ -178,7 +178,7 @@ class AddNewTree(webapp.RequestHandler):
         treefile['environment']['primaryuri'] = None
         treefile['tree'] = output
         treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
-
+        
         #zip the string
         treefilezip = ZipFiles(treefile)
 
@@ -187,6 +187,8 @@ class AddNewTree(webapp.RequestHandler):
         
         #handle storage time for the new tree
         stored = False
+        #don't delete the below method, it needs to be rewritten
+        """
         if self.request.params.get('store', None):
             #do some long term storage here
             try:
@@ -208,9 +210,9 @@ class AddNewTree(webapp.RequestHandler):
                               )
                     tmpEntry.put()
                     stored = True
+        """
         memcache.set("tree-data-"+k, treefilezip, cachetime)
-                    
-            #memcache.set("tree-data-"+k, treefilezip, time)
+        
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
@@ -228,6 +230,8 @@ class AddNewTree(webapp.RequestHandler):
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(")")
 
+    logging.error('done')
+    
 ############################
 class TreeGroup(webapp.RequestHandler):
   def get(self):
@@ -281,7 +285,7 @@ class TreeSave(webapp.RequestHandler):
     
     k = self.request.params.get('key', "abc") 
     
-    treefile = self.request.params.get('',simplejson.load(open('bcl_2.json','r')))
+    treefile = self.request.params.get(tree,simplejson.load(open('bcl_2.json','r')))
         
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
@@ -455,56 +459,56 @@ class NodeParse(webapp.RequestHandler):
       
       
 class LookUp(webapp.RequestHandler):
-    def getChildren(childKey,output,depth=0,maxDepth=-1):
-        child = db.get(childKey)
-        output.append(child.data)
-        if len(child.children)>0:
-            for c in child.children:
-                getChildren(c,output,depth+1,maxDepth)
-        return output
+  def getChildren(childKey,output,depth=0,maxDepth=-1):
+    child = db.get(childKey)
+    output.append(child.data)
+    if len(child.children)>0:
+        for c in child.children:
+            getChildren(c,output,depth+1,maxDepth)
+    return output
+
+  #get the stored tree json object straight from the datastore
+  def queryTreeByKey(k):
+    #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
+    tree = db.get(db.Key.from_path('Tree', k))
+    treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+    return "%s" % treeData
     
-    #get the stored tree json object straight from the datastore
-    def queryTreeByKey(k):
-        #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
-        tree = db.get(db.Key.from_path('Tree', k))
-        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
-        return "%s" % treeData
+  def simulatedAnnotationSearch():
+    query = Annotation.all(keys_only = True).filter("name =",'code')
+    result = query.fetch(1)
+    annotation = result[0]
+    node = annotation.parent()
+    tree = node.parent()
+    treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
+    self.response.out.write("%s" % (treeData) )
+
+  def SubtreeSearch(k,rootId):
+    out = []
+    tree = db.get(db.Key.from_path('Tree', k))
+    nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
+    output = """{
+        "description": "%s: subqueried at %s", 
+        "author": "%s", 
+        "k": "%s", 
+        "title": "%s", 
+        "environment": %s,
+        "v": 2, 
+        "date": "%s", 
+        "root": %s
+        "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,tree.addtime,rootId)
         
-    def simulatedAnnotationSearch():
-        query = Annotation.all(keys_only = True).filter("name =",'code')
-        result = query.fetch(1)
-        annotation = result[0]
-        node = annotation.parent()
-        tree = node.parent()
-        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
-        self.response.out.write("%s" % (treeData) )
-    
-    def SubtreeSearch(k,rootId):
-        out = []
-        tree = db.get(db.Key.from_path('Tree', k))
-        nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
-        output = """{
-            "description": "%s: subqueried at %s", 
-            "author": "%s", 
-            "k": "%s", 
-            "title": "%s", 
-            "environment": %s,
-            "v": 2, 
-            "date": "%s", 
-            "root": %s
-            "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,tree.addtime,rootId)
-            
-        for c in getChildren(nodeKey,[]):
-            output += "%s," % (c) 
-        output += "]}"
-        return output
+    for c in getChildren(nodeKey,[]):
+        output += "%s," % (c) 
+    output += "]}"
+    return output
     
   def post(self):
     self.get()
   def get(self,method):
     methods = {'getChildren': getChildren(childKey,output,depth=0,maxDepth=-1),
                'queryTreeByKey': queryTreeByKey(k),
-               'subtreeSearch': SubtreeSearch(k,rootId),
+               'subtreeSearch': SubtreeSearch(k,rootId)}
         
     k = self.request.params.get('k',None)
     cb = self.request.params.get('callback')
