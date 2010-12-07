@@ -284,6 +284,7 @@ class TreeSave(webapp.RequestHandler):
     #tree, node, annotation, and index entities
     
     k = self.request.params.get('key', "abc") 
+    temporary = self.request.params.get('temporary', None) 
     
     treefile = self.request.params.get(tree,simplejson.load(open('bcl_2.json','r')))
         
@@ -317,12 +318,15 @@ class TreeSave(webapp.RequestHandler):
     tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
     tree.author = treefile["author"] if "author" in treefile.keys() else None
     tree.description = treefile["description"] if "description" in treefile.keys() else None
-    
     tree.put()
+    
+    params = {'key': k}
+    if temporary is not None:
+        params['temporary'] = True
         
     taskqueue.add(
         url='/treeparse', 
-        params={'key': k},
+        params=params,
         name="treeparse-%s" % k)
         
     out = {'key': k}
@@ -335,6 +339,8 @@ class TreeParse(webapp.RequestHandler):
     self.post()
   def post(self):
     k = self.request.params.get('key', None)
+    
+    temporary = self.request.params.get('temporary', None) 
     
     tree = db.get(db.Key.from_path('Tree', k))
     treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
@@ -355,6 +361,10 @@ class TreeParse(webapp.RequestHandler):
     treeindex.scientificName = treefile["scientificName"] if "scientificName" in treefile.keys() else None
     treeindex.scientificNameId = treefile["scientificNameId"] if "scientificNameId" in treefile.keys() else None
     treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if "scientificNameAuthority" in treefile.keys() else None
+    
+    if temporary is not None:
+        treeindex.temporary = True
+        
     treeindex.put()
     
     
@@ -383,9 +393,13 @@ class TreeParse(webapp.RequestHandler):
         newnode.data = simplejson.dumps(node)  
         newnode.put()
         
+        params = {'key': k,'id':node["id"]}
+        if temporary is not None:
+            params['temporary'] = True
+            
         taskqueue.add(
             url='/nodeparse', 
-            params={'key': k,'id':node["id"]},
+            params=params,
             name="nodeparse-%s-%s" % (k,node["id"]))
         
     return 200
@@ -393,6 +407,9 @@ class TreeParse(webapp.RequestHandler):
 class NodeParse(webapp.RequestHandler):
   def post(self):
     k = self.request.params.get('key', None)
+    
+    temporary = self.request.params.get('temporary', None) 
+    
     id = self.request.params.get('id', None)
     indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
     nodeindex = db.get(indexkey)
@@ -410,6 +427,10 @@ class NodeParse(webapp.RequestHandler):
     nodeindex.branchLength = node["length"] if "length" in node.keys() else None
     nodeindex.branchConfidence = node["conf"] if "conf" in node.keys() and type(node["conf"]) == type(1) else None
     nodeindex.confidenceType = node["type"] if "type" in node.keys() else None
+    
+    if temporary is not None:
+        nodeindex.temporary = True
+        
     nodeindex.put()
 
     temporal_annotations = [
@@ -425,6 +446,8 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = node[a]
+            if temporary is not None:
+                annotation.temporary = True
             annotation.put()
     for a in geographic_annotations:
         if a in node.keys() and node[a] is not None:
@@ -434,6 +457,8 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = node[a]
+            if temporary is not None:
+                annotation.temporary = True
             annotation.put()
     if 'taxonomy' in node.keys() and node['taxonomy'] is not None:
         for a,b in node["taxonomy"].items():
@@ -443,6 +468,8 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = b
+            if temporary is not None:
+                annotation.temporary = True
             annotation.put()
     if 'uri' in node.keys() and node['uri'] is not None:
         for a,b in node["uris"].items():
@@ -453,6 +480,8 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = b
+            if temporary is not None:
+                annotation.temporary = True
             annotation.put()
                 
     return 200

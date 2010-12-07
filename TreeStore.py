@@ -24,7 +24,7 @@ class TreeIndex(db.Model): #searchable indexes of the trees
   users = db.StringListProperty()     #google username author of the tree
   root = db.StringProperty()                    #rootnode id of the given tree
   addtime = db.DateTimeProperty(auto_now_add=True)
-  
+  temporary = db.BooleanProperty(default=False)
   
 class Node(db.Model):
   #key = Tree.key(), something
@@ -43,6 +43,7 @@ class NodeIndex(db.Model):
   branchConfidence = db.FloatProperty()
   confidenceType = db.StringProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
+  temporary = db.BooleanProperty(default=False)
   
 class Annotation(db.Model):
   #parent = Node.key(), something
@@ -54,6 +55,7 @@ class Annotation(db.Model):
   value = db.TextProperty()         #annotation value
   user = db.UserProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
+  temporary = db.BooleanProperty(default=False)
   
   
 """I'm proposing this method for enabling non-branch connections
@@ -70,6 +72,7 @@ class NodeConnection(db.Model):
   value = db.TextProperty()  #anything that matches what should be expected for the category
   user = db.UserProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
+  temporary = db.BooleanProperty(default=False)
   
   
   
