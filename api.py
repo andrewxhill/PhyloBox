@@ -181,11 +181,7 @@ class AddNewTree(webapp.RequestHandler):
         
         #zip the string
         treefilezip = ZipFiles(treefile)
-
-        #i have removed a temp table from the data store
-        #now i just store tmp trees in memcache for 10 or so days
         
-        #handle storage time for the new tree
         stored = False
         #don't delete the below method, it needs to be rewritten
         """
