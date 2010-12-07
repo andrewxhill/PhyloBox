@@ -207,7 +207,7 @@ class AddNewTree(webapp.RequestHandler):
                     tmpEntry.put()
                     stored = True
         """
-        memcache.set("tree-data-"+k, treefilezip, cachetime)
+        memcache.set("tree-data-%s" % k, treefilezip, cachetime)
         
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
@@ -280,9 +280,10 @@ class TreeSave(webapp.RequestHandler):
     #tree, node, annotation, and index entities
     
     k = self.request.params.get('key', "abc") 
+    
     temporary = self.request.params.get('temporary', None) 
     
-    treefile = self.request.params.get(tree,simplejson.load(open('bcl_2.json','r')))
+    treefile = simplejson.loads(self.request.params.get('tree',None))
         
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
@@ -309,7 +310,7 @@ class TreeSave(webapp.RequestHandler):
     tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
     tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
     
-    treefile = simplejson.loads(treefile)
+    #treefile = simplejson.loads(treefile)
     tree.title = treefile["title"] if "title" in treefile.keys() else None
     tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
     tree.author = treefile["author"] if "author" in treefile.keys() else None
@@ -321,9 +322,9 @@ class TreeSave(webapp.RequestHandler):
         params['temporary'] = True
         
     taskqueue.add(
-        url='/treeparse', 
+        url='/api/treeparse', 
         params=params,
-        name="treeparse-%s" % k)
+        name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
         
     out = {'key': k}
     self.response.out.write(simplejson.dumps(out))
@@ -394,25 +395,31 @@ class TreeParse(webapp.RequestHandler):
             params['temporary'] = True
             
         taskqueue.add(
-            url='/nodeparse', 
+            url='/api/nodeparse', 
             params=params,
-            name="nodeparse-%s-%s" % (k,node["id"]))
+            name="%s-%s-%s" % (int(time.time()/10),k.replace('-',''),node["id"]))
         
     return 200
     
 class NodeParse(webapp.RequestHandler):
+  def get(self):
+    self.post()
   def post(self):
     k = self.request.params.get('key', None)
     
     temporary = self.request.params.get('temporary', None) 
     
     id = self.request.params.get('id', None)
+    logging.error("%s: %s" % (k,id))
     indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
-    nodeindex = db.get(indexkey)
+    """
+    nodeindex = NodeIndex.get(indexkey)
     if nodeindex is None:
-        nodeindex = NodeIndex(key = indexkey)
+    """
+    nodeindex = NodeIndex(key = indexkey, parent=db.Key.from_path('Tree', k, 'Node', str(id)))
     
-    indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
+    #indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
+    logging.error(nodeindex.parent())
     node = simplejson.loads(nodeindex.parent().data)
     
     nodeindex.tree = db.Key.from_path('Tree', k)
@@ -468,7 +475,7 @@ class NodeParse(webapp.RequestHandler):
                 annotation.temporary = True
             annotation.put()
     if 'uri' in node.keys() and node['uri'] is not None:
-        for a,b in node["uris"].items():
+        for a,b in node["uri"].items():
             annotation = Annotation(parent=nodeindex.key())
             annotation.node = nodeindex
             annotation.category = "uri"
@@ -519,10 +526,11 @@ class LookUp(webapp.RequestHandler):
   def queryTreeByKey(self,k):
     #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
     
-    data = memcache.get("tree-data-"+k)
+    data = memcache.get("tree-data-%s" % k)
     if data is None:
         data = db.get(db.Key.from_path('Tree', k)).data
     treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
+    memcache.set("tree-data-%s" % k, treeData, 2000)
     return "%s" % treeData
     
   def simulatedAnnotationSearch(self):
