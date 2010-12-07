@@ -46,6 +46,44 @@ class UserInfo(webapp.RequestHandler):
     self.response.out.write(simplejson.dumps(d).replace('\\/','/'))
     
     
+class AddUser(webapp.RequestHandler):
+  def post(self):
+    user,url,url_linktext = GetCurrentUser(self)
+    if user is None:
+        return 'you must be logged in'
+    else:
+        k = self.request.params.get('key', None)
+        
+        projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
+                    objId=k, userName = user).fetch(1)
+                    
+        if len(projects)<1: 
+            return 'you need to save the tree first'
+        else:
+            newuser = self.request.params.get('email', None)
+            
+            if newuser is None:
+                return "you didn't enter an email address"
+            else:
+                newuser = str(urllib.unquote(newuser))
+                if len(newuser.split("@"))<1:
+                    newuser = newuser.strip()+"@gmail.com"
+                newuser = users.User(email=newuser)
+                projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
+                    objId=k, userName = newuser).fetch(1)
+                if 0<len(projects):
+                    self.response.out.write(str(newuser)+" is already a collaborator")
+                else:
+                    tmpEntry = treeOwners(objId = k,
+                                userName = newuser,
+                                notes = 'Invited by '+str(user)
+                              )
+                    tmpEntry.put()
+                    
+
+                    self.response.out.write(200)
+           
+    
 class AddNewTree(webapp.RequestHandler):
   def get(self):
     #self.response.out.write(404)  
@@ -417,9 +455,6 @@ class NodeParse(webapp.RequestHandler):
       
       
 class LookUp(webapp.RequestHandler):
-  def post(self):
-    self.get()
-  def get(self):
     def getChildren(childKey,output,depth=0,maxDepth=-1):
         child = db.get(childKey)
         output.append(child.data)
@@ -427,30 +462,13 @@ class LookUp(webapp.RequestHandler):
             for c in child.children:
                 getChildren(c,output,depth+1,maxDepth)
         return output
-    k = self.request.params.get('k',None)
-    cb = self.request.params.get('callback')
-    if cb is not None:
-        self.response.out.write("%s (" % (cb) )
     
     #get the stored tree json object straight from the datastore
     def queryTreeByKey(k):
         #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
         tree = db.get(db.Key.from_path('Tree', k))
         treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
-        self.response.out.write("%s" % (treeData) )
-    
-    #get a tree from the treeIndex and return the tree json object
-    def simulatedSearch():
-        treeIndex = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
-        tree = treeIndex.parent()
-        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
-        self.response.out.write("%s" % (treeData) )
-        
-    def simulatedNodeSearch():
-        node = db.get(db.Key.from_path('Tree', k, 'Node', "100"))
-        tree = node.parent()
-        treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
-        self.response.out.write("%s" % (treeData) )
+        return "%s" % treeData
         
     def simulatedAnnotationSearch():
         query = Annotation.all(keys_only = True).filter("name =",'code')
@@ -461,68 +479,43 @@ class LookUp(webapp.RequestHandler):
         treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
         self.response.out.write("%s" % (treeData) )
     
-    def simulatedSubtreeSearch(k):
-        rootId = "4"
+    def SubtreeSearch(k,rootId):
         out = []
         tree = db.get(db.Key.from_path('Tree', k))
         nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
-        self.response.out.write("""{
+        output = """{
             "description": "%s: subqueried at %s", 
             "author": "%s", 
             "k": "%s", 
             "title": "%s", 
             "environment": %s,
             "v": 2, 
-            "date": "2010-11-20 01:46:57.943914", 
+            "date": "%s", 
             "root": %s
-            "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,rootId))
+            "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,tree.addtime,rootId)
             
         for c in getChildren(nodeKey,[]):
-            self.response.out.write("%s," % (c) ) 
-        self.response.out.write("]}")
+            output += "%s," % (c) 
+        output += "]}"
+        return output
     
-    simulatedSubtreeSearch(k)
+  def post(self):
+    self.get()
+  def get(self,method):
+    methods = {'getChildren': getChildren(childKey,output,depth=0,maxDepth=-1),
+               'queryTreeByKey': queryTreeByKey(k),
+               'subtreeSearch': SubtreeSearch(k,rootId),
+        
+    k = self.request.params.get('k',None)
+    cb = self.request.params.get('callback')
+    if cb is not None:
+        self.response.out.write("%s (" % (cb) )
+    
+    self.response.out.write(methods['queryTreeByKey'](k))
     
     if cb is not None:
         self.response.out.write(")")
 
-class AddUser(webapp.RequestHandler):
-  def post(self):
-    user,url,url_linktext = GetCurrentUser(self)
-    if user is None:
-        return 'you must be logged in'
-    else:
-        k = self.request.params.get('key', None)
-        
-        projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
-                    objId=k, userName = user).fetch(1)
-                    
-        if len(projects)<1: 
-            return 'you need to save the tree first'
-        else:
-            newuser = self.request.params.get('email', None)
-            
-            if newuser is None:
-                return "you didn't enter an email address"
-            else:
-                newuser = str(urllib.unquote(newuser))
-                if len(newuser.split("@"))<1:
-                    newuser = newuser.strip()+"@gmail.com"
-                newuser = users.User(email=newuser)
-                projects = treeOwners.gql("WHERE objId = :objId AND userName = :userName",
-                    objId=k, userName = newuser).fetch(1)
-                if 0<len(projects):
-                    self.response.out.write(str(newuser)+" is already a collaborator")
-                else:
-                    tmpEntry = treeOwners(objId = k,
-                                userName = newuser,
-                                notes = 'Invited by '+str(user)
-                              )
-                    tmpEntry.put()
-                    
-
-                    self.response.out.write(200)
-           
 
 application = webapp.WSGIApplication([('/api/new', AddNewTree),
                                       ('/api/group', TreeGroup),
@@ -531,7 +524,7 @@ application = webapp.WSGIApplication([('/api/new', AddNewTree),
                                       ('/api/treeparse', TreeParse),
                                       ('/api/nodeparse', NodeParse),
                                       ('/api/adduser', AddUser),
-                                      ('/api/lookup', LookUp)],      
+                                      ('/api/lookup/(.*)', LookUp)],      
                                      debug=False)
 
 def main():

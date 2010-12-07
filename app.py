@@ -19,7 +19,6 @@ from django.utils import feedgenerator, simplejson
 #from django.template import Context, Template
 import logging
 
-
 #project module storing all the db table models
 from TreeStore import *
 from phyloxml import *
@@ -199,9 +198,6 @@ class Examples(webapp.RequestHandler):
   def get(self,name):
         path = os.path.join(os.path.dirname(__file__), 'templates/examples/%s' % name)
         self.response.out.write(template.render(path, {}))
-            
-            
-            
 
 application = webapp.WSGIApplication([('/', MainPage),
                                       ('/signin', SignIn),
