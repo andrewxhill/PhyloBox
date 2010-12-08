@@ -7,6 +7,9 @@ from google.appengine.api import memcache, urlfetch
 from google.appengine.api import users
 from google.appengine.api.labs import taskqueue
 
+import xml.etree.cElementTree as ET
+NS_PXML = '{http://www.phyloxml.org}'
+
 
 import os, sys, string, Cookie, sha, time, random, cgi, urllib,urllib2
 import datetime, StringIO, pickle, urllib2, base64
@@ -111,107 +114,120 @@ class AddNewTree(webapp.RequestHandler):
     if treefile is not None:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
-        background = "23232F"
-        color = "FFFFCC"
-        if user:
-            author = str(user)
-        else:
-            author = "anon"
-        description = "PhyloJSON Tree Generated at PhyloBox"
-        view_mode = 'dendrogram'
-        root = None
-        width = 1
-        htulabels = False
-        branchlabels = False
-        leaflabels = False
-        node_radius = 1
-        #set defaults
-        branch_color = "FFFFFFFF"
-        branch_width = 1.5
-        icon = "http://geophylo.appspot.com/static_files/icons/a99.png"
-        proximity = 2
-        alt_grow = 15000
-        title = "Untitled Tree"
+        
+        treeGroup = []
+        groupKeys = []
         
         try:
-            #parse a PhyloXML file
-            tree = PhyloXMLtoTree(treefile,color=color)
+            treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
         except:
-            #if xml parsing fails, assume file was Newick. Sophistication needed for future development
             treefile = ParseNewick(str(treefile))
-            tree = PhyloXMLtoTree(treefile,color=color)
+            treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
             
-            
-        tree.load()
-        if tree.title is not None:
-            title = tree.title
-        if tree.rooted is not None:
-            root = tree.root
-        out = ''
-        output = []
-        #output = {}
-        for a,b in tree.objtree.tree.items():
-            if a != 0:
-                output.append(b.json())
+        for treeXML in treexml.findall(NS_PXML+'phylogeny'):
                 
-        treefile = {}
-        treefile['v'] = 2
-        treefile['k'] = k
-        treefile['date'] = str(datetime.datetime.now())
-        treefile['author'] = author
-        treefile['title'] = title
-        treefile['description'] = description
-        treefile['root'] = root
-        treefile['environment'] = {}
-        treefile['environment']['root'] = tree.root
-        treefile['environment']['viewmode'] = 0
-        treefile['environment']['branchlengths'] = True
-        treefile['environment']['threeD'] = False
-        treefile['environment']['color'] = background
-        treefile['environment']['angvel'] = {'x':None,'y':None,'z':None}
-        treefile['environment']['offset'] = {'dx':0.0,'dy':0.0,'dz':None,'ax':0.0,'ay':0.0,'az':0.0}
-        treefile['environment']['width'] = width
-        treefile['environment']['radius'] = node_radius
-        treefile['environment']['htulabels'] = htulabels
-        treefile['environment']['branchlabels'] = branchlabels
-        treefile['environment']['leaflabels'] = leaflabels
-        treefile['environment']['primaryuri'] = None
-        treefile['tree'] = output
-        treefile = str(simplejson.dumps(treefile).replace('\\/','/'))
-        
-        #zip the string
-        treefilezip = ZipFiles(treefile)
-        
-        stored = False
-        #don't delete the below method, it needs to be rewritten
-        """
-        if self.request.params.get('store', None):
-            #do some long term storage here
+            background = "23232F"
+            color = "FFFFCC"
+            if user:
+                author = str(user)
+            else:
+                author = "anon"
+            view_mode = 'dendrogram'
+            root = None
+            width = 1
+            htulabels = False
+            branchlabels = False
+            leaflabels = False
+            node_radius = 1
+            #set defaults
+            branch_color = "FFFFFFFF"
+            branch_width = 1.5
+            icon = "http://geophylo.appspot.com/static_files/icons/a99.png"
+            proximity = 2
+            alt_grow = 15000
+            
             try:
-                cachetime = 30 #number of days * sec/day
+                #parse a PhyloXML file
+                tree = PhyloXMLtoTree(treeXML,color=color)
             except:
-                if 'permanent' == self.request.params.get('store', None):
-                    tmpEntry = treeStore(key_name=k,
-                              objId = k,
-                              objBlob = treefilezip,
-                              userName = user,
-                              treeTitle = title,
-                              originalAuthor = user,
-                              version = version
-                              )
-                    tmpEntry.put()
+                #if xml parsing fails, assume file was Newick. Sophistication needed for future development
+                tree = PhyloXMLtoTree(treeXML,color=color)
+                
+                
+            tree.load()
+            if tree.title is not None:
+                title = tree.title
+            if tree.rooted is not None:
+                root = tree.root
+            out = ''
+            output = []
+            #output = {}
+            for a,b in tree.objtree.tree.items():
+                if a != 0:
+                    output.append(b.json())
                     
-                    tmpEntry = treeOwners(objId = k,
-                              userName = user
-                              )
-                    tmpEntry.put()
-                    stored = True
-        """
-        memcache.set("tree-data-%s" % k, treefilezip, cachetime)
+            treefile = {}
+            treefile['v'] = 2
+            treefile['k'] = k
+            treefile['date'] = str(datetime.datetime.now())
+            treefile['author'] = author
+            treefile['root'] = root
+            treefile['description'] = tree.description
+            treefile['title'] = tree.title
+            treefile['environment'] = {}
+            treefile['environment']['root'] = tree.root
+            treefile['environment']['viewmode'] = 0
+            treefile['environment']['branchlengths'] = True
+            treefile['environment']['threeD'] = False
+            treefile['environment']['color'] = background
+            treefile['environment']['angvel'] = {'x':None,'y':None,'z':None}
+            treefile['environment']['offset'] = {'dx':0.0,'dy':0.0,'dz':None,'ax':0.0,'ay':0.0,'az':0.0}
+            treefile['environment']['width'] = width
+            treefile['environment']['radius'] = node_radius
+            treefile['environment']['htulabels'] = htulabels
+            treefile['environment']['branchlabels'] = branchlabels
+            treefile['environment']['leaflabels'] = leaflabels
+            treefile['environment']['primaryuri'] = None
+            treefile['tree'] = output
+            
+            treeGroup.append(treefile)
+            groupKeys.append(k)
+            
+            #zip the string
+            treefilezip = ZipFiles(str(simplejson.dumps(treefile).replace('\\/','/')))
+            
+            stored = False
+            #don't delete the below method, it needs to be rewritten
+            """
+            if self.request.params.get('store', None):
+                #do some long term storage here
+                try:
+                    cachetime = 30 #number of days * sec/day
+                except:
+                    if 'permanent' == self.request.params.get('store', None):
+                        tmpEntry = treeStore(key_name=k,
+                                  objId = k,
+                                  objBlob = treefilezip,
+                                  userName = user,
+                                  treeTitle = title,
+                                  originalAuthor = user,
+                                  version = version
+                                  )
+                        tmpEntry.put()
+                        
+                        tmpEntry = treeOwners(objId = k,
+                                  userName = user
+                                  )
+                        tmpEntry.put()
+                        stored = True
+            """
+            memcache.set("tree-data-%s" % k, treefilezip, cachetime)
         
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
+        
+        
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
         out = {"key":k,"url":"http://phylobox.appspot.com/?%s" % (k)}
         self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
@@ -220,9 +236,19 @@ class AddNewTree(webapp.RequestHandler):
     elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "png":
         self.response.out.write(403)
     elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "link":
-        self.response.out.write("http://phylobox.appspot.com/?%s" % (k))
+        self.response.out.write("http://phylobox.appspot.com/#%s" % (k))
     else:
-        self.response.out.write(treefile)
+        if len(groupKeys)==1:
+            self.response.out.write(str(simplejson.dumps(treeGroup[0]).replace('\\/','/')))
+        else:
+            g = "phylobox-"+version+"-group-"+str(uuid.uuid4())
+            memcache.set("group-data-%s" % g, groupKeys, cachetime)
+            treeGroup = {"group":g,"trees":treeGroup}
+            self.response.out.write(str(simplejson.dumps(treeGroup).replace('\\/','/')))
+            
+        
+        
+        
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(")")
 

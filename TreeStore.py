@@ -1,6 +1,10 @@
 from google.appengine.ext import db
 import os
 
+class TreeGroup(db.Model):
+  trees = db.ListProperty(db.Key)
+  temporary = db.BooleanProperty(default=False)
+  
 class Tree(db.Model):  #stores JSON encoded elements of the tree, not for searching
   #key = tree/unique_key
   data = db.BlobProperty()

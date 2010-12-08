@@ -70,18 +70,24 @@ class PhyloXMLtoTree():
     title = None
     rooted = None
     
-    def __init__(self,xmlstring,color="FFFFFF"):
+    def __init__(self,treexml,color="FFFFFF"):
         
         #self.xmlobject = minidom.parseString(xmlstring).getElementsByTagName('phylogeny')[0].childNodes
         
         self.objtree = PhyloTree()
         self.root = None
-        self.topobject = ET.parse(StringIO.StringIO(xmlstring)).getroot().find(NS_PXML+'phylogeny')
+        self.name = "Untitled Tree"
+        self.title = "Untitled Tree" #replicated because JS client expects title, while we should be storing name
+        self.description = ""
+        self.topobject = treexml
         if cmp(self.topobject.get("rooted"),"true")==0:
             self.rooted = True
         for phylo in self.topobject:
             if cmp(phylo.tag,NS_PXML + 'name')==0:
+                self.name = str(phylo.text)
                 self.title = str(phylo.text)
+            elif cmp(phylo.tag,NS_PXML + 'description')==0:
+                self.description = str(phylo.text)
                 
         self.xmlobject = self.topobject.findall(NS_PXML+'clade')
         self.color = color
