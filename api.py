@@ -115,8 +115,8 @@ class AddNewTree(webapp.RequestHandler):
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
         
-        treeGroup = []
-        groupKeys = []
+        treeCollection = []
+        collectionKeys = []
         
         try:
             treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
@@ -190,8 +190,8 @@ class AddNewTree(webapp.RequestHandler):
             treefile['environment']['primaryuri'] = None
             treefile['tree'] = output
             
-            treeGroup.append(treefile)
-            groupKeys.append(k)
+            treeCollection.append(treefile)
+            collectionKeys.append(k)
             
             #zip the string
             treefilezip = ZipFiles(str(simplejson.dumps(treefile).replace('\\/','/')))
@@ -238,13 +238,13 @@ class AddNewTree(webapp.RequestHandler):
     elif self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "link":
         self.response.out.write("http://phylobox.appspot.com/#%s" % (k))
     else:
-        if len(groupKeys)==1:
-            self.response.out.write(str(simplejson.dumps(treeGroup[0]).replace('\\/','/')))
+        if len(collectionKeys)==1:
+            self.response.out.write(str(simplejson.dumps(treeCollection[0]).replace('\\/','/')))
         else:
-            g = "phylobox-"+version+"-group-"+str(uuid.uuid4())
-            memcache.set("group-data-%s" % g, groupKeys, cachetime)
-            treeGroup = {"group":g,"trees":treeGroup}
-            self.response.out.write(str(simplejson.dumps(treeGroup).replace('\\/','/')))
+            c = "phylobox-"+version+"-collection-"+str(uuid.uuid4())
+            memcache.set("collection-data-%s" % c, collectionKeys, cachetime)
+            treeGroup = {"collection":g,"trees":treeCollection}
+            self.response.out.write(str(simplejson.dumps(treeCollection).replace('\\/','/')))
             
         
         

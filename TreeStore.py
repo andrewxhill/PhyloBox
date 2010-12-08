@@ -1,7 +1,7 @@
 from google.appengine.ext import db
 import os
 
-class TreeGroup(db.Model):
+class Collection(db.Model):
   trees = db.ListProperty(db.Key)
   temporary = db.BooleanProperty(default=False)
   
