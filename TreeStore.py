@@ -56,7 +56,9 @@ class Annotation(db.Model):
   description = db.TextProperty()
   category = db.CategoryProperty()  #geography, uri, time, taxonomy
   name = db.StringProperty()        #a link/doi
-  value = db.TextProperty()         #annotation value
+  value = db.StringProperty()         #annotation value
+  full = db.StringProperty()         #if something longer than 500 bytes, it isn't searchable by its full value
+  triplet = db.StringProperty() #full searchable field
   user = db.UserProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
   temporary = db.BooleanProperty(default=False)

@@ -245,8 +245,6 @@ class AddNewTree(webapp.RequestHandler):
             memcache.set("collection-data-%s" % c, collectionKeys, cachetime)
             treeGroup = {"collection":g,"trees":treeCollection}
             self.response.out.write(str(simplejson.dumps(treeCollection).replace('\\/','/')))
-            
-        
         
         
     if self.request.params.get('callback', None) is not None:
@@ -475,6 +473,7 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = node[a]
+            annotation.triplet = "%s:%s:%s" % ("time",a.lower().strip(),node[a].lower().strip())
             if temporary is not None:
                 annotation.temporary = True
             annotation.put()
@@ -486,6 +485,7 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = node[a]
+            annotation.triplet = "%s:%s:%s" % ("geography",a.lower().strip(),node[a].lower().strip())
             if temporary is not None:
                 annotation.temporary = True
             annotation.put()
@@ -497,6 +497,7 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = b
+            annotation.triplet = "%s:%s:%s" % ("taxonomy",a.lower().strip(),b.lower().strip())
             if temporary is not None:
                 annotation.temporary = True
             annotation.put()
@@ -508,6 +509,7 @@ class NodeParse(webapp.RequestHandler):
             annotation.user = users.get_current_user()
             annotation.name = a
             annotation.value = b
+            annotation.triplet = "%s:%s:%s" % ("uri",a.lower().strip(),b.lower().strip())
             if temporary is not None:
                 annotation.temporary = True
             annotation.put()
@@ -534,44 +536,60 @@ class Annotations(webapp.RequestHandler):
     annotation.user = users.get_current_user()
     annotation.name = n
     annotation.value = v
+    annotation.triplet = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
     annotation.temporary = nodeindex.temporary
     annotation.put()
     
     
     
 class LookUp(webapp.RequestHandler):
-  def getChildren(childKey,output,depth=0,maxDepth=-1):
+  def getChildren(self,childKey,output,depth=0,maxDepth=-1,root=False):
     child = db.get(childKey)
-    output.append(child.data)
+    data = child.data
+    if root:
+        data = simplejson.loads(data)
+        data['parent_id'] = None
+        data = simplejson.dumps(data)
+    output.append(data)
     if len(child.children)>0:
         for c in child.children:
-            getChildren(c,output,depth+1,maxDepth)
-    return output
+            self.getChildren(c,output,depth+1,maxDepth)
+    return output 
 
   #get the stored tree json object straight from the datastore
-  def queryTreeByKey(self,k):
+  def queryTreeByKey(self):
     #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
-    
+    k = self.request.params.get('k',None)
     data = memcache.get("tree-data-%s" % k)
+    logging.error(data)
     if data is None:
         data = db.get(db.Key.from_path('Tree', k)).data
+        memcache.set("tree-data-%s" % k, data, 2000)
     treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
-    memcache.set("tree-data-%s" % k, treeData, 2000)
-    return "%s" % treeData
+    logging.error(treeData)
+    return treeData 
     
-  def simulatedAnnotationSearch(self):
-    query = Annotation.all(keys_only = True).filter("name =",'code')
-    result = query.fetch(1)
-    annotation = result[0]
-    node = annotation.parent()
-    tree = node.parent()
-    treeData = UnzipFiles(StringIO.StringIO(tree.data),iszip=True)
-    self.response.out.write("%s" % (treeData) )
+  def annotationSearch(self):
+    k = self.request.params.get('k',None)
+    c = self.request.params.get('category','taxonomy')
+    n = self.request.params.get('name','id')
+    v = self.request.params.get('value','16414')
+    searchValue = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
+    logging.error(searchValue)
+    query = Annotation.all(keys_only = True).filter("triplet =",'%s' % searchValue)
+    result = query.fetch(1)[0]
+    id = db.get(result.parent()).id
+    logging.error(id)
+    return self.querySubtree(rootId=id)
 
-  def querySubtree(self,k,rootId):
+  def querySubtree(self,rootId=None):
+    k = self.request.params.get('k',None)
+    if rootId is None:
+        rootId = self.request.params.get('rootid',None)
     out = []
     tree = db.get(db.Key.from_path('Tree', k))
-    nodeKey = db.Key.from_path('Tree', k, 'Node', rootId)
+    env = simplejson.loads(tree.environment)
+    env['root'] = rootId
     output = """{
         "description": "%s: subqueried at %s", 
         "author": "%s", 
@@ -580,10 +598,11 @@ class LookUp(webapp.RequestHandler):
         "environment": %s,
         "v": 2, 
         "date": "%s", 
-        "root": %s
-        "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,tree.environment,tree.addtime,rootId)
-        
-    for c in getChildren(nodeKey,[]):
+        "root": %s,
+        "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,simplejson.dumps(env),tree.addtime,rootId) 
+    
+    rootNode = db.Key.from_path('Tree', k, 'Node', str(rootId))
+    for c in self.getChildren(rootNode,[],root=True):
         output += "%s," % (c) 
     output += "]}"
     return output
@@ -592,14 +611,18 @@ class LookUp(webapp.RequestHandler):
     self.get(method)
   def get(self,method):
     methods = {'queryTreeByKey': self.queryTreeByKey,
-               'subtreeSearch': self.querySubtree}
+               'subtreeSearch': self.querySubtree,
+               'annotationSearch': self.annotationSearch}
+    
+    #temporary workaround until JS handles the method independently
+    #method = 'annotationSearch'
         
-    k = self.request.params.get('k',None)
+    logging.error(method)
     cb = self.request.params.get('callback')
     if cb is not None:
         self.response.out.write("%s (" % (cb) )
     
-    self.response.out.write(methods['queryTreeByKey'](k))
+    self.response.out.write( methods[method]() )
     
     if cb is not None:
         self.response.out.write(")")
