@@ -306,8 +306,13 @@ class TreeSave(webapp.RequestHandler):
     k = self.request.params.get('key', "abc") 
     
     temporary = self.request.params.get('temporary', None) 
+    isMemcache = self.request.params.get('memcache', False) 
     
-    treefile = simplejson.loads(self.request.params.get('tree',None))
+    if isMemcache:
+        data = memcache.get("tree-data-%s" % k)
+        treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True))
+    else:
+        treefile = simplejson.loads(self.request.params.get('tree',None))
         
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
@@ -578,7 +583,7 @@ class LookUp(webapp.RequestHandler):
     logging.error(searchValue)
     query = Annotation.all(keys_only = True).filter("triplet =",'%s' % searchValue)
     result = query.fetch(1)[0]
-    id = db.get(result.parent()).id
+    id = db.get(result.node()).id
     logging.error(id)
     return self.querySubtree(rootId=id)
 
@@ -615,7 +620,7 @@ class LookUp(webapp.RequestHandler):
                'annotationSearch': self.annotationSearch}
     
     #temporary workaround until JS handles the method independently
-    #method = 'annotationSearch'
+    method = 'annotationSearch'
         
     logging.error(method)
     cb = self.request.params.get('callback')

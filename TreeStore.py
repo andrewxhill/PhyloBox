@@ -42,7 +42,7 @@ class NodeIndex(db.Model):
   id = db.IntegerProperty()
   name = db.StringProperty()
   nodeColor = db.StringProperty()
-  branchColor = db.StringProperty()
+  branchColor = db.StringProperty() #need to move branchColor, nodeColor, lenght/confidence stuff to annotation methods
   branchLength = db.FloatProperty()
   branchConfidence = db.FloatProperty()
   confidenceType = db.StringProperty()
@@ -59,12 +59,13 @@ class Annotation(db.Model):
   value = db.StringProperty()         #annotation value
   full = db.StringProperty()         #if something longer than 500 bytes, it isn't searchable by its full value
   triplet = db.StringProperty() #full searchable field
+  latest = db.BooleanProperty(default=True) 
   user = db.UserProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
   temporary = db.BooleanProperty(default=False)
   
   
-"""I'm proposing this method for enabling non-branch connections
+"""I'm proposing this method for enabling connections
    between two or more nodes. What do you think? They are almost a
    super specialized Annotation, but they need something slightly 
    different"""
@@ -72,10 +73,11 @@ class NodeConnection(db.Model):
   #No Parent
   trees = db.ListProperty(db.Key) #list of trees that contain the nodes
   nodes = db.ListProperty(db.Key) #list of nodes that are connected by this connection
-  category = db.CategoryProperty()     #if False, annotation is assumed to be at node
+  connections = db.TextProperty() #json object representing each connection
   description = db.TextProperty()
+  category = db.CategoryProperty()     #if False, annotation is assumed to be at node
   name = db.StringProperty()  #geography, uri, time, taxonomy
-  value = db.TextProperty()  #anything that matches what should be expected for the category
+  value = db.StringProperty()  #anything that matches what should be expected for the category
   user = db.UserProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
   temporary = db.BooleanProperty(default=False)
