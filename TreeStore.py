@@ -41,17 +41,12 @@ class NodeIndex(db.Model):
   tree = db.ReferenceProperty(TreeIndex)
   id = db.IntegerProperty()
   name = db.StringProperty()
-  nodeColor = db.StringProperty()
-  branchColor = db.StringProperty() #need to move branchColor, nodeColor, lenght/confidence stuff to annotation methods
-  branchLength = db.FloatProperty()
-  branchConfidence = db.FloatProperty()
-  confidenceType = db.StringProperty()
   addtime = db.DateTimeProperty(auto_now_add=True)
   temporary = db.BooleanProperty(default=False)
   
 class Annotation(db.Model):
   #parent = Node.key(), something
-  node = db.ReferenceProperty(NodeIndex)
+  tree = db.ReferenceProperty()
   branch = db.BooleanProperty(default=False)     #if False, annotation is assumed to be at node
   description = db.TextProperty()
   category = db.CategoryProperty()  #geography, uri, time, taxonomy

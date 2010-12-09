@@ -351,7 +351,7 @@ class TreeSave(webapp.RequestHandler):
         params['temporary'] = True
         
     taskqueue.add(
-        url='/api/treeparse', 
+        url='/task/treeparse', 
         params=params,
         name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
         
@@ -359,168 +359,6 @@ class TreeSave(webapp.RequestHandler):
     self.response.out.write(simplejson.dumps(out))
     
     
-         
-class TreeParse(webapp.RequestHandler):
-  def get(self):
-    self.post()
-  def post(self):
-    k = self.request.params.get('key', None)
-    
-    temporary = self.request.params.get('temporary', None) 
-    
-    tree = db.get(db.Key.from_path('Tree', k))
-    treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
-    
-    indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
-    treeindex = db.get(indexkey)
-    if treeindex is None:
-        treeindex = TreeIndex(key=indexkey)
-        
-    if users.get_current_user() is not None:
-        if users.get_current_user() not in treeindex.users:
-            treeindex.users.append([users.get_current_user()])
-
-    treeindex.title = treefile["title"] if "title" in treefile.keys() else None
-    treeindex.date = treefile["date"] if "date" in treefile.keys() else None
-    treeindex.root = str(treefile["root"]) if "root" in treefile.keys() else None
-    treeindex.author = treefile["author"] if "author" in treefile.keys() else None
-    treeindex.scientificName = treefile["scientificName"] if "scientificName" in treefile.keys() else None
-    treeindex.scientificNameId = treefile["scientificNameId"] if "scientificNameId" in treefile.keys() else None
-    treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if "scientificNameAuthority" in treefile.keys() else None
-    
-    if temporary is not None:
-        treeindex.temporary = True
-        
-    treeindex.put()
-    
-    
-    for node in treefile["tree"]:
-        if 'id' not in node.keys() or node['id'] is None:
-            node['id'] = random.randint(0,1000000000000)
-            
-        nodekey = db.Key.from_path('Tree', k, 'Node', str(node["id"]))
-        newnode = db.get(nodekey)
-        if newnode is None:
-            newnode = Node(key = nodekey)
-        
-            
-        newnode.visibility = node["visibility"]     #tells the viewer what to draw
-             #JSON encoded node
-        children = []
-        
-        if "children" in node.keys() and node["children"] is not None:
-            ct = len(node["children"])
-            cct = 0
-            while cct<ct:
-                child = node["children"][cct]
-                cct+=1
-                children.append(db.Key.from_path('Tree', k, 'Node', str(child["id"])))
-        newnode.children = children
-        newnode.data = simplejson.dumps(node)  
-        newnode.put()
-        
-        params = {'key': k,'id':node["id"]}
-        if temporary is not None:
-            params['temporary'] = True
-            
-        taskqueue.add(
-            url='/api/nodeparse', 
-            params=params,
-            name="%s-%s-%s" % (int(time.time()/10),k.replace('-',''),node["id"]))
-        
-    return 200
-    
-class NodeParse(webapp.RequestHandler):
-  def get(self):
-    self.post()
-  def post(self):
-    k = self.request.params.get('key', None)
-    
-    temporary = self.request.params.get('temporary', None) 
-    
-    id = self.request.params.get('id', None)
-    logging.error("%s: %s" % (k,id))
-    indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
-    """
-    nodeindex = NodeIndex.get(indexkey)
-    if nodeindex is None:
-    """
-    nodeindex = NodeIndex(key = indexkey, parent=db.Key.from_path('Tree', k, 'Node', str(id)))
-    
-    #indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
-    logging.error(nodeindex.parent())
-    node = simplejson.loads(nodeindex.parent().data)
-    
-    nodeindex.tree = db.Key.from_path('Tree', k)
-    nodeindex.id = node["id"]
-    nodeindex.name = node["name"] if "name" in node.keys() else None
-    nodeindex.nodeColor = node["ncolor"] if "ncolor" in node.keys() else None
-    nodeindex.branchColor = node["color"] if "color" in node.keys() else None
-    nodeindex.branchLength = node["length"] if "length" in node.keys() else None
-    nodeindex.branchConfidence = node["conf"] if "conf" in node.keys() and type(node["conf"]) == type(1) else None
-    nodeindex.confidenceType = node["type"] if "type" in node.keys() else None
-    
-    if temporary is not None:
-        nodeindex.temporary = True
-        
-    nodeindex.put()
-
-    temporal_annotations = [
-            "data","dateMin","dateMax",]
-    geographic_annotations = [
-            "latitude","longitude","uncertainty","altitude","polygon",]
-    
-    for a in temporal_annotations:
-        if a in node.keys() and node[a] is not None:
-            annotation = Annotation(parent=nodeindex.key())
-            annotation.node = nodeindex
-            annotation.category = "time"
-            annotation.user = users.get_current_user()
-            annotation.name = a
-            annotation.value = node[a]
-            annotation.triplet = "%s:%s:%s" % ("time",a.lower().strip(),node[a].lower().strip())
-            if temporary is not None:
-                annotation.temporary = True
-            annotation.put()
-    for a in geographic_annotations:
-        if a in node.keys() and node[a] is not None:
-            annotation = Annotation(parent=nodeindex.key())
-            annotation.node = nodeindex
-            annotation.category = "geography"
-            annotation.user = users.get_current_user()
-            annotation.name = a
-            annotation.value = node[a]
-            annotation.triplet = "%s:%s:%s" % ("geography",a.lower().strip(),node[a].lower().strip())
-            if temporary is not None:
-                annotation.temporary = True
-            annotation.put()
-    if 'taxonomy' in node.keys() and node['taxonomy'] is not None:
-        for a,b in node["taxonomy"].items():
-            annotation = Annotation(parent=nodeindex.key())
-            annotation.node = nodeindex
-            annotation.category = "taxonomy"
-            annotation.user = users.get_current_user()
-            annotation.name = a
-            annotation.value = b
-            annotation.triplet = "%s:%s:%s" % ("taxonomy",a.lower().strip(),b.lower().strip())
-            if temporary is not None:
-                annotation.temporary = True
-            annotation.put()
-    if 'uri' in node.keys() and node['uri'] is not None:
-        for a,b in node["uri"].items():
-            annotation = Annotation(parent=nodeindex.key())
-            annotation.node = nodeindex
-            annotation.category = "uri"
-            annotation.user = users.get_current_user()
-            annotation.name = a
-            annotation.value = b
-            annotation.triplet = "%s:%s:%s" % ("uri",a.lower().strip(),b.lower().strip())
-            if temporary is not None:
-                annotation.temporary = True
-            annotation.put()
-                
-    return 200
-      
       
 class Annotations(webapp.RequestHandler):
   def get(self):
@@ -576,15 +414,19 @@ class LookUp(webapp.RequestHandler):
     
   def annotationSearch(self):
     k = self.request.params.get('k',None)
-    c = self.request.params.get('category','taxonomy')
-    n = self.request.params.get('name','id')
-    v = self.request.params.get('value','16414')
-    searchValue = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
-    logging.error(searchValue)
-    query = Annotation.all(keys_only = True).filter("triplet =",'%s' % searchValue)
+    c = self.request.params.get('category',None)
+    n = self.request.params.get('name',None)
+    v = self.request.params.get('value',None)
+    if c==n==v==None:
+        searchValue = self.request.params.get('triplet',None)
+    else:
+        searchValue = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
+    query = Annotation.all().filter("triplet =",'%s' % searchValue).filter("tree = ", db.Key.from_path('Tree', k))
     result = query.fetch(1)[0]
-    id = db.get(result.node()).id
-    logging.error(id)
+    annoType = type(result)
+    while type(result) == annoType:
+        result = result.parent()
+    id = result.id
     return self.querySubtree(rootId=id)
 
   def querySubtree(self,rootId=None):
@@ -620,7 +462,7 @@ class LookUp(webapp.RequestHandler):
                'annotationSearch': self.annotationSearch}
     
     #temporary workaround until JS handles the method independently
-    method = 'annotationSearch'
+    #method = 'annotationSearch'
         
     logging.error(method)
     cb = self.request.params.get('callback')
@@ -637,8 +479,6 @@ application = webapp.WSGIApplication([('/api/new', AddNewTree),
                                       ('/api/group', TreeGroup),
                                       ('/api/user', UserInfo),
                                       ('/api/save', TreeSave),
-                                      ('/api/treeparse', TreeParse),
-                                      ('/api/nodeparse', NodeParse),
                                       ('/api/adduser', AddUser),
                                       ('/api/annotations', Annotations),
                                       ('/api/lookup/(.*)', LookUp)],      

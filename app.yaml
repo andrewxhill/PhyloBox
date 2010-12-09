@@ -22,6 +22,9 @@ handlers:
   script: cron.py
   login: admin
   
+- url: /task/.*
+  script: task.py
+  
 - url: /api/.*
   script: api.py
   
