@@ -12,7 +12,7 @@
         .cl{ overflow: auto; background: #00001d; color: #c69500; float:left; width:300px; height: 400px;  border: 1px solid red; margin-left: 15px; }
         .info{ background: #00001d; color: #c69500; padding: 10px; font-size: 1.3em; float:left; width:695px; height: 85px;  border: 1px solid red; margin-top: 15px; }
     </style>
-    <script type="text/javascript" src="http://localhost:8080/static/js/2-0/widget.phylobox.js"></script>
+    <script type="text/javascript" src="/static/js/2-0/widget.phylobox.js"></script>
     
     <script type="text/javascript">
         function init(){
@@ -34,7 +34,7 @@
 				shadow: true
 			  };
               var myPhylobox = new PBox("phylo_div", myOptions);
-              myPhylobox.drawTree("key","phylobox-2-0-98e1fa6b-b178-43c9-8e9e-da3d7b5fcc9d");
+              myPhylobox.drawTree("url","http://www.phylosoft.org/archaeopteryx/examples/data/multiple_supports.xml");
               function myF( e, data ) {
                     // do something...
                     $('.eventLog').html( "You clicked " + data.node.id );

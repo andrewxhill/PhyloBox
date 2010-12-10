@@ -14,7 +14,7 @@
 '--------------------------------------------------------------------------*/
 // locaation
 var version = "http://2-0.latest.phylobox.appspot.com/";
-version = "http://localhost:8080/";
+//version = "http://localhost:8080/";
 // tools
 var toolbar__ = '<div id="toolbar">';
 toolbar__ += 		'<nav>';
@@ -49,7 +49,7 @@ PBox = function(divid, options) {
     var _this = this;
     _this._divid = divid;
     _this._options = options;
-    _this.delay = 1500;
+    _this.delay = 2000;
     
     
     function jQueryPBLoad(){
@@ -60,7 +60,7 @@ PBox = function(divid, options) {
             script.setAttribute('src', "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js");
             script.onload = function() { 
                 jQuery.noConflict(); 
-                _this.delay = _this.delay - 400;
+                _this.delay = _this.delay - 1000;
                 classPBLoad();
             }
         }else{
@@ -75,7 +75,7 @@ PBox = function(divid, options) {
             script.setAttribute('src', version+"static/js/2-0/class.phylobox.js");
             head.appendChild(script);
             script.onload = function() {
-                _this.delay = _this.delay - 400;
+                _this.delay = _this.delay -900;
                 mainPBLoad();
             }
         }else{

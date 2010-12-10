@@ -16,13 +16,14 @@
 PhyloBox = function( $ ) {
 	// constants
 	var HOST = window.location.host,
-		WIDGET = (HOST == "localhost:8080" && (window.location.pathname).split('/')[1] == "examples") ||
+		WIDGET = (window.location.pathname).split('/')[1] == "examples" ||
             (HOST != "localhost:8080" && 
 			 HOST != "phylobox.appspot.com" && 
 			 HOST != "2-0.latest.phylobox.appspot.com"),
-		LOCAL = true,
-		HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
-	//console.log(WIDGET);
+		LOCAL = true;
+        HOME = HOST in {"localhost:8080":'',"2-0.latest.phylobox.appspot.com/":''} ? "http://"+HOST+"/" : "http://2-0.latest.phylobox.appspot.com/";
+		//HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
+    //console.log(HOME);
     var API_TREE = HOME + "api/lookup/queryTreeByKey",
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
