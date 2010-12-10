@@ -13,54 +13,8 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 // locaation
-//var version = "http://localhost:8080/";
 var version = "http://2-0.latest.phylobox.appspot.com/";
-// load all scripts
-(function() {
-    var head = document.getElementsByTagName('head').item(0),
-    style = document.createElement("link");
-	style.type = "text/css";
-	style.rel = "stylesheet";
-	style.href = version+"static/css/2-0/widget.style.css";
-	style.media = "screen";
-	head.appendChild(style);
-    //document.body.appendChild(style);
-	var script = document.createElement("script");
-	head.appendChild(script);
-	script.type = "text/javascript";
-	script.src = "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js";
-    script.setAttribute('src', "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js");
-    //document.body.appendChild(script);
-    script.onload = function() { 
-        jQuery.noConflict(); 
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        //script.src = version+"static/js/2-0/class.phylobox.js";
-        script.setAttribute('src', version+"static/js/2-0/class.phylobox.js");
-        //document.body.appendChild(style);
-        head.appendChild(script);
-        script.onload = function() {
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            //script.src = version+"static/js/2-0/main.phylobox.js";
-            script.setAttribute('src', version+"static/js/2-0/main.phylobox.js");
-            //document.body.appendChild(style);
-            head.appendChild(script);
-            script.onload = function() {
-                var script = document.createElement("script");
-                script.type = "text/javascript";
-                //script.src = version+"static/js/2-0/event.phylobox.js";
-                script.setAttribute('src', version+"static/js/2-0/event.phylobox.js");
-                head.appendChild(script);
-                script.onload = function(){
-                    while (!PhyloBox) {};
-                    pbinit();
-                }
-            }
-            
-        }
-    };
-})();
+version = "http://localhost:8080/";
 // tools
 var toolbar__ = '<div id="toolbar">';
 toolbar__ += 		'<nav>';
@@ -74,3 +28,111 @@ toolbar__ += 				'<div class="clear"></div>';
 toolbar__ += 			'</ul>';
 toolbar__ += 		'</nav>';
 toolbar__ += '</div>';
+
+var head = document.getElementsByTagName('head').item(0);
+style = document.createElement("link");
+style.type = "text/css";
+style.rel = "stylesheet";
+style.href = version+"static/css/2-0/widget.style.css";
+style.media = "screen";
+head.appendChild(style);
+
+if (typeof PbEvent != 'function'){
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.setAttribute('src', version+"static/js/2-0/event.phylobox.js");
+    head.appendChild(script);
+}
+// load all scripts
+var PhyloBoxInitialized = false;
+PBox = function(divid, options) {
+    var _this = this;
+    _this._divid = divid;
+    _this._options = options;
+    _this.delay = 1500;
+    
+    
+    function jQueryPBLoad(){
+        if(typeof jQuery != 'function'){
+            script = document.createElement("script");
+            head.appendChild(script);
+            script.type = "text/javascript";
+            script.setAttribute('src', "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js");
+            script.onload = function() { 
+                jQuery.noConflict(); 
+                _this.delay = _this.delay - 400;
+                classPBLoad();
+            }
+        }else{
+            classPBLoad();
+        }
+    }
+    
+    function classPBLoad(){
+        if (typeof Class != 'function'){
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            script.setAttribute('src', version+"static/js/2-0/class.phylobox.js");
+            head.appendChild(script);
+            script.onload = function() {
+                _this.delay = _this.delay - 400;
+                mainPBLoad();
+            }
+        }else{
+            mainPBLoad();
+        }
+    }
+    
+    function mainPBLoad(){
+        if (typeof PhyloBox != 'object'){
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            script.setAttribute('src', version+"static/js/2-0/main.phylobox.js");
+            head.appendChild(script);
+            script.onload = function() {
+                _this.delay = 1;
+                console.log('loaded');
+                gutPBSelf();
+            }
+        }else{
+            gutPBSelf();
+        }
+    }
+        
+    function gutPBSelf(){
+        PhyloBoxInitialized = true;
+        var tmpDiv = _this._divid;
+        var tmpOpt = _this._options;
+        _this = PhyloBox;
+        var tmp = _this.Viz(tmpDiv,tmpOpt);
+        _this.Viz = tmp;
+    }
+    
+    jQueryPBLoad()
+                
+    if (!PhyloBoxInitialized) {
+        return {
+            drawTree: function(a, b){
+                setTimeout(function(){
+                    _this.Viz.drawTree(a,b);
+                },_this.delay);
+            },
+            // registers an event with a PhyloBox instance
+            addListener: function( t, h ) {
+                setTimeout(function(){
+                    _this.Viz.addListener(t,h);
+                },_this.delay + 50);
+            },
+            // removes an event with a PhyloBox instance
+            removeListener: function( t, h ) { 
+                setTimeout(function(){
+                    _this.Viz.removeListener(t,h);
+                },_this.delay + 50);
+            }
+        }
+    } else {
+        return new PhyloBox.Viz(divid,options);
+    }
+};
+
+

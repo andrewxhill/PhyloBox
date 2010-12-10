@@ -409,7 +409,7 @@ class LookUp(webapp.RequestHandler):
         data = db.get(db.Key.from_path('Tree', k)).data
         memcache.set("tree-data-%s" % k, data, 2000)
     treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
-    logging.error(treeData)
+    #logging.error(treeData)
     return treeData 
     
   def annotationSearch(self):
@@ -464,7 +464,7 @@ class LookUp(webapp.RequestHandler):
     #temporary workaround until JS handles the method independently
     #method = 'annotationSearch'
         
-    logging.error(method)
+    #logging.error(method)
     cb = self.request.params.get('callback')
     if cb is not None:
         self.response.out.write("%s (" % (cb) )

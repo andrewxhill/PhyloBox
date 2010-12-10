@@ -46,7 +46,7 @@ class NodeIndex(db.Model):
   
 class Annotation(db.Model):
   #parent = Node.key(), something
-  tree = db.ReferenceProperty()
+  tree = db.ReferenceProperty(Tree)
   branch = db.BooleanProperty(default=False)     #if False, annotation is assumed to be at node
   description = db.TextProperty()
   category = db.CategoryProperty()  #geography, uri, time, taxonomy

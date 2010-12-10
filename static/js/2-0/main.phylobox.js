@@ -12,15 +12,18 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
+
 PhyloBox = function( $ ) {
 	// constants
 	var HOST = window.location.host,
-		WIDGET = HOST != "localhost:8080" && 
-			HOST != "phylobox.appspot.com" && 
-			HOST != "2-0.latest.phylobox.appspot.com",
+		WIDGET = (HOST == "localhost:8080" && (window.location.pathname).split('/')[1] == "examples") ||
+            (HOST != "localhost:8080" && 
+			 HOST != "phylobox.appspot.com" && 
+			 HOST != "2-0.latest.phylobox.appspot.com"),
 		LOCAL = true,
 		HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
-	var API_TREE = HOME + "api/lookup/queryTreeByKey",
+	//console.log(WIDGET);
+    var API_TREE = HOME + "api/lookup/queryTreeByKey",
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
 		API_SAVE_TREE = HOME + "api/save",
@@ -208,7 +211,7 @@ PhyloBox = function( $ ) {
 		if ( ! window.console ) window.console = { log: function () {} };
 		// methods
 		return {
-			
+
 		};
 	};
 /*###########################################################################
@@ -1778,7 +1781,7 @@ var Navigation = function( s ) {
 		$( _activeMenu.nextElementSibling ).hide();
 		_activeMenu = null;
 		// show loading gif
-		
+
 		// save ref to parent
 		var parent = this.parentNode;
 		// create an iframe
