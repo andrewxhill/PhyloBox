@@ -62,51 +62,15 @@ class MainPage(webapp.RequestHandler):
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
     
-    k = self.request.params.get('k', None)
-    if k is None:
-        #k = "tmp-phylobox-"+version+"-"+str(uuid.uuid4())
-        #treefile = open("examplejson",'r').read()
-        template_values = {
-                #'key':0,
-                'user':user,
-                'url': url,
-                'url_linktext': url_linktext,
-                }
-        path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
-        data = template.render(path, template_values)
-        self.response.out.write(data)
-    else:  
-        #check memcache for the page first
-        data = memcache.get("tree-edit-"+k)
-        #return it if it exists
-        if data is not None:
-            self.response.out.write(data)
-        #else build the page
-        else:
-            tmp = False
-            if cmp('tmp',k[:3])==0:
-                tmp=True
-            
-            collaborators = []
-            results = treeOwners.gql("WHERE objId = :objId",
-                            objId=k).fetch(100)
-            for res in results:
-                collaborators.append(str(res.userName))
-            
-            template_values = {
-                    'key':k,
-                    'tmp':tmp,
-                    'user':user,
-                    'url': url,
-                    'url_linktext': url_linktext,
-                    'collaborators': collaborators
-                    }
-        #set path
-        path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
-        #render the final page HTML
-        data = template.render(path, template_values)
-        #write the page
-        self.response.out.write(data)
+    template_values = {
+            #'key':0,
+            'user':user,
+            'url': url,
+            'url_linktext': url_linktext,
+            }
+    path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
+    data = template.render(path, template_values)
+    self.response.out.write(data)
         
 class SignOut(webapp.RequestHandler):
   def get(self):
