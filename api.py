@@ -496,9 +496,9 @@ class LookUp(webapp.RequestHandler):
   def post(self,method):
     self.get(method)
   def get(self,method):
-    methods = {'queryTreeByKey': self.queryTreeByKey,
-               'subtreeSearch': self.querySubtree,
-               'annotationSearch': self.annotationSearch}
+    methods = {'byKey': self.queryTreeByKey,
+               'subTree': self.querySubtree,
+               'byAnnotation': self.annotationSearch}
     
     #temporary workaround until JS handles the method independently
     #method = 'annotationSearch'

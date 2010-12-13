@@ -39,7 +39,15 @@
             var vars = getVars();
             if ( vars.length > 0 ) {
                 var key = vars['k'];
-                myBox.drawTree( "key", key );
+                options = {};
+                if (vars.method) {
+                    //keeps track of byKey, byAnnotation, and subtree query parameters
+                    options['method']=vars.method;
+                }
+                if (vars.params) {
+                    options['params']=vars.params;
+                }
+                myBox.drawTree( "key", key, options );
             } else myBox.drawTree();
         };
     </script>

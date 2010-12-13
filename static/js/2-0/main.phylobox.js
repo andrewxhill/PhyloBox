@@ -24,7 +24,7 @@ PhyloBox = function( $ ) {
         HOME = HOST in {"localhost:8080":'',"2-0.latest.phylobox.appspot.com/":''} ? "http://"+HOST+"/" : "http://2-0.latest.phylobox.appspot.com/";
 		//HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
     //console.log(HOME);
-    var API_TREE = HOME + "api/lookup/" + "queryTreeByKey",
+    var API_TREE = HOME + "api/lookup/",
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
 		API_SAVE_TREE = HOME + "api/save",
@@ -371,6 +371,7 @@ PhyloBox = function( $ ) {
 				var type = WIDGET ? undefined : "POST";
 					server = s || _server,
 					query = WIDGET ? q + "&callback=?" : q;
+                console.log(server);
 				$.ajax({
 		  			type: type, 
 					url: server, 
@@ -646,7 +647,7 @@ PhyloBox = function( $ ) {
 						if ( ! WIDGET )
 							RX_URL( window.location.hash.substr( 1 ) ) ?
 								window.location.hash = window.location.hash.substr( 1 ) :
-								window.location.hash = _key;
+								_key = _key;
 						break;
 					case "save":
 						// notify sandbox
@@ -2641,7 +2642,9 @@ var Feedback = function( s ) {
 				taxalist: false,
 				cladeinfo: false,
 				treeinfo: false,
-				feedback: false
+				feedback: false,
+				method: 'byKey', //to be appended to the end of the query url so /api/lookup/ becomes /api/lookup/byKey
+				params: null  //parameters to be passed via lookup other than key
 		    }, phylobox_environment_options );
 			// make a sandbox
 			var _sandbox = new _Sandbox( _context, _options );
