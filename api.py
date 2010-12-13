@@ -448,7 +448,7 @@ class LookUp(webapp.RequestHandler):
         searchValue = self.request.params.get('triplet',None).lower().strip()
     else:
         searchValue = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
-    
+    logging.error(searchValue)
     id = memcache.get("subtree-root-%s-%s" % (k,searchValue))
     if id is None:
         query = Annotation.all().filter("triplet =",'%s' % searchValue).filter("tree = ", db.Key.from_path('Tree', k))

@@ -297,10 +297,11 @@ PhyloBox = function( $ ) {
 			},
 			load: function( data, group ) {
 				// check group
-				if( group )
+				if( group ) {
 					// get the tree keys from the api
+                    console.log('load');
 					_io.request( "load", "g=" + data );
-				else {
+				} else {
 					// create a tree type
 					var t = new _Tree( this );
 					// save it
@@ -348,9 +349,9 @@ PhyloBox = function( $ ) {
 /*###########################################################################
 ########################################################################## IO
 ###########################################################################*/
-	var _IO = function( x, c, s, dt, l ) {
+	var _IO = function( x, c, s, dt, l, p) {
 		// private vars
-		var _context, _caller, _server, _dataType, _loader;
+		var _context, _caller, _server, _dataType, _loader, _params;
 		// show / hide loading icon (if exists)
 		function _loading( vis ) {
 			vis ? 
@@ -360,9 +361,10 @@ PhyloBox = function( $ ) {
 				}); 
 		}
 		// init
+        if (!p) { p={} };
 		if ( ! x || ! c || ! s || ! dt || ! l ) 
 			return error_( "invalid arguments..." );
-		_context = x; _caller = c; _server = s; _dataType = dt; _loader = l;
+		_context = x; _caller = c; _server = s; _dataType = dt; _loader = l, _params=p;
 		// methods
 		return {
 			// make a data request
@@ -371,7 +373,9 @@ PhyloBox = function( $ ) {
 				var type = WIDGET ? undefined : "POST";
 					server = s || _server,
 					query = WIDGET ? q + "&callback=?" : q;
-                console.log(server);
+                for (p in _params){
+                    query = query+'&'+p+'='+_params[p];
+                }
 				$.ajax({
 		  			type: type, 
 					url: server, 
@@ -615,8 +619,9 @@ PhyloBox = function( $ ) {
 				var pt = WIDGET && _sandbox.options.tools ? 40 : 20;
 	            _view = new _Engine.View( _sandbox, _key, holder, { t: pt, r: 20, b: 20, l: 20 }, true, 20, true );
 	            // initialize io
-				_io = new _IO( _sandbox.context, this, API_TREE, "json", "#tree-loader-" + _view.id );
-				// load data or go on
+				_io = new _IO( _sandbox.context, this, API_TREE + sandbox.options.method, "json", "#tree-loader-" + _view.id, sandbox.options.params );
+				
+                // load data or go on
 				typeof data == "string" ? 
 					RX_URL.test( data ) ? 
 						_io.request( "load", "phyloUrl=" + data, API_NEW ) : 

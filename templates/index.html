@@ -28,27 +28,38 @@
             for(var i = 0; i < hashes.length; i++)
             {
                 hash = hashes[i].split('=');
-                vars.push(hash[0]);
-                vars[hash[0]] = hash[1];
+                if (hash[0]=='method'||hash[0]=='k'){
+                    vars.push(hash[0]);
+                    vars[hash[0]] = hash[1];
+                }else{
+                    if (!vars.params){
+                        vars.push('params');
+                        vars['params'] = {};
+                    }
+                    vars['params'][hash[0]]=hash[1];
+                }
             }
             return vars;
         };
         
         function init() {
-            var myBox = new PhyloBox.Viz();
+            var myBox;
             var vars = getVars();
-            if ( vars.length > 0 ) {
+            if ( vars.k ) {
                 var key = vars['k'];
                 options = {};
-                if (vars.method) {
-                    //keeps track of byKey, byAnnotation, and subtree query parameters
-                    options['method']=vars.method;
+                if (vars.method){
+                    options['method'] = vars.method;
                 }
-                if (vars.params) {
-                    options['params']=vars.params;
+                if (vars.params){
+                    options['params'] = vars.params;
                 }
-                myBox.drawTree( "key", key, options );
-            } else myBox.drawTree();
+                myBox = new PhyloBox.Viz(null,options);
+                myBox.drawTree( "key", key);
+            } else {
+                myBox = new PhyloBox.Viz();
+                myBox.drawTree();
+            }
         };
     </script>
 </head>
