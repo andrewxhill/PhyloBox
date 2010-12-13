@@ -9,3 +9,18 @@ indexes:
 # manually, move them above the marker line.  The index.yaml file is
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
+
+- kind: Annotation
+  properties:
+  - name: temporary
+  - name: addtime
+
+- kind: NodeIndex
+  properties:
+  - name: temporary
+  - name: addtime
+
+- kind: TreeIndex
+  properties:
+  - name: temporary
+  - name: addtime

@@ -2,3 +2,15 @@ cron:
 - description: Daily tmpStore cleanup
   url: /dailycron
   schedule: every 24 hours
+  
+- description: Cleanup Temporary Annotations
+  url: /cron/deletetempannotations
+  schedule: every 30 minutes
+
+- description: Cleanup Temporary Nodes
+  url: /cron/deletetempnodes
+  schedule: every 2 hours
+
+- description: Cleanup Temporary Trees
+  url: /cron/deletetemptrees
+  schedule: every 48 hours

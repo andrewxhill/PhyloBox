@@ -30,22 +30,30 @@ toolbar__ += 		'</nav>';
 toolbar__ += '</div>';
 
 var head = document.getElementsByTagName('head').item(0);
-style = document.createElement("link");
+var style = document.createElement("link");
 style.type = "text/css";
 style.rel = "stylesheet";
 style.href = version+"static/css/2-0/widget.style.css";
 style.media = "screen";
 head.appendChild(style);
 
+
 if (typeof PbEvent != 'function'){
     var script = document.createElement("script");
     script.type = "text/javascript";
     script.setAttribute('src', version+"static/js/2-0/event.phylobox.js");
     head.appendChild(script);
+    
+    script = new Image(); 
+    script.src = '/static/files/phylobox_embedded_tree.png';
+    script.style.display = 'none';
+    script.onload = function(){
+        document.body.appendChild(script);  
+    }
 }
 // load all scripts
 var PhyloBoxInitialized = false;
-PBox = function(divid, options) {
+PhyBox = function(divid, options) {
     var _this = this;
     _this._divid = divid;
     _this._options = options;
@@ -54,7 +62,7 @@ PBox = function(divid, options) {
     
     function jQueryPBLoad(){
         if(typeof jQuery != 'function'){
-            script = document.createElement("script");
+            var script = document.createElement("script");
             head.appendChild(script);
             script.type = "text/javascript";
             script.setAttribute('src', "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js");

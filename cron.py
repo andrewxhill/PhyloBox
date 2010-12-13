@@ -21,9 +21,8 @@ import logging
 
 
 #project module storing all the db table models
-from DataStore import *
+from TreeStore import *
 from phyloxml import *
-from api import *
 from GenericMethods import *
 from NewickParser import *
 
@@ -34,9 +33,52 @@ class DailyCron(webapp.RequestHandler):
   def get(self):   
     seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
 
+class DeleteTemporaryAnnotations(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    q = db.GqlQuery("SELECT __key__ FROM Annotation WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=30)).fetch(800)
+    try:
+        db.delete(q)
+    except:
+        pass
+    return 200
 
-application = webapp.WSGIApplication(
-                                     [('/cron/dailycron', DailyCron)],      
+class DeleteTemporaryNodes(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    d = []
+    q = db.GqlQuery("SELECT __key__ FROM NodeIndex WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=30)).fetch(500)
+    for n in q:
+        d.append(n.parent())
+    try:
+        db.delete(q)
+        db.delete(d)
+    except:
+        pass
+    return 200
+
+class DeleteTemporaryTrees(webapp.RequestHandler):
+  def get(self):
+    self.post()
+  def post(self):
+    d = []
+    q = db.GqlQuery("SELECT __key__ FROM TreeIndex WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=30)).fetch(200)
+    for n in q:
+        d.append(n.parent())
+    try:
+        db.delete(q)
+        db.delete(d)
+    except:
+        pass
+    return 200
+
+
+application = webapp.WSGIApplication([('/cron/deletetempannotations', DeleteTemporaryAnnotations),
+                                      ('/cron/deletetempnodes', DeleteTemporaryNodes),
+                                      ('/cron/deletetemptrees', DeleteTemporaryTrees),
+                                      ('/cron/dailycron', DailyCron)],      
                                      debug=False)
                                      
 def main():

@@ -24,7 +24,8 @@ PhyloBox = function( $ ) {
         HOME = HOST in {"localhost:8080":'',"2-0.latest.phylobox.appspot.com/":''} ? "http://"+HOST+"/" : "http://2-0.latest.phylobox.appspot.com/";
 		//HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
     //console.log(HOME);
-    var API_TREE = HOME + "api/lookup/queryTreeByKey",
+    var API_METHOD = "queryTreeByKey"
+    var API_TREE = HOME + "api/lookup/" + API_METHOD,
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
 		API_SAVE_TREE = HOME + "api/save",

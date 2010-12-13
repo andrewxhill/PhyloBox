@@ -111,19 +111,20 @@ class AddNewTree(webapp.RequestHandler):
     else:
         treefile = self.request.params.get('phyloFile', None)
     
+    treeCollection = []
+    collectionKeys = []
+    treeSizes = []
+    
     if treefile is not None:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
-        
-        treeCollection = []
-        collectionKeys = []
         
         try:
             treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
         except:
             treefile = ParseNewick(str(treefile))
             treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
-            
+        
         for treeXML in treexml.findall(NS_PXML+'phylogeny'):
                 
             background = "23232F"
@@ -190,6 +191,8 @@ class AddNewTree(webapp.RequestHandler):
             treefile['environment']['primaryuri'] = None
             treefile['tree'] = output
             
+            treeSizes.append(len(output))
+            
             treeCollection.append(treefile)
             collectionKeys.append(k)
             
@@ -222,12 +225,28 @@ class AddNewTree(webapp.RequestHandler):
                         stored = True
             """
             memcache.set("tree-data-%s" % k, treefilezip, cachetime)
+            #logging.error("tree-data-%s" % k)
+            #simplejson.loads(UnzipFiles(StringIO.StringIO(treefilezip),iszip=True))
+            #logging.error(memcache.get("tree-data-%s" % k))
+                    
+    for t in treeCollection:
+        k = t['k']
+        params = {
+                'key': k,
+                'memcache': True,
+                'temporary': True
+            }
+        
+        taskqueue.add(
+            queue_name='tree-processing-queue',
+            url='/api/save', 
+            params=params,
+            name="02-%s-%s" % (k.replace('-',''),int(time.time())))
         
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
-        
-        
+
     if self.request.params.get('response', None) is not None and str(self.request.params.get('response', "")) == "key":
         out = {"key":k,"url":"http://phylobox.appspot.com/?%s" % (k)}
         self.response.out.write(simplejson.dumps(out).replace('\\/','/')) 
@@ -239,18 +258,25 @@ class AddNewTree(webapp.RequestHandler):
         self.response.out.write("http://phylobox.appspot.com/#%s" % (k))
     else:
         if len(collectionKeys)==1:
-            self.response.out.write(str(simplejson.dumps(treeCollection[0]).replace('\\/','/')))
+            if max(treeSizes) > 2000:
+                #logging.error('very large tree')
+                self.response.out.write(str(simplejson.dumps(
+                    {"error": "your tree is very large", "suggestions": 
+                        ["some option"]
+                    })))
+            else:
+                self.response.out.write(str(simplejson.dumps(treeCollection[0]).replace('\\/','/')))
         else:
             c = "phylobox-"+version+"-collection-"+str(uuid.uuid4())
             memcache.set("collection-data-%s" % c, collectionKeys, cachetime)
-            treeGroup = {"collection":g,"trees":treeCollection}
+            treeGroup = {"collection":c,"trees":treeCollection}
             self.response.out.write(str(simplejson.dumps(treeCollection).replace('\\/','/')))
         
         
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(")")
 
-    logging.error('done')
+    #logging.error('done')
     
 ############################
 class TreeGroup(webapp.RequestHandler):
@@ -306,6 +332,7 @@ class TreeSave(webapp.RequestHandler):
     k = self.request.params.get('key', "abc") 
     
     temporary = self.request.params.get('temporary', None) 
+    
     isMemcache = self.request.params.get('memcache', False) 
     
     if isMemcache:
@@ -404,7 +431,7 @@ class LookUp(webapp.RequestHandler):
     #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
     k = self.request.params.get('k',None)
     data = memcache.get("tree-data-%s" % k)
-    logging.error(data)
+    #logging.error(data)
     if data is None:
         data = db.get(db.Key.from_path('Tree', k)).data
         memcache.set("tree-data-%s" % k, data, 2000)
@@ -418,40 +445,52 @@ class LookUp(webapp.RequestHandler):
     n = self.request.params.get('name',None)
     v = self.request.params.get('value',None)
     if c==n==v==None:
-        searchValue = self.request.params.get('triplet',None)
+        searchValue = self.request.params.get('triplet',None).lower().strip()
     else:
         searchValue = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
-    query = Annotation.all().filter("triplet =",'%s' % searchValue).filter("tree = ", db.Key.from_path('Tree', k))
-    result = query.fetch(1)[0]
-    annoType = type(result)
-    while type(result) == annoType:
-        result = result.parent()
-    id = result.id
+    
+    id = memcache.get("subtree-root-%s-%s" % (k,searchValue))
+    if id is None:
+        query = Annotation.all().filter("triplet =",'%s' % searchValue).filter("tree = ", db.Key.from_path('Tree', k))
+        result = query.fetch(1)[0]
+        annoType = type(result)
+        while type(result) == annoType:
+            result = result.parent()
+        id = result.id
+        memcache.set("subtree-root-%s-%s" % (k,searchValue),id,)
     return self.querySubtree(rootId=id)
 
   def querySubtree(self,rootId=None):
     k = self.request.params.get('k',None)
     if rootId is None:
         rootId = self.request.params.get('rootid',None)
-    out = []
-    tree = db.get(db.Key.from_path('Tree', k))
-    env = simplejson.loads(tree.environment)
-    env['root'] = rootId
-    output = """{
-        "description": "%s: subqueried at %s", 
-        "author": "%s", 
-        "k": "%s", 
-        "title": "%s", 
-        "environment": %s,
-        "v": 2, 
-        "date": "%s", 
-        "root": %s,
-        "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,simplejson.dumps(env),tree.addtime,rootId) 
-    
-    rootNode = db.Key.from_path('Tree', k, 'Node', str(rootId))
-    for c in self.getChildren(rootNode,[],root=True):
-        output += "%s," % (c) 
-    output += "]}"
+    output = memcache.get("subtree-data-%s-%s" % (k,rootId))
+    if output is None:
+        out = []
+        tree = db.get(db.Key.from_path('Tree', k))
+        env = simplejson.loads(tree.environment)
+        env['root'] = rootId
+        output = """{
+            "description": "%s: subqueried at %s", 
+            "author": "%s", 
+            "k": "%s", 
+            "title": "%s", 
+            "environment": %s,
+            "v": 2, 
+            "date": "%s", 
+            "root": %s,
+            "tree": [""" % (tree.title,rootId,tree.author,k,tree.title,simplejson.dumps(env),tree.addtime,rootId) 
+        rootNode = db.Key.from_path('Tree', k, 'Node', str(rootId))
+        for c in self.getChildren(rootNode,[],root=True):
+            output += "%s," % (c) 
+        output += "]}"
+        try:
+            tmp = ZipFiles(str(simplejson.dumps(output).replace('\\/','/')))
+            memcache.set("subtree-data-%s-%s" % (k,rootId),tmp,3000)
+        except:
+            pass
+    else:
+        output = simplejson.loads(UnzipFiles(StringIO.StringIO(output),iszip=True))
     return output
     
   def post(self,method):
