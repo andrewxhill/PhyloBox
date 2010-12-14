@@ -104,9 +104,9 @@ class AddNewTree(webapp.RequestHandler):
     treeSizes = []
     
     #if self.request.params.get('phyloFile', None) is None:
-    if self.request.params.get('phyloUrl', None) is not None:
-        fileurl = str(self.request.params.get('phyloUrl', None)).strip()
-        k="phylobox-"+version+"-"+str(fileurl).lower().replace('http://','').replace('/','1').replace('.','0').replace('-','2').replace('?','3').replace('&','4').replace('?','3').replace('=','5').replace(':','6')
+    fileurl = self.request.params.get('phyloUrl', None)
+    if fileurl is not None:
+        k="phylobox-"+version+"-"+str(fileurl).lower().replace('http://','').replace('/','1').replace('.','0').replace('-','2').replace('?','3').replace('&','4').replace('?','3').replace('=','5').replace(':','6').replace('_','7')
         data = memcache.get("tree-data-"+k)
         if data is None:
             result = urlfetch.fetch(url=fileurl)
@@ -121,8 +121,8 @@ class AddNewTree(webapp.RequestHandler):
     
     
     if treefile is not None:
-        if fileurl:
-            k="phylobox-"+version+"-"+str(fileurl).lower().replace('http://','').replace('/','1').replace('.','0').replace('-','2').replace('?','3').replace('&','4').replace('=','5').replace(':','6')
+        if fileurl is not None:
+            k="phylobox-"+version+"-"+str(fileurl).lower().replace('http://','').replace('/','1').replace('.','0').replace('-','2').replace('?','3').replace('&','4').replace('=','5').replace(':','6').replace('_','7')
         else:
             k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
