@@ -98,26 +98,33 @@ class AddNewTree(webapp.RequestHandler):
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
     cachetime = 9000
-    
-    #if self.request.params.get('phyloFile', None) is None:
-    if self.request.params.get('phyloUrl', None) is not None:
-        fileurl = str(self.request.params.get('phyloUrl', None)).strip()
-        treefile = memcache.get("tree-data-"+str(fileurl).lower())
-        if treefile is None:
-            result = urlfetch.fetch(url=fileurl)
-            if result.status_code == 200:
-                treefile = result.content
-                k=str(fileurl).lower()
-                memcache.set("tree-data-"+k, treefile, cachetime)
-    else:
-        treefile = self.request.params.get('phyloFile', None)
-    
+    treefile = None
     treeCollection = []
     collectionKeys = []
     treeSizes = []
     
+    #if self.request.params.get('phyloFile', None) is None:
+    if self.request.params.get('phyloUrl', None) is not None:
+        fileurl = str(self.request.params.get('phyloUrl', None)).strip()
+        k="phylobox-"+version+"-"+str(fileurl).lower().replace('http://','').replace('/','1').replace('.','0').replace('-','2').replace('?','3').replace('&','4').replace('?','3').replace('=','5').replace(':','6')
+        data = memcache.get("tree-data-"+k)
+        if data is None:
+            result = urlfetch.fetch(url=fileurl)
+            if result.status_code == 200:
+                treefile = result.content
+        else:
+            treeCollection.append(simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True)))
+            collectionKeys.append(k)
+            treeSizes.append(len(treeCollection[0]))
+    else:
+        treefile = self.request.params.get('phyloFile', None)
+    
+    
     if treefile is not None:
-        k = "phylobox-"+version+"-"+str(uuid.uuid4())
+        if fileurl:
+            k="phylobox-"+version+"-"+str(fileurl).lower().replace('http://','').replace('/','1').replace('.','0').replace('-','2').replace('?','3').replace('&','4').replace('=','5').replace(':','6')
+        else:
+            k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
         
         try:
@@ -138,7 +145,6 @@ class AddNewTree(webapp.RequestHandler):
         
         for treeXML in treexml.findall(NS_XML+topE):
             
-            logging.error('tree')
             background = "23232F"
             color = "FFFFCC"
             if user:
@@ -159,7 +165,6 @@ class AddNewTree(webapp.RequestHandler):
             proximity = 2
             alt_grow = 15000
             
-            logging.error(xmlType)
             if xmlType=='phyloxml':
                 #parse a PhyloXML file
                 tree = PhyloXMLtoTree(treeXML,color=color)
@@ -242,7 +247,7 @@ class AddNewTree(webapp.RequestHandler):
             #logging.error("tree-data-%s" % k)
             #simplejson.loads(UnzipFiles(StringIO.StringIO(treefilezip),iszip=True))
             #logging.error(memcache.get("tree-data-%s" % k))
-            logging.error(k)
+            
     for t in treeCollection:
         k = t['k']
         params = {
@@ -279,7 +284,7 @@ class AddNewTree(webapp.RequestHandler):
                         ["some option"]
                     })))
             else:
-                self.response.out.write(str(simplejson.dumps(treeCollection[0]).replace('\\/','/')))
+                self.response.out.write(simplejson.dumps(treeCollection[0]).replace('\\/','/'))
         else:
             c = "phylobox-"+version+"-collection-"+str(uuid.uuid4())
             memcache.set("collection-data-%s" % c, collectionKeys, cachetime)
