@@ -6,61 +6,6 @@ import xml.etree.cElementTree as ET
 
 NS_PXML = '{http://www.phyloxml.org}'
 
-class PhyloTree():
-    tree = None
-    unclosed_parents = []
-    ignored_elements = {}
-    unused_code = 9876543210
-    
-    def __init__(self):
-        self.tree = {}
-        self.frame = {}
-        
-    def elementbyid(self,id):
-        if id in self.tree:
-            return self.tree[id]
-        else:
-            gt = GenericTreeElement()
-            gt.id=id
-            return gt
-            
-    def setelement(self,element):
-        id = int(element.id)
-        self.tree[id] = element
-        
-    def addvalues(self,values):
-        #values = dictionary of attributes to add to the tree
-        set_code = False
-        try:
-            id = int(values['id'])
-            set_code = True
-        except:
-            id = self.unused_code
-            self.unused_code+=1
-        
-        element = self.elementbyid(id)
-        for a, b in values.iteritems():
-            try:
-                element.__dict__[a] = b
-            except:
-                self.ignored_elements[a] = 1
-        self.setelement(element)
-        
-    def addchild(self,id,child_int_id):
-        if id is not None:
-            element = self.elementbyid(int(id))
-            tmp = {}
-            tmp['id'] = child_int_id
-            if element.children is None:
-                element.children = []
-            element.children.append(tmp)
-            self.setelement(element)
-        
-    def addchild_coords(self,id,coords):
-        element = self.elementbyid(int(id))
-        element.children_coords.append(coords)
-        self.setelement(element)
-        
         
 class PhyloXMLtoTree():
     xmlobject = None

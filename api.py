@@ -28,6 +28,7 @@ from TreeStore import *
 #from DataStore import *
 from GenericMethods import *
 from phyloxml import *
+from nexml import *
 from NewickParser import * 
 
 ##################################################
@@ -124,9 +125,20 @@ class AddNewTree(webapp.RequestHandler):
         except:
             treefile = ParseNewick(str(treefile))
             treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
+             
+        NS_XML = "{%s}" % str(treexml).split('{')[1].split('}')[0]
         
-        for treeXML in treexml.findall(NS_PXML+'phylogeny'):
-                
+        if 'phyloxml' in str(treexml):
+            xmlType = 'phyloxml'
+            topE = 'phylogeny'
+        else:
+            xmlType = 'nexml'
+            treexml = treexml.findall(NS_XML+'trees')[0]
+            topE = 'tree'
+        
+        for treeXML in treexml.findall(NS_XML+topE):
+            
+            logging.error('tree')
             background = "23232F"
             color = "FFFFCC"
             if user:
@@ -147,15 +159,17 @@ class AddNewTree(webapp.RequestHandler):
             proximity = 2
             alt_grow = 15000
             
-            try:
+            logging.error(xmlType)
+            if xmlType=='phyloxml':
                 #parse a PhyloXML file
                 tree = PhyloXMLtoTree(treeXML,color=color)
-            except:
+            else:
                 #if xml parsing fails, assume file was Newick. Sophistication needed for future development
-                tree = PhyloXMLtoTree(treeXML,color=color)
+                tree = NeXMLtoTree(treeXML,color=color)
                 
                 
             tree.load()
+            
             if tree.title is not None:
                 title = tree.title
             if tree.rooted is not None:
@@ -228,7 +242,7 @@ class AddNewTree(webapp.RequestHandler):
             #logging.error("tree-data-%s" % k)
             #simplejson.loads(UnzipFiles(StringIO.StringIO(treefilezip),iszip=True))
             #logging.error(memcache.get("tree-data-%s" % k))
-                    
+            logging.error(k)
     for t in treeCollection:
         k = t['k']
         params = {
