@@ -21,7 +21,7 @@ PhyloBox = function( $ ) {
 			 HOST != "phylobox.appspot.com" && 
 			 HOST != "2-0.latest.phylobox.appspot.com"),
 		LOCAL = true;
-        HOME = HOST in {"localhost:8080":'',"2-0.latest.phylobox.appspot.com/":''} ? "http://"+HOST+"/" : "http://2-0.latest.phylobox.appspot.com/";
+        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? "http://" + HOST + "/" : "http://2-0.latest.phylobox.appspot.com/";
 		//HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
     //console.log(HOME);
     var API_TREE = HOME + "api/lookup/",
@@ -29,7 +29,6 @@ PhyloBox = function( $ ) {
 		API_NEW = HOME + "api/new",
 		API_SAVE_TREE = HOME + "api/save",
 		RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-	
     // private parts
 /*###########################################################################
 ###################################################################### SYSTEM
@@ -1721,45 +1720,29 @@ PhyloBox = function( $ ) {
 /*###########################################################################
 ##################################################################### MODULES
 ###########################################################################*/
-// header bar for main app
-var Navigation = function( s ) {
-	// vars
-	var _sandbox = s, _activeMenu;
-	// widget specific markup
-	var wHTML = "";
-	// hide file / edit / share menu
-	function _killMenu( e ) {
-		if ( e.target.nodeName != "INPUT" ) {
-			$( document ).unbind( "click", _killMenu );
-			$( _activeMenu ).removeClass( "menu-butt-active" );
-			$( _activeMenu.nextElementSibling ).hide();
-			_activeMenu = null;
+	// header bar for main app
+	var Navigation = function( s ) {
+		// vars
+		var _sandbox = s, _activeMenu;
+		// widget specific markup
+		var wHTML = "";
+		// hide file / edit / share menu
+		function _killMenu( e ) {
+			if ( e.target.nodeName != "INPUT" ) {
+				$( document ).unbind( "click", _killMenu );
+				$( _activeMenu ).removeClass( "menu-butt-active" );
+				$( _activeMenu.nextElementSibling ).hide();
+				_activeMenu = null;
+			}
 		}
-	}
-	// wait for images before positioning menus
-	$( window ).load( function () {
-		$( ".menu", _sandbox.context ).each( function ( i ) {
-			$( this ).css( "left", $( this.parentNode ).offset().left );
+		// wait for images before positioning menus
+		$( window ).load( function () {
+			$( ".menu", _sandbox.context ).each( function ( i ) {
+				$( this ).css( "left", $( this.parentNode ).offset().left );
+			});
 		});
-	});
-	// menu events
-	$( ".menu-butt", _sandbox.context ).live( "click", function () {
-		// set active
-		_activeMenu = this;
-		// add style and show menu
-		$( this ).addClass( "menu-butt-active" );
-		$( this.nextElementSibling ).show();
-		// hide when click out	
-		$( document ).bind( "click", _killMenu );
-	});
-	$( ".menu-butt", _sandbox.context ).live( "mouseenter", function () {
-		// check if active
-		if ( _activeMenu ) {
-			// remove first document listener
-			$( document ).unbind( "click", _killMenu );
-			// remove style and hide menu
-			$( _activeMenu ).removeClass( "menu-butt-active" );
-			$( _activeMenu.nextElementSibling ).hide();
+		// menu events
+		$( ".menu-butt", _sandbox.context ).live( "click", function () {
 			// set active
 			_activeMenu = this;
 			// add style and show menu
@@ -1767,796 +1750,812 @@ var Navigation = function( s ) {
 			$( this.nextElementSibling ).show();
 			// hide when click out	
 			$( document ).bind( "click", _killMenu );
-		}
-	});
-	// menu file events
-	$( "#file-menu-new-file", _sandbox.context ).live( "mouseenter", function () {
-		$( this.nextElementSibling ).addClass( "menu-submit-hover" );
-	});
-	$( "#file-menu-new-file", _sandbox.context ).live( "mouseleave", function () {
-		$( this.nextElementSibling ).removeClass( "menu-submit-hover" );
-	});
-	$( "#file-menu-new-file", _sandbox.context ).live( "mousedown", function () {
-		$( this.nextElementSibling ).addClass( "menu-submit-active" );
-	});
-	$( "#file-menu-new-file", _sandbox.context ).live( "mouseup", function () {
-		$( this.nextElementSibling ).removeClass( "menu-submit-active" );
-	});
-	$( "#file-menu-new-file", _sandbox.context ).live( "change", function () {
-		// hide menu
-		$( document ).unbind( "click", _killMenu );
-		$( _activeMenu ).removeClass( "menu-butt-active" );
-		$( _activeMenu.nextElementSibling ).hide();
-		_activeMenu = null;
-		// show loading gif
-
-		// save ref to parent
-		var parent = this.parentNode;
-		// create an iframe
-		var iframe = $( "<iframe id='uploader' name='uploader' style='display:none;' />" );
-		// add to doc
-	    iframe.appendTo( _sandbox.context );
-		// iframe event handling
-		var uploaded = function( e ) {
-			// remove load event
-			$( "#uploader", _sandbox.context ).unbind( "load", uploaded );
-			// get data
-			var data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "pre" ).html() );
-			if ( ! data ) 
-				data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "body" ).html() );
-			// make a tree
-			_sandbox.load( data );
-			// clean up -- safari needs the delay
-			setTimeout( function () {
-				$( "#uploader", _sandbox.context ).remove();
-				$( "#file-form", _sandbox.context ).remove();
-			}, 1000 );
-		}
-		// add load event to iframe
-		$( "#uploader", _sandbox.context ).bind( "load", uploaded );
-		// create the upload form
-		var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
-		// add to doc
-	    $( form ).appendTo( _sandbox.context );
-		// change form's target to the iframe (this is what simulates ajax)
-	    $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
-		// add the file input to the form
-		$( this ).appendTo( "#file-form", _sandbox.context );
-		// submit form
-	    $( "#file-form", _sandbox.context ).submit();
-		// re-attach input field
-		$( this ).prependTo( parent );
-		// ensure single submit
-		return false;
-	});
-	// save active tree
-	$( "#file-menu-save-tree", _sandbox.context ).live( "click", function () {
-		// save active tree
-		_sandbox.saveTree();
-	});
-	// sharing info
-	$( "#share-menu-share-tree", _sandbox.context ).live( "click", function () {
-		// $.fancybox({
-		// 	content: $( "#perma-link" ).html(),
-		// });
-		// return false;
-	});
-	// methods
-	return {
-		handle: function( type, data ) {  }
-	};
-};
-// yep, the toolbar
-var Toolbar = function( s ) {
-	// vars
-	var _sandbox = s, _activeTool;
-	// widget specific markup
-	var wHTML = ( function () {
-		var html = '<div id="toolbar">';
-		html += 		'<nav>';
-		html += 			'<ul>';
-		html += 				'<li><a href="javascript:;" id="select" class="tool"><img src="' + HOME + 'static/gfx/tools/select.png" alt="select-tool" title="Select" /></a></li>';
-		html += 				'<li><a href="javascript:;" id="translate" class="tool"><img src="' + HOME + 'static/gfx/tools/translate.png" alt="translate-tool" title="Translate" /></a></li>';
-		html += 				'<li style="padding-right:30px;"><a href="javascript:;" id="rotate" class="tool"><img src="' + HOME + 'static/gfx/tools/rotate.png" alt="rotate-tool" title="Rotate" /></a></li>';
-		html += 				'<li><a href="javascript:;" id="zin" class="tool"><img src="' + HOME + 'static/gfx/tools/zin.png" alt="zoom-in-tool" title="Zoom In" /></a></li>';
-		html += 				'<li><a href="javascript:;" id="zout" class="tool"><img src="' + HOME + 'static/gfx/tools/zout.png" alt="zoom-out-tool" title="Zoom Out" /></a></li>';
-		html += 				'<div class="clear"></div>';
-		html += 			'</ul>';
-		html += 		'</nav>';
-		html += '</div>';
-		return html;
-	})();
-	// get mouse position relative to tree
-	function _viewMouse( e, c ) {
-		// mouse
-		var m = mouse_( e );
-		// coords
-		vx = m.x - c.offset().left;
-		vy = m.y - c.offset().top;
-		// format
-		return { x: vx, y: vy };
-	}
-	// tools
-	$( ".tool", _sandbox.context ).live( "click", function () {
-		// check unavailable
-		if ( $( this ).hasClass( "tool-off" ) ) 
-			return false;
-		// check already active
-		if ( $( this ).hasClass( "tool-active" ) ) 
-			return false;
-		// clear styles
-		$( ".tool", _sandbox.context ).each( function( i ) { 
-			$( this ).removeClass( "tool-active" ); 
 		});
-		// add style
-		$( this ).addClass( "tool-active" );
-		// set to active
-		_activeTool = this.id;
-	});
-	$( ".tool", _sandbox.context ).live( "mousedown", function ( e ) {
-		// prevent image drag behavior
-		if ( e.preventDefault ) e.preventDefault();
-	});
-	// get all
-	var canvases = $( ".tree-holder canvas", _sandbox.context );
-	// canvas tools
-	canvases.live( "click", function ( e ) {
-		// set active if not
-		if ( this.id == _sandbox.activeTree.view.id ) 
+		$( ".menu-butt", _sandbox.context ).live( "mouseenter", function () {
+			// check if active
+			if ( _activeMenu ) {
+				// remove first document listener
+				$( document ).unbind( "click", _killMenu );
+				// remove style and hide menu
+				$( _activeMenu ).removeClass( "menu-butt-active" );
+				$( _activeMenu.nextElementSibling ).hide();
+				// set active
+				_activeMenu = this;
+				// add style and show menu
+				$( this ).addClass( "menu-butt-active" );
+				$( this.nextElementSibling ).show();
+				// hide when click out	
+				$( document ).bind( "click", _killMenu );
+			}
+		});
+		// menu file events
+		$( "#file-menu-new-file", _sandbox.context ).live( "mouseenter", function () {
+			$( this.nextElementSibling ).addClass( "menu-submit-hover" );
+		});
+		$( "#file-menu-new-file", _sandbox.context ).live( "mouseleave", function () {
+			$( this.nextElementSibling ).removeClass( "menu-submit-hover" );
+		});
+		$( "#file-menu-new-file", _sandbox.context ).live( "mousedown", function () {
+			$( this.nextElementSibling ).addClass( "menu-submit-active" );
+		});
+		$( "#file-menu-new-file", _sandbox.context ).live( "mouseup", function () {
+			$( this.nextElementSibling ).removeClass( "menu-submit-active" );
+		});
+		$( "#file-menu-new-file", _sandbox.context ).live( "change", function () {
+			// hide menu
+			$( document ).unbind( "click", _killMenu );
+			$( _activeMenu ).removeClass( "menu-butt-active" );
+			$( _activeMenu.nextElementSibling ).hide();
+			_activeMenu = null;
+			// show loading gif
+
+			// save ref to parent
+			var parent = this.parentNode;
+			// create an iframe
+			var iframe = $( "<iframe id='uploader' name='uploader' style='display:none;' />" );
+			// add to doc
+		    iframe.appendTo( _sandbox.context );
+			// iframe event handling
+			var uploaded = function( e ) {
+				// remove load event
+				$( "#uploader", _sandbox.context ).unbind( "load", uploaded );
+				// get data
+				var data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "pre" ).html() );
+				if ( ! data ) 
+					data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "body" ).html() );
+				// make a tree
+				_sandbox.load( data );
+				// clean up -- safari needs the delay
+				setTimeout( function () {
+					$( "#uploader", _sandbox.context ).remove();
+					$( "#file-form", _sandbox.context ).remove();
+				}, 1000 );
+			}
+			// add load event to iframe
+			$( "#uploader", _sandbox.context ).bind( "load", uploaded );
+			// create the upload form
+			var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
+			// add to doc
+		    $( form ).appendTo( _sandbox.context );
+			// change form's target to the iframe (this is what simulates ajax)
+		    $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
+			// add the file input to the form
+			$( this ).appendTo( "#file-form", _sandbox.context );
+			// submit form
+		    $( "#file-form", _sandbox.context ).submit();
+			// re-attach input field
+			$( this ).prependTo( parent );
+			// ensure single submit
 			return false;
-		else {
+		});
+		// save active tree
+		$( "#file-menu-save-tree", _sandbox.context ).live( "click", function () {
+			// save active tree
+			_sandbox.saveTree();
+		});
+		// sharing info
+		$( "#share-menu-share-tree", _sandbox.context ).live( "click", function () {
+			// $.fancybox({
+			// 	content: $( "#perma-link" ).html(),
+			// });
+			// return false;
+		});
+		// methods
+		return {
+			handle: function( type, data ) {  }
+		};
+	};
+	// yep, the toolbar
+	var Toolbar = function( s ) {
+		// vars
+		var _sandbox = s, _activeTool;
+		// widget specific markup
+		var wHTML = ( function () {
+			var html = '<div id="toolbar">';
+			html += 		'<nav>';
+			html += 			'<ul>';
+			html += 				'<li><a href="javascript:;" id="select" class="tool"><img src="' + HOME + 'static/gfx/tools/select.png" alt="select-tool" title="Select" /></a></li>';
+			html += 				'<li><a href="javascript:;" id="translate" class="tool"><img src="' + HOME + 'static/gfx/tools/translate.png" alt="translate-tool" title="Translate" /></a></li>';
+			html += 				'<li style="padding-right:30px;"><a href="javascript:;" id="rotate" class="tool"><img src="' + HOME + 'static/gfx/tools/rotate.png" alt="rotate-tool" title="Rotate" /></a></li>';
+			html += 				'<li><a href="javascript:;" id="zin" class="tool"><img src="' + HOME + 'static/gfx/tools/zin.png" alt="zoom-in-tool" title="Zoom In" /></a></li>';
+			html += 				'<li><a href="javascript:;" id="zout" class="tool"><img src="' + HOME + 'static/gfx/tools/zout.png" alt="zoom-out-tool" title="Zoom Out" /></a></li>';
+			html += 				'<div class="clear"></div>';
+			html += 			'</ul>';
+			html += 		'</nav>';
+			html += '</div>';
+			return html;
+		})();
+		// get mouse position relative to tree
+		function _viewMouse( e, c ) {
+			// mouse
+			var m = mouse_( e );
+			// coords
+			vx = m.x - c.offset().left;
+			vy = m.y - c.offset().top;
+			// format
+			return { x: vx, y: vy };
+		}
+		// tools
+		$( ".tool", _sandbox.context ).live( "click", function () {
+			// check unavailable
+			if ( $( this ).hasClass( "tool-off" ) ) 
+				return false;
+			// check already active
+			if ( $( this ).hasClass( "tool-active" ) ) 
+				return false;
+			// clear styles
+			$( ".tool", _sandbox.context ).each( function( i ) { 
+				$( this ).removeClass( "tool-active" ); 
+			});
+			// add style
+			$( this ).addClass( "tool-active" );
+			// set to active
+			_activeTool = this.id;
+		});
+		$( ".tool", _sandbox.context ).live( "mousedown", function ( e ) {
+			// prevent image drag behavior
+			if ( e.preventDefault ) e.preventDefault();
+		});
+		// get all
+		var canvases = $( ".tree-holder canvas", _sandbox.context );
+		// canvas tools
+		canvases.live( "click", function ( e ) {
+			// set active if not
+			if ( this.id == _sandbox.activeTree.view.id ) 
+				return false;
+			else {
+				// notify sandbox
+				_sandbox.notify( "pb-clearnode" );
+				// notify sandbox
+				_sandbox.notify( "pb-treefocus", $( this ).data( "view" ).tree );
+				// trigger mouseenter for cursor
+				$( this ).trigger( "mouseenter" );
+			}
+		});
+		canvases.live( "mousedown", function ( e ) {
+			// check if active
+			if ( this.id != _sandbox.activeTree.view.id ) 
+				return false;
+			// save reference
+			var canvas = $( this );
+			// trigger event
+			canvas.trigger( "pb-" + _activeTool, ["mousedown", _viewMouse( e, canvas )] );
+			// add move event
+			canvas.bind( "mousemove", function ( e ) {
+				// trigger event
+				canvas.trigger( "pb-" + _activeTool, ["mousemove", _viewMouse( e, canvas )] );
+			});
+			// add up event
+			$( document ).bind( "mouseup", function ( e ) {
+				// unbind events
+				canvas.unbind( "mousemove" );
+				$( this ).unbind( "mouseup" );
+				// trigger event
+				canvas.trigger( "pb-" + _activeTool, ["mouseup", _viewMouse( e, canvas )] );
+			});
+		});
+		canvases.live( "mouseenter", function ( e ) {
+			// check if active
+			if ( this.id != _sandbox.activeTree.view.id ) { 
+				$( this ).css( "cursor", "default" );
+				return false;
+			}
+			var pre = WIDGET ? HOME : "";
+			// set cursor
+			switch( _activeTool ) {
+				case "select":
+					$( this ).css( "cursor", "none" );
+					break;
+				case "translate":
+					$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
+					break;
+				case "rotate":
+					$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-rotate.png) 8 8, auto" );
+					break;
+				case "zin":
+					$( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto" );
+					break;
+				case "zout":
+					$( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto" );
+					break;		
+			}
+		});
+		canvases.live( "mouseleave", function ( e ) {
+			// check if active
+			if ( this.id != _sandbox.activeTree.view.id ) return false;
+			// notify sandbox
+			_sandbox.notify( "pb-treeblur" );
+		});
+		canvases.live( "mousemove", function ( e ) {
+			// check if active
+			if ( this.id != _sandbox.activeTree.view.id ) return false;
+			// save reference
+			var canvas = $( this );
+			// trigger event
+			canvas.trigger( "pb-" + _activeTool, ["mousesearch", _viewMouse( e, canvas )] );
+		});
+		canvases.live( "dblclick", function ( e ) {
+			// check if active
+			if( this.id != _sandbox.activeTree.view.id ) return false;
 			// notify sandbox
 			_sandbox.notify( "pb-clearnode" );
+		});
+		// methods
+		return {
+			// respond to external actions
+			handle: function( type, data ) { 
+				switch ( type ) {
+					// set active tree
+					case "pb-treefocus":
+						// don't if a tree exists already
+						if ( _sandbox.trees.length > 1 ) 
+							return false;
+						// default tool is select
+						$( "#select", _sandbox.context ).addClass( "tool-active" );
+						_activeTool = "select";
+						break;
+				}
+			}
+		};
+	};
+	// drawing surface for trees
+	var TreeEditor = function( s ) {
+		// vars
+		var _sandbox = s;
+		// widget specific markup
+		var wHTML = "";
+		// methods
+		return {
+			// respond to external actions
+			handle: function( type, data ) {
+				switch ( type ) {
+					// set active tree
+					case "pb-treefocus":
+						// grid the trees
+						$( ".tree-holder", _sandbox.context ).each( function( i ) {
+							$( this ).css( "height", ( 100 / _sandbox.trees.length ) + "%" );
+						});
+						// auto-fit
+						$( window ).trigger( "resize" );
+						break;
+					case "pb-treeblur":
+						// redraw tree
+						_sandbox.activeTree.view.refresh();
+						break;
+					case "pb-treeplot":
+						// replot tree
+						_sandbox.activeTree.view.replot();
+					case "pb-treedraw":
+						// redraw tree
+						_sandbox.activeTree.view.refresh();
+					// hover over a node
+					case "pb-nodehover":
+						// redraw tree
+						_sandbox.activeTree.view.refresh();
+						break;
+					// move away from node
+					case "pb-nodeexit":
+						// redraw tree
+						_sandbox.activeTree.view.refresh();
+						break;
+					// set selected node and redraw
+					case "pb-nodeclick":
+						// clear selected
+						_sandbox.activeTree.view.clearSelected();
+						_sandbox.activeTree.view.setSelected( data.node );
+						_sandbox.activeTree.view.selecting = true;
+						_sandbox.activeTree.view.refresh();
+						_sandbox.activeTree.view.selecting = false;
+						break;
+					case "pb-clearnode":
+						// clear selected
+						_sandbox.activeTree.view.clearSelected();
+						_sandbox.activeTree.view.refresh();
+						break;
+				}
+			}
+		};
+	};
+	// node browser / list
+	var TaxaList = function( s ) {
+		// vars
+		var _sandbox = s, _activeNode;
+		// widget specific markup
+		var wHTML = "";
+		// animate taxa list to hovered node
+		function _navTo( n ) {
+			// go to it
+			$( "#taxa > section", _sandbox.context ).scrollTo( "#" + n.link.attr( "id" ), 100, { offset: -45 } );
+		}
+		function _clear() {
+			if ( _activeNode ) {
+				_activeNode.link.removeClass( "taxa-link-selected" );
+				// clear child style
+				$( ".taxa-link", _sandbox.context ).each( function ( i ) {
+					$( this ).css( "padding-left", "0" );
+				});
+			}
+		}
+		// init
+		$( ".taxa-link", _sandbox.context ).live( "mouseenter", function () {
+			// get node
+			var node = $( this ).data( "node" );
+			// set hover
+			node.hover = true;
 			// notify sandbox
-			_sandbox.notify( "pb-treefocus", $( this ).data( "view" ).tree );
-			// trigger mouseenter for cursor
-			$( this ).trigger( "mouseenter" );
-		}
-	});
-	canvases.live( "mousedown", function ( e ) {
-		// check if active
-		if ( this.id != _sandbox.activeTree.view.id ) 
-			return false;
-		// save reference
-		var canvas = $( this );
-		// trigger event
-		canvas.trigger( "pb-" + _activeTool, ["mousedown", _viewMouse( e, canvas )] );
-		// add move event
-		canvas.bind( "mousemove", function ( e ) {
-			// trigger event
-			canvas.trigger( "pb-" + _activeTool, ["mousemove", _viewMouse( e, canvas )] );
+			_sandbox.notify( "pb-nodehover", node );
 		});
-		// add up event
-		$( document ).bind( "mouseup", function ( e ) {
-			// unbind events
-			canvas.unbind( "mousemove" );
-			$( this ).unbind( "mouseup" );
-			// trigger event
-			canvas.trigger( "pb-" + _activeTool, ["mouseup", _viewMouse( e, canvas )] );
+		$( ".taxa-link", _sandbox.context ).live( "mouseleave", function () {
+			// get node
+			var node = $( this ).data( "node" );
+			// set hover
+			node.hover = false;
+			// notify sandbox
+			_sandbox.notify( "pb-nodeexit", node );
 		});
-	});
-	canvases.live( "mouseenter", function ( e ) {
-		// check if active
-		if ( this.id != _sandbox.activeTree.view.id ) { 
-			$( this ).css( "cursor", "default" );
-			return false;
-		}
-		var pre = WIDGET ? HOME : "";
-		// set cursor
-		switch( _activeTool ) {
-			case "select":
-				$( this ).css( "cursor", "none" );
-				break;
-			case "translate":
-				$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
-				break;
-			case "rotate":
-				$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-rotate.png) 8 8, auto" );
-				break;
-			case "zin":
-				$( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto" );
-				break;
-			case "zout":
-				$( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto" );
-				break;		
-		}
-	});
-	canvases.live( "mouseleave", function ( e ) {
-		// check if active
-		if ( this.id != _sandbox.activeTree.view.id ) return false;
-		// notify sandbox
-		_sandbox.notify( "pb-treeblur" );
-	});
-	canvases.live( "mousemove", function ( e ) {
-		// check if active
-		if ( this.id != _sandbox.activeTree.view.id ) return false;
-		// save reference
-		var canvas = $( this );
-		// trigger event
-		canvas.trigger( "pb-" + _activeTool, ["mousesearch", _viewMouse( e, canvas )] );
-	});
-	canvases.live( "dblclick", function ( e ) {
-		// check if active
-		if( this.id != _sandbox.activeTree.view.id ) return false;
-		// notify sandbox
-		_sandbox.notify( "pb-clearnode" );
-	});
-	// methods
-	return {
-		// respond to external actions
-		handle: function( type, data ) { 
-			switch ( type ) {
-				// set active tree
-				case "pb-treefocus":
-					// don't if a tree exists already
-					if ( _sandbox.trees.length > 1 ) 
-						return false;
-					// default tool is select
-					$( "#select", _sandbox.context ).addClass( "tool-active" );
-					_activeTool = "select";
-					break;
-			}
-		}
-	};
-};
-// drawing surface for trees
-var TreeEditor = function( s ) {
-	// vars
-	var _sandbox = s;
-	// widget specific markup
-	var wHTML = "";
-	// methods
-	return {
-		// respond to external actions
-		handle: function( type, data ) {
-			switch ( type ) {
-				// set active tree
-				case "pb-treefocus":
-					// grid the trees
-					$( ".tree-holder", _sandbox.context ).each( function( i ) {
-						$( this ).css( "height", ( 100 / _sandbox.trees.length ) + "%" );
-					});
-					// auto-fit
-					$( window ).trigger( "resize" );
-					break;
-				case "pb-treeblur":
-					// redraw tree
-					_sandbox.activeTree.view.refresh();
-					break;
-				case "pb-treeplot":
-					// replot tree
-					_sandbox.activeTree.view.replot();
-				case "pb-treedraw":
-					// redraw tree
-					_sandbox.activeTree.view.refresh();
-				// hover over a node
-				case "pb-nodehover":
-					// redraw tree
-					_sandbox.activeTree.view.refresh();
-					break;
-				// move away from node
-				case "pb-nodeexit":
-					// redraw tree
-					_sandbox.activeTree.view.refresh();
-					break;
-				// set selected node and redraw
-				case "pb-nodeclick":
-					// clear selected
-					_sandbox.activeTree.view.clearSelected();
-					_sandbox.activeTree.view.setSelected( data.node );
-					_sandbox.activeTree.view.selecting = true;
-					_sandbox.activeTree.view.refresh();
-					_sandbox.activeTree.view.selecting = false;
-					break;
-				case "pb-clearnode":
-					// clear selected
-					_sandbox.activeTree.view.clearSelected();
-					_sandbox.activeTree.view.refresh();
-					break;
-			}
-		}
-	};
-};
-// node browser / list
-var TaxaList = function( s ) {
-	// vars
-	var _sandbox = s, _activeNode;
-	// widget specific markup
-	var wHTML = "";
-	// animate taxa list to hovered node
-	function _navTo( n ) {
-		// go to it
-		$( "#taxa > section", _sandbox.context ).scrollTo( "#" + n.link.attr( "id" ), 100, { offset: -45 } );
-	}
-	function _clear() {
-		if ( _activeNode ) {
-			_activeNode.link.removeClass( "taxa-link-selected" );
-			// clear child style
-			$( ".taxa-link", _sandbox.context ).each( function ( i ) {
-				$( this ).css( "padding-left", "0" );
-			});
-		}
-	}
-	// init
-	$( ".taxa-link", _sandbox.context ).live( "mouseenter", function () {
-		// get node
-		var node = $( this ).data( "node" );
-		// set hover
-		node.hover = true;
-		// notify sandbox
-		_sandbox.notify( "pb-nodehover", node );
-	});
-	$( ".taxa-link", _sandbox.context ).live( "mouseleave", function () {
-		// get node
-		var node = $( this ).data( "node" );
-		// set hover
-		node.hover = false;
-		// notify sandbox
-		_sandbox.notify( "pb-nodeexit", node );
-	});
-	$( ".taxa-link", _sandbox.context ).live( "click", function () {
-		// get node
-		var node = $( this ).data( "node" );
-		// notify sandbox
-		_sandbox.notify( "pb-nodeclick", node );
-	});
-	// methods
-	return {
-		// respond to external actions
-		handle: function( type, data ) {
-			switch ( type ) {
-				// create the list
-				case "pb-treefocus":
-					// use active tree
-					var node_list = _sandbox.activeTree.node_list;
-					// order nodes by id
-					var nodes = [];
-					for ( var i = 0; i < node_list.length; i++ ) 
-						nodes[i] = node_list[i];
-					nodes.sort( function( a, b ) {
-						return a.id - b.id; 
-					});
-					// get taxa list
-					var taxa = $( "#taxa > section > ul", _sandbox.context );
-					// empty taxa
-					taxa.empty();
-					// walk nodes
-					for ( var n in nodes ) {
-						var node = nodes[n];
-						// color dot
-						var info = "<div class='taxa-right'>";
-						info += 	"<div class='ex' style='" + ( node.visibility ? "display:none" : "" ) + "'>x</div>";
-						info += 	"<div class='dot' style='background:#" + node.color + ";'></div>";
-						info += "</div>";
-						// add to doc
-						taxa.append( "<li><a href='javascript:;' id='nl-" + node.id + "' class='taxa-link'>" + node.title + info + "</a></li>" );
-						// add node as data to link
-						var l = $( "#nl-" + node.id, _sandbox.context );
-						l.data( "node", node );
-						// save link to node
-						node.link = l;
-					}
-					break;
-				// hover over a node
-				case "pb-nodehover":
-					// set style
-					data.node.link.addClass( "taxa-link-hover" );
-					// go to it
-					if ( data.found ) 
-						_navTo( data.node );
-					break;
-				// move away from node
-				case "pb-nodeexit":
-					// check node
-					if ( ! data.node ) 
-						return false;
-					// set style
-					data.node.link.removeClass( "taxa-link-hover" );
-					// go back to selected
-					if ( _sandbox.activeTree.view.selected_node && data.found )
-						_navTo( _sandbox.activeTree.view.selected_node );
-					break;
-				// set selected node in list
-				case "pb-nodeclick":
-					// clear first
-					_clear();
-					// store locally too for clear
-					_activeNode = data.node;
-					// set style
-					_sandbox.activeNode.link.addClass( "taxa-link-selected" );
-					// go to it if not using list to navigate
-					if ( data.found ) _navTo( _sandbox.activeNode );
-					// walk kids
-					( function( n ) {
-						for ( var c in n.children ) {
-							n.children[c].link.css( "padding-left", "20px" );
-							arguments.callee( n.children[c] );
+		$( ".taxa-link", _sandbox.context ).live( "click", function () {
+			// get node
+			var node = $( this ).data( "node" );
+			// notify sandbox
+			_sandbox.notify( "pb-nodeclick", node );
+		});
+		// methods
+		return {
+			// respond to external actions
+			handle: function( type, data ) {
+				switch ( type ) {
+					// create the list
+					case "pb-treefocus":
+						// use active tree
+						var node_list = _sandbox.activeTree.node_list;
+						// order nodes by id
+						var nodes = [];
+						for ( var i = 0; i < node_list.length; i++ ) 
+							nodes[i] = node_list[i];
+						nodes.sort( function( a, b ) {
+							return a.id - b.id; 
+						});
+						// get taxa list
+						var taxa = $( "#taxa > section > ul", _sandbox.context );
+						// empty taxa
+						taxa.empty();
+						// walk nodes
+						for ( var n in nodes ) {
+							var node = nodes[n];
+							// color dot
+							var info = "<div class='taxa-right'>";
+							info += 	"<div class='ex' style='" + ( node.visibility ? "display:none" : "" ) + "'>x</div>";
+							info += 	"<div class='dot' style='background:#" + node.color + ";'></div>";
+							info += "</div>";
+							// add to doc
+							taxa.append( "<li><a href='javascript:;' id='nl-" + node.id + "' class='taxa-link'>" + node.title + info + "</a></li>" );
+							// add node as data to link
+							var l = $( "#nl-" + node.id, _sandbox.context );
+							l.data( "node", node );
+							// save link to node
+							node.link = l;
 						}
-					})( _sandbox.activeNode );
-					break;
-				case "pb-clearnode":
-					// clear selected
-					_clear();
-					break;
+						break;
+					// hover over a node
+					case "pb-nodehover":
+						// set style
+						data.node.link.addClass( "taxa-link-hover" );
+						// go to it
+						if ( data.found ) 
+							_navTo( data.node );
+						break;
+					// move away from node
+					case "pb-nodeexit":
+						// check node
+						if ( ! data.node ) 
+							return false;
+						// set style
+						data.node.link.removeClass( "taxa-link-hover" );
+						// go back to selected
+						if ( _sandbox.activeTree.view.selected_node && data.found )
+							_navTo( _sandbox.activeTree.view.selected_node );
+						break;
+					// set selected node in list
+					case "pb-nodeclick":
+						// clear first
+						_clear();
+						// store locally too for clear
+						_activeNode = data.node;
+						// set style
+						_sandbox.activeNode.link.addClass( "taxa-link-selected" );
+						// go to it if not using list to navigate
+						if ( data.found ) _navTo( _sandbox.activeNode );
+						// walk kids
+						( function( n ) {
+							for ( var c in n.children ) {
+								n.children[c].link.css( "padding-left", "20px" );
+								arguments.callee( n.children[c] );
+							}
+						})( _sandbox.activeNode );
+						break;
+					case "pb-clearnode":
+						// clear selected
+						_clear();
+						break;
+				}
 			}
-		}
+		};
 	};
-};
-// node / clade info panel
-var CladeInfo = function( s ) {
-	// vars
-	var _sandbox = s;
-	// widget specific markup
-	var wHTML = "";
-	// wipe out title and body
-	function _clear() {
-		// title
-		$( ".panel-head", $( "#node" , _sandbox.context ) ).text( "Node" );
-		// body
-		$( "#node > section", _sandbox.context ).html( "<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>" );
-	}
-	// editable cells
-	$( ".editable", _sandbox.context ).live( "click", function () {
-		// save ref
-		var __this = this;
-		// return if already editing
-		if ( $( this ).hasClass( "editing" ) ) 
-			return false;
-		$( this ).addClass( "editing" );
-		// show input
-		$( this ).hide();
-		$( this.nextElementSibling ).show().focus();
-		// exit
-		var done = function() {
-			$( document ).unbind( "click", done );
-			$( __this.nextElementSibling ).unbind( "keyup", done );
-			$( __this ).removeClass( "editing" );
-			$( __this ).text( $( __this.nextElementSibling ).val() );
-			$( __this.nextElementSibling ).hide();
-			$( __this ).show();
+	// node / clade info panel
+	var CladeInfo = function( s ) {
+		// vars
+		var _sandbox = s;
+		// widget specific markup
+		var wHTML = "";
+		// wipe out title and body
+		function _clear() {
+			// title
+			$( ".panel-head", $( "#node" , _sandbox.context ) ).text( "Node" );
+			// body
+			$( "#node > section", _sandbox.context ).html( "<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>" );
 		}
-		$( document ).bind( "click", done );
-		$( this.nextElementSibling).bind( "keyup", "return", done );
-	});
-	// change clade color
-	$( "#node-prop-cl", _sandbox.context ).live( "change", function () {
-		// set color
-		_sandbox.activeNode.color = $( this ).val();
-		// walk kids
-		( function ( n ) {
-			for ( var c in n.children ) {
-				n.children[c].color = _sandbox.activeNode.color;
-            	arguments.callee( n.children[c] );
-        	}
-		})( _sandbox.activeNode );
-		// prepare view
-		_sandbox.activeTree.view.update_links = true;
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// clade toggle
-	$( "#node-prop-vb", _sandbox.context ).live( "change", function () {
-		// toggle
-		_sandbox.activeNode.visibility = ! _sandbox.activeNode.visibility;
-		// walk kids
-		( function ( n ) {
-			for ( var c in n.children ) {
-				n.children[c].visibility = _sandbox.activeNode.visibility;
-            	arguments.callee( n.children[c] );
-        	}
-		})( _sandbox.activeNode );
-		// prepare view
-		_sandbox.activeTree.view.update_links = true;
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	/// methods
-	return {
-		// respond to external actions
-		handle: function( type, data ) {
-			switch ( type ) {
-				// clear clade info
-				case "pb-treefocus":
-					// clear selected
-					_clear();
-					break;
-				// show selected clade info
-				case "pb-nodeclick":
-					// set node title
-					var title = _sandbox.activeNode.title;
-					$( ".panel-head", $( "#node", _sandbox.context ) ).html( "Node -" + title.substring( 13, title.length - 1 ) );
-					// check parent
-					var vis = _sandbox.activeNode.parent && _sandbox.activeNode.parent.visibility ? "" : "disabled='disabled'";
-					// check kids
-					var is_clade = _sandbox.activeNode.n_children > 0;
-					// init html
-					var clade, uri;
-					// write clade table
-					clade = "<table>";
-					clade += 	"<caption>Clade Properties</caption>";
-					clade += 	"<tbody>";
-					clade +=		"<tr>";
-					clade += 			"<td align='right'>color</td>";
-					clade += 			"<td>";
-					clade +=				"<span class='editable editable-prop'>" + _sandbox.activeNode.color + "</span>";
-					clade +=				"<input type='text' class='editable-field editable-field-long' id='node-prop-cl' value='" + _sandbox.activeNode.color + "' />";
-					clade +=			"</td>";
-					clade +=		"</tr>";
-					clade +=		"<tr>";
-					clade += 			"<td align='right'>toggle</td>";
-					clade += 			"<td>";
-					clade +=				_sandbox.activeNode.visibility ? "<input type='checkbox' id='node-prop-vb' checked='checked' " + vis + " />" : "<input type='checkbox' id='node-prop-vb' " + vis + " />";
-					clade +=			"</td>";
-					clade +=		"</tr>";
-					clade +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					clade += 	"</tbody>";
-					clade += "</table>";
-					// write uri table
-					uri = "<table>";
-					uri += 	"<caption>URI Links</caption>";
-					uri += 	"<tbody>";
-					uri +=		"<tr>";
-					uri += 			"<td align='right'>images</td>";
-					uri += 			"<td>";
-					uri +=				"<span class='uri-link'>n / a</span>";
-					uri +=			"</td>";
-					uri +=		"</tr>";
-					uri +=		"<tr>";
-					uri += 			"<td align='right'>videos</td>";
-					uri += 			"<td>";
-					uri +=				"<span class='uri-link'>n / a</span>";
-					uri +=			"</td>";
-					uri +=		"</tr>";
-					uri +=		"<tr>";
-					uri += 			"<td align='right'>wiki</td>";
-					uri += 			"<td>";
-					uri +=				"<span class='uri-link'>n / a</span>";
-					uri +=			"</td>";
-					uri +=		"</tr>";
-					uri +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					uri += 	"</tbody>";
-					uri += "</table>";
-					// add to doc
-					if ( is_clade ) 
-						$( "#node > section", _sandbox.context ).html( clade + uri ); 
-					else 
-						$( "#node > section", _sandbox.context ).html( uri );
-					break;
-				case "pb-clearnode":
-					// clear selected
-					_clear();
-					break;
+		// editable cells
+		$( ".editable", _sandbox.context ).live( "click", function () {
+			// save ref
+			var __this = this;
+			// return if already editing
+			if ( $( this ).hasClass( "editing" ) ) 
+				return false;
+			$( this ).addClass( "editing" );
+			// show input
+			$( this ).hide();
+			$( this.nextElementSibling ).show().focus();
+			// exit
+			var done = function() {
+				$( document ).unbind( "click", done );
+				$( __this.nextElementSibling ).unbind( "keyup", done );
+				$( __this ).removeClass( "editing" );
+				$( __this ).text( $( __this.nextElementSibling ).val() );
+				$( __this.nextElementSibling ).hide();
+				$( __this ).show();
 			}
-		}
-	};
-};
-// tree properties / drawing options
-var TreeInfo = function( s ) {
-	// vars
-	var _sandbox = s;
-	// widget specific markup
-	var wHTML = "";
-	// editable cells
-	$( ".editable", _sandbox.context ).live( "click", function () {
-		// save ref
-		var __this = this;
-		// return if already editing
-		if ( $( this ).hasClass( "editing" ) ) 
-			return false;
-		$( this ).addClass( "editing" );
-		// show input
-		$( this ).hide();
-		$( this.nextElementSibling ).show().focus();
-		// exit
-		var done = function() {
-			$( document ).unbind( "click", done );
-			$( __this.nextElementSibling ).unbind( "keyup", done );
-			$( __this ).removeClass( "editing" );
-			$( __this ).text( $( __this.nextElementSibling ).val() );
-			$( __this.nextElementSibling ).hide();
-			$( __this ).show();
-		}
-		$( document ).bind( "click", done );
-		$( this.nextElementSibling).bind( "keyup", "return", done );
-	});
-	// change title
-	$( "#tree-prop-name", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.title = $( this ).val();
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// change background color
-	$( "#tree-prop-bg", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.color = $(this).val();
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// change branch width
-	$( "#tree-prop-bw", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.width = parseInt( $(this).val() );
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// change node radius width
-	$( "#tree-prop-nr", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.radius = parseInt( $(this).val() );
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// change tree type
-	$( "#tree-prop-vm", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.viewmode = parseInt( $( this ).val() );
-		// notify sandbox
-		_sandbox.notify( "pb-treeplot" );
-	});
-	// change branch length option
-	$( "#tree-prop-bl", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.branchlenghts = ! _sandbox.activeTree.environment.branchlenghts;
-		// notify sandbox
-		_sandbox.notify( "pb-treeplot" );
-	});
-	// change 3d option
-	$( "#tree-prop-3d", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.threeD = ! _sandbox.activeTree.environment.threeD;
-		// notify sandbox
-		_sandbox.notify( "pb-treeplot" );
-	});
-	// change boundaries option
-	$( "#tree-prop-bn", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.view.boundaries = ! _sandbox.activeTree.view.boundaries;
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// leaf labels
-	$( "#tree-prop-ll", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.leaflabels = ! _sandbox.activeTree.environment.leaflabels;
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// htu labels
-	$( "#tree-prop-hl", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.htulabels = ! _sandbox.activeTree.environment.htulabels;
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// branch labels
-	$( "#tree-prop-bl", _sandbox.context ).live( "change", function () {
-		_sandbox.activeTree.environment.branchlabels = ! _sandbox.activeTree.environment.branchlabels;
-		// notify sandbox
-		_sandbox.notify( "pb-treedraw" );
-	});
-	// methods
-	return {
-		// respond to external actions
-		handle: function( type, data ) {
-			switch ( type ) {
-				// create the list
-				case "pb-treefocus":
-					// init html
-					var name, visual, viewing, labels;
-					// write name table
-					name = "<table>";
-					name += 	"<caption>Tree Name</caption>";
-					name += 	"<tbody>";
-					name +=			"<tr>";
-					name += 			"<td>";
-					name +=					"<span class='editable'>" + _sandbox.activeTree.title + "</span>";
-					name +=					"<input type='text' class='editable-field' style='width:170px' id='tree-prop-name' value='" + _sandbox.activeTree.title + "' />";
-					name +=				"</td>";
-					name +=				"<td>&nbsp;</td>";
-					name +=			"</tr>";
-					name +=			"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					name += 	"</tbody>";
-					name += "</table>";
-					// write visual table
-					visual = "<table>";
-					visual += 	"<caption>Visual Properties</caption>";
-					visual += 	"<tbody>";
-					visual +=		"<tr>";
-					visual += 			"<td align='right'>background color</td>";
-					visual += 			"<td>";
-					visual +=				"<span class='editable editable-prop'>" + _sandbox.activeTree.environment.color + "</span>";
-					visual +=				"<input type='text' class='editable-field editable-field-long' id='tree-prop-bg' value='" + _sandbox.activeTree.environment.color + "' />";
-					visual +=			"</td>";
-					visual +=		"</tr>";
-					visual +=		"<tr>";
-					visual += 			"<td align='right'>branch width</td>";
-					visual += 			"<td>";
-					visual +=				"<span class='editable editable-prop'>" + _sandbox.activeTree.environment.width + "</span>";
-					visual +=				"<input type='text' class='editable-field editable-field-short' id='tree-prop-bw' value='" + _sandbox.activeTree.environment.width + "' />";
-					visual +=			"</td>";
-					visual +=		"</tr>";
-					visual +=		"<tr>";
-					visual += 			"<td align='right'>node radius</td>";
-					visual += 			"<td>";
-					visual +=				"<span class='editable editable-prop'>" + _sandbox.activeTree.environment.radius + "</span>";
-					visual +=				"<input type='text' class='editable-field editable-field-short' id='tree-prop-nr' value='" + _sandbox.activeTree.environment.radius + "' />";
-					visual +=			"</td>";
-					visual +=		"</tr>";
-					visual +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					visual += 	"</tbody>";
-					visual += "</table>";
-					// write viewing table
-					viewing = "<table>";
-					viewing += 	"<caption>Viewing Properties</caption>";
-					viewing += 	"<tbody>";
-					viewing +=		"<tr>";
-					viewing += 			"<td align='right'>view type</td>";
-					viewing += 			"<td>";
-					viewing += 				"<select id='tree-prop-vm'>";
-					viewing += 					_sandbox.activeTree.environment.viewmode == 0 ? "<option value='0' selected='selected'>dendrogram</option>" : "<option value='0'>dendrogram</option>";
-					viewing +=					_sandbox.activeTree.environment.viewmode == 1 ? "<option value='1' selected='selected'>cladogram</option>" : "<option value='1'>cladogram</option>";
-					viewing +=					_sandbox.activeTree.environment.viewmode == 2 ? "<option value='2' selected='selected'>circular dendrogram</option>" : "<option value='2'>circular dendrogram</option>";
-					viewing +=					_sandbox.activeTree.environment.viewmode == 3 ? "<option value='3' selected='selected'>circular cladogram</option>" : "<option value='3'>circular cladogram</option>";
-					viewing += 				"</select>";
-					viewing +=			"</td>";
-					viewing +=		"</tr>";
-					viewing +=		"<tr>";
-					viewing += 			"<td align='right'>branch length</td>";
-					viewing += 			"<td>";
-					viewing +=				_sandbox.activeTree.environment.branchlenghts ? "<input type='checkbox' id='tree-prop-bl' disabled='disabled' />" : "<input type='checkbox' id='tree-prop-bl'  disabled='disabled' />";
-					viewing +=			"</td>";
-					viewing +=		"</tr>";
-					viewing +=		"<tr>";
-					viewing += 			"<td align='right'>3D</td>";
-					viewing += 			"<td>";
-					viewing +=				_sandbox.activeTree.environment.threeD ? "<input type='checkbox' id='tree-prop-3d' checked='checked' />" : "<input type='checkbox' id='tree-prop-3d' />";
-					viewing +=			"</td>";
-					viewing +=		"</tr>";
-					viewing +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					viewing +=		"<tr>";
-					viewing += 			"<td align='right'>boundaries</td>";
-					viewing += 			"<td>";
-					viewing +=				"<input type='checkbox' id='tree-prop-bn' />";
-					viewing +=			"</td>";
-					viewing +=		"</tr>";
-					viewing +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					viewing += 	"</tbody>";
-					viewing += "</table>";
-					// write labels table
-					labels = "<table>";
-					labels += 	"<caption>Node Labels</caption>";
-					labels += 	"<tbody>";
-					labels +=		"<tr>";
-					labels += 			"<td align='right'>leaf labels</td>";
-					labels += 			"<td>";
-					labels +=				_sandbox.activeTree.environment.leaflabels ? "<input type='checkbox' id='tree-prop-ll' checked='checked' />" : "<input type='checkbox' id='tree-prop-ll' />";
-					labels +=			"</td>";
-					labels +=		"</tr>";
-					labels +=		"<tr>";
-					labels += 			"<td align='right'>HTU labels</td>";
-					labels += 			"<td>";
-					labels +=				_sandbox.activeTree.environment.htulabels ? "<input type='checkbox' id='tree-prop-hl' checked='checked' />" : "<input type='checkbox' id='tree-prop-hl' />";
-					labels +=			"</td>";
-					labels +=		"</tr>";
-					labels +=		"<tr>";
-					labels += 			"<td align='right'>branch labels</td>";
-					labels += 			"<td>";
-					labels +=				_sandbox.activeTree.environment.branchlabels ? "<input type='checkbox' id='tree-prop-bl' checked='checked' disabled='disabled' />" : "<input type='checkbox' id='tree-prop-bl' disabled='disabled' />";
-					labels +=			"</td>";
-					labels +=		"</tr>";
-					labels +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
-					labels += 	"</tbody>";
-					labels += "</table>";
-					// add to doc
-					$( "#doc > section", _sandbox.context ).html( name + visual + viewing + labels );
-					break;
+			$( document ).bind( "click", done );
+			$( this.nextElementSibling).bind( "keyup", "return", done );
+		});
+		// change clade color
+		$( "#node-prop-cl", _sandbox.context ).live( "change", function () {
+			// set color
+			_sandbox.activeNode.color = $( this ).val();
+			// walk kids
+			( function ( n ) {
+				for ( var c in n.children ) {
+					n.children[c].color = _sandbox.activeNode.color;
+	            	arguments.callee( n.children[c] );
+	        	}
+			})( _sandbox.activeNode );
+			// prepare view
+			_sandbox.activeTree.view.update_links = true;
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// clade toggle
+		$( "#node-prop-vb", _sandbox.context ).live( "change", function () {
+			// toggle
+			_sandbox.activeNode.visibility = ! _sandbox.activeNode.visibility;
+			// walk kids
+			( function ( n ) {
+				for ( var c in n.children ) {
+					n.children[c].visibility = _sandbox.activeNode.visibility;
+	            	arguments.callee( n.children[c] );
+	        	}
+			})( _sandbox.activeNode );
+			// prepare view
+			_sandbox.activeTree.view.update_links = true;
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		/// methods
+		return {
+			// respond to external actions
+			handle: function( type, data ) {
+				switch ( type ) {
+					// clear clade info
+					case "pb-treefocus":
+						// clear selected
+						_clear();
+						break;
+					// show selected clade info
+					case "pb-nodeclick":
+						// set node title
+						var title = _sandbox.activeNode.title;
+						$( ".panel-head", $( "#node", _sandbox.context ) ).html( "Node -" + title.substring( 13, title.length - 1 ) );
+						// check parent
+						var vis = _sandbox.activeNode.parent && _sandbox.activeNode.parent.visibility ? "" : "disabled='disabled'";
+						// check kids
+						var is_clade = _sandbox.activeNode.n_children > 0;
+						// init html
+						var clade, uri;
+						// write clade table
+						clade = "<table>";
+						clade += 	"<caption>Clade Properties</caption>";
+						clade += 	"<tbody>";
+						clade +=		"<tr>";
+						clade += 			"<td align='right'>color</td>";
+						clade += 			"<td>";
+						clade +=				"<span class='editable editable-prop'>" + _sandbox.activeNode.color + "</span>";
+						clade +=				"<input type='text' class='editable-field editable-field-long' id='node-prop-cl' value='" + _sandbox.activeNode.color + "' />";
+						clade +=			"</td>";
+						clade +=		"</tr>";
+						clade +=		"<tr>";
+						clade += 			"<td align='right'>toggle</td>";
+						clade += 			"<td>";
+						clade +=				_sandbox.activeNode.visibility ? "<input type='checkbox' id='node-prop-vb' checked='checked' " + vis + " />" : "<input type='checkbox' id='node-prop-vb' " + vis + " />";
+						clade +=			"</td>";
+						clade +=		"</tr>";
+						clade +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						clade += 	"</tbody>";
+						clade += "</table>";
+						// write uri table
+						uri = "<table>";
+						uri += 	"<caption>URI Links</caption>";
+						uri += 	"<tbody>";
+						uri +=		"<tr>";
+						uri += 			"<td align='right'>images</td>";
+						uri += 			"<td>";
+						uri +=				"<span class='uri-link'>n / a</span>";
+						uri +=			"</td>";
+						uri +=		"</tr>";
+						uri +=		"<tr>";
+						uri += 			"<td align='right'>videos</td>";
+						uri += 			"<td>";
+						uri +=				"<span class='uri-link'>n / a</span>";
+						uri +=			"</td>";
+						uri +=		"</tr>";
+						uri +=		"<tr>";
+						uri += 			"<td align='right'>wiki</td>";
+						uri += 			"<td>";
+						uri +=				"<span class='uri-link'>n / a</span>";
+						uri +=			"</td>";
+						uri +=		"</tr>";
+						uri +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						uri += 	"</tbody>";
+						uri += "</table>";
+						// add to doc
+						if ( is_clade ) 
+							$( "#node > section", _sandbox.context ).html( clade + uri ); 
+						else 
+							$( "#node > section", _sandbox.context ).html( uri );
+						break;
+					case "pb-clearnode":
+						// clear selected
+						_clear();
+						break;
+				}
 			}
-		}
+		};
 	};
-};
-// simple feedback bar
-var Feedback = function( s ) {
-	// vars
-	var _sandbox = s;
-	// widget specific markup
-	var wHTML = "";
-	// methods
-	return {
-		// respond to external actions
-		handle: function( type, data ) {  }
+	// tree properties / drawing options
+	var TreeInfo = function( s ) {
+		// vars
+		var _sandbox = s;
+		// widget specific markup
+		var wHTML = "";
+		// editable cells
+		$( ".editable", _sandbox.context ).live( "click", function () {
+			// save ref
+			var __this = this;
+			// return if already editing
+			if ( $( this ).hasClass( "editing" ) ) 
+				return false;
+			$( this ).addClass( "editing" );
+			// show input
+			$( this ).hide();
+			$( this.nextElementSibling ).show().focus();
+			// exit
+			var done = function() {
+				$( document ).unbind( "click", done );
+				$( __this.nextElementSibling ).unbind( "keyup", done );
+				$( __this ).removeClass( "editing" );
+				$( __this ).text( $( __this.nextElementSibling ).val() );
+				$( __this.nextElementSibling ).hide();
+				$( __this ).show();
+			}
+			$( document ).bind( "click", done );
+			$( this.nextElementSibling).bind( "keyup", "return", done );
+		});
+		// change title
+		$( "#tree-prop-name", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.title = $( this ).val();
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// change background color
+		$( "#tree-prop-bg", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.color = $(this).val();
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// change branch width
+		$( "#tree-prop-bw", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.width = parseInt( $(this).val() );
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// change node radius width
+		$( "#tree-prop-nr", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.radius = parseInt( $(this).val() );
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// change tree type
+		$( "#tree-prop-vm", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.viewmode = parseInt( $( this ).val() );
+			// notify sandbox
+			_sandbox.notify( "pb-treeplot" );
+		});
+		// change branch length option
+		$( "#tree-prop-bl", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.branchlenghts = ! _sandbox.activeTree.environment.branchlenghts;
+			// notify sandbox
+			_sandbox.notify( "pb-treeplot" );
+		});
+		// change 3d option
+		$( "#tree-prop-3d", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.threeD = ! _sandbox.activeTree.environment.threeD;
+			// notify sandbox
+			_sandbox.notify( "pb-treeplot" );
+		});
+		// change boundaries option
+		$( "#tree-prop-bn", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.view.boundaries = ! _sandbox.activeTree.view.boundaries;
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// leaf labels
+		$( "#tree-prop-ll", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.leaflabels = ! _sandbox.activeTree.environment.leaflabels;
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// htu labels
+		$( "#tree-prop-hl", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.htulabels = ! _sandbox.activeTree.environment.htulabels;
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// branch labels
+		$( "#tree-prop-bl", _sandbox.context ).live( "change", function () {
+			_sandbox.activeTree.environment.branchlabels = ! _sandbox.activeTree.environment.branchlabels;
+			// notify sandbox
+			_sandbox.notify( "pb-treedraw" );
+		});
+		// methods
+		return {
+			// respond to external actions
+			handle: function( type, data ) {
+				switch ( type ) {
+					// create the list
+					case "pb-treefocus":
+						// init html
+						var name, visual, viewing, labels;
+						// write name table
+						name = "<table>";
+						name += 	"<caption>Tree Name</caption>";
+						name += 	"<tbody>";
+						name +=			"<tr>";
+						name += 			"<td>";
+						name +=					"<span class='editable'>" + _sandbox.activeTree.title + "</span>";
+						name +=					"<input type='text' class='editable-field' style='width:170px' id='tree-prop-name' value='" + _sandbox.activeTree.title + "' />";
+						name +=				"</td>";
+						name +=				"<td>&nbsp;</td>";
+						name +=			"</tr>";
+						name +=			"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						name += 	"</tbody>";
+						name += "</table>";
+						// write visual table
+						visual = "<table>";
+						visual += 	"<caption>Visual Properties</caption>";
+						visual += 	"<tbody>";
+						visual +=		"<tr>";
+						visual += 			"<td align='right'>background color</td>";
+						visual += 			"<td>";
+						visual +=				"<span class='editable editable-prop'>" + _sandbox.activeTree.environment.color + "</span>";
+						visual +=				"<input type='text' class='editable-field editable-field-long' id='tree-prop-bg' value='" + _sandbox.activeTree.environment.color + "' />";
+						visual +=			"</td>";
+						visual +=		"</tr>";
+						visual +=		"<tr>";
+						visual += 			"<td align='right'>branch width</td>";
+						visual += 			"<td>";
+						visual +=				"<span class='editable editable-prop'>" + _sandbox.activeTree.environment.width + "</span>";
+						visual +=				"<input type='text' class='editable-field editable-field-short' id='tree-prop-bw' value='" + _sandbox.activeTree.environment.width + "' />";
+						visual +=			"</td>";
+						visual +=		"</tr>";
+						visual +=		"<tr>";
+						visual += 			"<td align='right'>node radius</td>";
+						visual += 			"<td>";
+						visual +=				"<span class='editable editable-prop'>" + _sandbox.activeTree.environment.radius + "</span>";
+						visual +=				"<input type='text' class='editable-field editable-field-short' id='tree-prop-nr' value='" + _sandbox.activeTree.environment.radius + "' />";
+						visual +=			"</td>";
+						visual +=		"</tr>";
+						visual +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						visual += 	"</tbody>";
+						visual += "</table>";
+						// write viewing table
+						viewing = "<table>";
+						viewing += 	"<caption>Viewing Properties</caption>";
+						viewing += 	"<tbody>";
+						viewing +=		"<tr>";
+						viewing += 			"<td align='right'>view type</td>";
+						viewing += 			"<td>";
+						viewing += 				"<select id='tree-prop-vm'>";
+						viewing += 					_sandbox.activeTree.environment.viewmode == 0 ? "<option value='0' selected='selected'>dendrogram</option>" : "<option value='0'>dendrogram</option>";
+						viewing +=					_sandbox.activeTree.environment.viewmode == 1 ? "<option value='1' selected='selected'>cladogram</option>" : "<option value='1'>cladogram</option>";
+						viewing +=					_sandbox.activeTree.environment.viewmode == 2 ? "<option value='2' selected='selected'>circular dendrogram</option>" : "<option value='2'>circular dendrogram</option>";
+						viewing +=					_sandbox.activeTree.environment.viewmode == 3 ? "<option value='3' selected='selected'>circular cladogram</option>" : "<option value='3'>circular cladogram</option>";
+						viewing += 				"</select>";
+						viewing +=			"</td>";
+						viewing +=		"</tr>";
+						viewing +=		"<tr>";
+						viewing += 			"<td align='right'>branch length</td>";
+						viewing += 			"<td>";
+						viewing +=				_sandbox.activeTree.environment.branchlenghts ? "<input type='checkbox' id='tree-prop-bl' disabled='disabled' />" : "<input type='checkbox' id='tree-prop-bl'  disabled='disabled' />";
+						viewing +=			"</td>";
+						viewing +=		"</tr>";
+						viewing +=		"<tr>";
+						viewing += 			"<td align='right'>3D</td>";
+						viewing += 			"<td>";
+						viewing +=				_sandbox.activeTree.environment.threeD ? "<input type='checkbox' id='tree-prop-3d' checked='checked' />" : "<input type='checkbox' id='tree-prop-3d' />";
+						viewing +=			"</td>";
+						viewing +=		"</tr>";
+						viewing +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						viewing +=		"<tr>";
+						viewing += 			"<td align='right'>boundaries</td>";
+						viewing += 			"<td>";
+						viewing +=				"<input type='checkbox' id='tree-prop-bn' />";
+						viewing +=			"</td>";
+						viewing +=		"</tr>";
+						viewing +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						viewing += 	"</tbody>";
+						viewing += "</table>";
+						// write labels table
+						labels = "<table>";
+						labels += 	"<caption>Node Labels</caption>";
+						labels += 	"<tbody>";
+						labels +=		"<tr>";
+						labels += 			"<td align='right'>leaf labels</td>";
+						labels += 			"<td>";
+						labels +=				_sandbox.activeTree.environment.leaflabels ? "<input type='checkbox' id='tree-prop-ll' checked='checked' />" : "<input type='checkbox' id='tree-prop-ll' />";
+						labels +=			"</td>";
+						labels +=		"</tr>";
+						labels +=		"<tr>";
+						labels += 			"<td align='right'>HTU labels</td>";
+						labels += 			"<td>";
+						labels +=				_sandbox.activeTree.environment.htulabels ? "<input type='checkbox' id='tree-prop-hl' checked='checked' />" : "<input type='checkbox' id='tree-prop-hl' />";
+						labels +=			"</td>";
+						labels +=		"</tr>";
+						labels +=		"<tr>";
+						labels += 			"<td align='right'>branch labels</td>";
+						labels += 			"<td>";
+						labels +=				_sandbox.activeTree.environment.branchlabels ? "<input type='checkbox' id='tree-prop-bl' checked='checked' disabled='disabled' />" : "<input type='checkbox' id='tree-prop-bl' disabled='disabled' />";
+						labels +=			"</td>";
+						labels +=		"</tr>";
+						labels +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
+						labels += 	"</tbody>";
+						labels += "</table>";
+						// add to doc
+						$( "#doc > section", _sandbox.context ).html( name + visual + viewing + labels );
+						break;
+				}
+			}
+		};
 	};
-};
+	// simple feedback bar
+	var Feedback = function( s ) {
+		// vars
+		var _sandbox = s;
+		// widget specific markup
+		var wHTML = "";
+		// methods
+		return {
+			// respond to external actions
+			handle: function( type, data ) {  }
+		};
+	};
 /*###########################################################################
 ####################################################################### UTILS
 ###########################################################################*/
