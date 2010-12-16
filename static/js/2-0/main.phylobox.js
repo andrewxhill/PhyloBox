@@ -617,7 +617,18 @@ PhyloBox = function( $ ) {
 	            if ( typeof data == "string" && RX_URL.test( data ) ) 
 					_key = ( ( ( 1 + Math.random() ) * 0x10000 ) | 0 ).toString( 16 ).substring( 1 );
 				var pt = WIDGET && _sandbox.options.tools ? 40 : 20;
-	            _view = new _Engine.View( _sandbox, _key, holder, { t: pt, r: 20, b: 20, l: 20 }, true, 20, true );
+                var tmpR = 20;
+                var tmpL = 20;
+                var tmpB = 20;
+                var tmpT = pt;
+                if (WIDGET && _sandbox.options.margins) {
+                    tmpR = _sandbox.options.margins.r ? tmpR + _sandbox.options.margins.r : tmpR;
+                    tmpL = _sandbox.options.margins.l ? tmpL + _sandbox.options.margins.l : tmpL;
+                    tmpB = _sandbox.options.margins.b ? tmpB + _sandbox.options.margins.b : tmpB;
+                    tmpT = _sandbox.options.margins.t ? tmpT + _sandbox.options.margins.t : tmpT;
+	            }
+                //_view = new _Engine.View( _sandbox, _key, holder, { t: pt, r: 20, b: 20, l: 20 }, true, 20, true );
+                _view = new _Engine.View( _sandbox, _key, holder, { t: tmpT, r: tmpR, b: tmpB, l: tmpL }, true, 20, true );
 	            // initialize io
 				_io = new _IO( _sandbox.context, this, API_TREE + sandbox.options.method, "json", "#tree-loader-" + _view.id, sandbox.options.params );
 				
@@ -1230,7 +1241,10 @@ PhyloBox = function( $ ) {
 					// enable css3 color words
 		            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 					_ctx.lineWidth = 1;
-					_ctx.font = "6px Plain";
+                    
+                    //_ctx.font = _sandbox.options.labelSize + "px Plain";
+                    _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
+					//_ctx.font = "8px Plain";
 					_ctx.globalAlpha = 1;
 					if ( _tree.environment.color === false )
 						_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -1621,7 +1635,9 @@ PhyloBox = function( $ ) {
 						// first render
 			            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 			            _ctx.lineWidth = 1;
-						_ctx.font = "6px Plain";
+                        _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
+                        //_ctx.font.replace('pxpx','px');
+						//_ctx.font = "8px Plain";
 						_ctx.globalAlpha = 1;
 						if ( _tree.environment.color === false )
 							_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -2639,6 +2655,7 @@ var Feedback = function( s ) {
 		        threeD: null,
 		        htuLabels: null,
 		        leafLabels:  null,
+		        labelSize:  8,
 		        branchColor: null,
 		        branchWidth: null,
 		        nodeRadius: null,

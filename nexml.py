@@ -25,7 +25,7 @@ class NeXMLtoTree():
         self.root = None
         self.name = "Untitled Tree"
         self.title = "Untitled Tree" #replicated because JS client expects title, while we should be storing name
-        self.description = ""
+        self.description = None
         self.topobject = treexml
         self.idMap = {}
         """

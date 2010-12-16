@@ -43,13 +43,6 @@ if (typeof PbEvent != 'function'){
     script.type = "text/javascript";
     script.setAttribute('src', version+"static/js/2-0/event.phylobox.js");
     head.appendChild(script);
-    
-    script = new Image(); 
-    script.src = '/static/files/phylobox_embedded_tree.png';
-    script.style.display = 'none';
-    script.onload = function(){
-        document.body.appendChild(script);  
-    }
 }
 // load all scripts
 var PhyloBoxInitialized = false;

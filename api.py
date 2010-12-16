@@ -127,6 +127,8 @@ class AddNewTree(webapp.RequestHandler):
             k = "phylobox-"+version+"-"+str(uuid.uuid4())
         treefile = UnzipFiles(treefile)
         
+        treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
+        
         try:
             treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
         except:
@@ -142,7 +144,7 @@ class AddNewTree(webapp.RequestHandler):
             xmlType = 'nexml'
             treexml = treexml.findall(NS_XML+'trees')[0]
             topE = 'tree'
-        
+        logging.error(xmlType)
         for treeXML in treexml.findall(NS_XML+topE):
             
             background = "23232F"
@@ -192,7 +194,7 @@ class AddNewTree(webapp.RequestHandler):
             treefile['date'] = str(datetime.datetime.now())
             treefile['author'] = author
             treefile['root'] = root
-            treefile['description'] = tree.description
+            treefile['description'] = tree.description if tree.description is not None else phylourl is not None else None
             treefile['title'] = tree.title
             treefile['environment'] = {}
             treefile['environment']['root'] = tree.root
