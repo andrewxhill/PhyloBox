@@ -13,8 +13,8 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 // locaation
-var version = "http://2-0.latest.phylobox.appspot.com/";
-//version = "http://localhost:8080/";
+//var version = "http://2-0.latest.phylobox.appspot.com/";
+var version = "http://localhost:8080/";
 // tools
 var toolbar__ = '<div id="toolbar">';
 toolbar__ += 		'<nav>';
@@ -62,27 +62,27 @@ PhyBox = function(divid, options) {
             script.onload = function() { 
                 jQuery.noConflict(); 
                 _this.delay = _this.delay - 1000;
-                classPBLoad();
-            }
-        }else{
-            classPBLoad();
-        }
-    }
-    
-    function classPBLoad(){
-        if (typeof Class != 'function'){
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            script.setAttribute('src', version+"static/js/2-0/class.phylobox.js");
-            head.appendChild(script);
-            script.onload = function() {
-                _this.delay = _this.delay -900;
                 mainPBLoad();
             }
         }else{
             mainPBLoad();
         }
     }
+    
+    // function classPBLoad(){
+    //     if (typeof Class != 'function'){
+    //         var script = document.createElement("script");
+    //         script.type = "text/javascript";
+    //         script.setAttribute('src', version+"static/js/2-0/class.phylobox.js");
+    //         head.appendChild(script);
+    //         script.onload = function() {
+    //             _this.delay = _this.delay -900;
+    //             mainPBLoad();
+    //         }
+    //     }else{
+    //         mainPBLoad();
+    //     }
+    // }
     
     function mainPBLoad(){
         if (typeof PhyloBox != 'object'){

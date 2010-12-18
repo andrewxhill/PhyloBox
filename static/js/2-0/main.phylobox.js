@@ -144,7 +144,7 @@ PhyloBox = function( $ ) {
 				if ( $( handle ).hasClass( "handle-left" ) ) {
 					// get margin and sibling
 					var main_m_orig = parseInt( $( main ).css( "margin-left" ) );
-					var sib = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.previousElementSibling.lastElementChild.previousElementSibling;
+					var sib = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.previousElementSibling.lastElementChild;
 					var sib_w_orig = $( sib ).width();
 					// bind mouse move
 					var movehandle = function( e ) {
@@ -1622,26 +1622,33 @@ PhyloBox = function( $ ) {
 						switch ( _tree.environment.viewmode ) {
 							// dendogram, cladogram
 							case 0: case 1:
-								var gap_x = _width / ( _tree.n_layers - 1 );
-								var gap_y = _height / ( _tree.n_leaves - 1 );
-								_max_z = ( _tree.n_layers - 1 ) * gap_x;
-								var j = 0;
-								for ( var l in nls ) {
-									for ( var n in nls[l] ) {
-										var x = ( nls[l][n].layer * gap_x ) - _vpx;
-										if ( nls[l][n].is_leaf ) {
-											var y = j * gap_y - _vpy;
-											j++;
-										} else {
-											var max_y = nls[l][n].children[0].point3D.y;
-											var min_y = nls[l][n].children[nls[l][n].n_children - 1].point3D.y;
-											var y = min_y + ( ( max_y - min_y ) / 2 );
+								// switch( _tree.environment.branchlengths ) {
+								// 	case true:
+								// 		
+								// 		break;
+								// 	case false:
+										var gap_x = _width / ( _tree.n_layers - 1 );
+										var gap_y = _height / ( _tree.n_leaves - 1 );
+										_max_z = ( _tree.n_layers - 1 ) * gap_x;
+										var j = 0;
+										for ( var l in nls ) {
+											for ( var n in nls[l] ) {
+												var x = ( nls[l][n].layer * gap_x ) - _vpx;
+												if ( nls[l][n].is_leaf ) {
+													var y = j * gap_y - _vpy;
+													j++;
+												} else {
+													var max_y = nls[l][n].children[0].point3D.y;
+													var min_y = nls[l][n].children[nls[l][n].n_children - 1].point3D.y;
+													var y = min_y + ( ( max_y - min_y ) / 2 );
+												}
+												var z = _tree.environment.threeD ? nls[l][n].n_parents * gap_x - ( _max_z / 2 ) : 1;
+						                        nls[l][n].point3D =  new _Engine.Point3D( x, y, z );
+											}
 										}
-										var z = _tree.environment.threeD ? nls[l][n].n_parents * gap_x - ( _max_z / 2 ) : 1;
-				                        nls[l][n].point3D =  new _Engine.Point3D( x, y, z );
-									}
-								}
-								_gap = gap_x;
+										_gap = gap_x;
+								// 		break;
+								// }
 								break;
 							// circular dendogram, circular cladogram
 							case 2: case 3:
@@ -2101,7 +2108,7 @@ PhyloBox = function( $ ) {
 			// set cursor
 			switch( _activeTool ) {
 				case "select":
-					//$( this ).css( "cursor", "none" );
+					$( this ).css( "cursor", "default" );
 					break;
 				case "translate":
 					$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
@@ -2292,11 +2299,11 @@ PhyloBox = function( $ ) {
 							var node = nodes[n];
 							// color dot
 							var info = "<div class='taxa-right'>";
-							info += 	"<div class='ex' style='" + ( node.visibility ? "display:none" : "" ) + "'>x</div>";
-							info += 	"<div class='dot' style='background:#" + node.color + ";'></div>";
-							info += "</div>";
+								info += 	"<div class='ex' style='" + ( node.visibility ? "display:none" : "" ) + "'>x</div>";
+								info += 	"<div class='dot' style='background:#" + node.color + ";'></div>";
+								info += "</div>";
 							// add to doc
-							taxa.append( "<li><a href='javascript:;' id='nl-" + node.id + "' class='taxa-link'>" + node.title + info + "</a></li>" );
+							taxa.append( "<li><a href='javascript:;' id='nl-" + node.id + "' class='taxa-link'>" + info + "<span class='taxa-link-text'>" + node.title + "</span></a></li>" );
 							// add node as data to link
 							var l = $( "#nl-" + node.id, _sandbox.context );
 							l.data( "node", node );
@@ -2897,7 +2904,9 @@ PhyloBox = function( $ ) {
 							_nav.welcome();
 							break;
 						default:
-							alert( "Oops. Something's not configured properly. Check our wiki for more on developing with PhyloBox.\n\nhttps://github.com/andrewxhill/PhyloBox/wiki/_pages" );
+							alert( "Oops! Something's not configured properly. Please check our wiki for more information on developing with PhyloBox. \
+									\n\nhttps://github.com/andrewxhill/PhyloBox/wiki/_pages/\n\n"
+							);
 							break;
 					}
 				},
