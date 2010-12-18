@@ -21,7 +21,8 @@ PbEvent = function() {
 		"pb-nodechange",
 		"pb-pan",
 		"pb-rotate",
-		"pb-zoom"
+		"pb-zoom",
+        "pb-treefocus"
 	],
 	// checks if valid event type
 	_isValidType = function( t ) {
