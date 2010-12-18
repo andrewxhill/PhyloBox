@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -7,7 +7,8 @@
         <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-	<link type="text/css" rel="stylesheet" href="static/css/style.css" />
+	<link rel="stylesheet" href="/static/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
 	<meta name="keywords" content="" />
 	<meta name="description" content="PhyloBox Yo!" />
 	<!--[if lt IE 9]>
@@ -18,6 +19,7 @@
 	<script type="text/javascript" src="/static/js/2-0/jquery.scrollTo-1.4.2.js"></script>
 	<script type="text/javascript" src="/static/js/2-0/date.format.js"></script>
 	<script type="text/javascript" src="/static/js/2-0/jquery.hotkeys.js"></script>
+	<script type="text/javascript" src="/static/fancybox/jquery.fancybox-1.3.4.js"></script>
 	<script type="text/javascript" src="/static/js/2-0/main.phylobox.js"></script>
     <script type="text/javascript" >
         function getVars() {
@@ -57,13 +59,12 @@
                 myBox.drawTree( "key", key);
             } else {
                 myBox = new PhyloBox.Viz();
-                myBox.drawTree();
+                myBox.drawTree("app");
             }
         };
     </script>
 </head>
 <body onload="init()">
-        <div id="crap" style="position: absolute; top: 0; left: 0; height:100%"></div>
 	<header id="head">
 		<!-- <div id="perma-link">
 			<p>Permalink:</p>
@@ -90,11 +91,11 @@
 						<a href="javascript:;" class="menu-butt">File<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
 						<div id="file-menu" class="menu">
 							<ul>
+								<li><a href="javascript:;" id="file-menu-new" class="menu-item">New</a></li>
 								<li>
-									<input type="file" id="file-menu-new-file" class="menu-submit-file" size="1" name="phyloFile" />
-									<a href="javascript:;" id="" class="menu-item">New</a>
+									<input type="file" id="file-menu-open-file" class="menu-submit-file" size="1" name="phyloFile" />
+									<a href="javascript:;" id="" class="menu-item">Open...</a>
 								</li>
-								<li><a href="javascript:;" id="" class="menu-item-off">Open...</a></li>
 								<li><a href="javascript:;" id="" class="menu-item-off">Close</a></li>
 							</ul>
 							<div class="menu-separator"></div>
@@ -165,6 +166,7 @@
 			</ul>
 		</nav>
 	</div>
+	<div class="clear" style="margin-top:-3px;"></div>
 	<div id="main">
 		<div id="main-left">
 			<div id="taxa" class="panel panel-left">
@@ -188,7 +190,7 @@
 					<h2 class="panel-head">Node</h2>
 				</header>
 				<section>
-					<h2 class="prop-title nodes-blank">Select a node to see its properties.</h2>
+					<h2 class="prop-title nodes-blank"></h2>
 				</section>
 			</div>
 			<div class="clear"></div>
@@ -230,5 +232,68 @@
 	<footer id="foot">
 		<a href="javascript:;" class="plain">Feedback</a>
 	</footer>
+	<!-- modal content markup -->
+	<div id="overlay">
+		<!--/////////////////////////////////////////////////////////////////////// welcome -->
+		<div id="welcome">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r.png" />
+			</h1>
+			<h3 class="overlay-sub"><span class="boold">PhyloBox</span> is an online environment for viewing, editing, sharing, and publishing phylogenetic trees. All work is licensed under a <a href="http://creativecommons.org/licenses/by/3.0/us/" target="_blank">Creative Commons Attribution 3.0 License.</a></h3>
+			<h3 class="overlay-head">Quick Start:</h3>
+			<div class="modal-form-actions">
+			    <button tabindex="1" class="choice" name="visualize_your_phylogeny" type="submit">
+					<input type="file" id="welcome-new-file" class="welcome-submit-file" size="1" name="phyloFile" />
+					<span>Visualize Your Phylogeny</span>
+				</button>
+				<button tabindex="2" class="choice" name="see_an_example" type="submit">
+					<span>See an Example</span>
+				</button>
+			</div>
+			<div class="modal-form-links">
+				<li><a href="https://github.com/andrewxhill/PhyloBox/wiki/_pages" target="_blank">About</a></li>
+				<li><a href="https://github.com/andrewxhill/PhyloBox/wiki/PhyloBox-API-For-Developers" target="_blank">API</a></li>
+				<li><a href="https://github.com/andrewxhill/PhyloBox/wiki" target="_blank">Support</a></li>
+				<li><a href="https://github.com/andrewxhill/PhyloBox" target="_blank">Github</a></li>
+				<li><a href="mailto:andrewxhill@gmail.com?subject=PhyloBox">Contact</a></li>
+			</div>
+		</div>
+		<!--///////////////////////////////////////////////////////////////////////// saved -->
+		<div id="tree-saved">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l-sm.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r-sm.png" />
+			</h1>
+			<h3 class="overlay-sub">Your tree has been saved.</h3>
+			<div class="modal-form-actions-vsm">
+				<button tabindex="1" class="choice" name="close" type="submit">
+					<span>Close</span>
+				</button>
+			</div>
+		</div>
+		<!--////////////////////////////////////////////////////////// confirm new document -->
+		<div id="confirm-new">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l-sm.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r-sm.png" />
+			</h1>
+			<h3 class="overlay-sub-sm">Your are about to start a new project. Your current project will be saved. Are you sure you want to proceed?</h3>
+			<div class="modal-form-actions-sm">
+				<button tabindex="2" class="choice" name="yes" type="submit">
+					<span>Yes</span>
+				</button>
+				<button tabindex="1" class="choice" name="no" type="submit">
+					<span>No</span>
+				</button>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

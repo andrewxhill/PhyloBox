@@ -260,11 +260,7 @@ PhyloBox = function( $ ) {
 						_context.trigger( type, [{ tree: _activeTree }] );
 						break;
 					case "pb-treesave":
-						// tell local modules
-						for ( var m in _modules )
-							_modules[m].handle( type );
-						// tell anyone else who might be interested
-						_context.trigger( type );
+						alert( "Your tree has been saved. Sick!" );
 						break;
 					case "pb-treepan":
 					case "pb-treerotate":
@@ -299,16 +295,6 @@ PhyloBox = function( $ ) {
 							_modules[m].handle( type, { tree: _activeTree } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree }] );
-						break;
-					case "pb-reset":
-						// tell local modules
-						for ( var m in _modules )
-							_modules[m].handle( type );
-						// tell anyone else who might be interested
-						_context.trigger( type );
-						// remove refs for garbage collector
-						_activeTree = _activeNode = null;
-						_trees = [];
 						break;
 					default: error_( "can't notify: invalid event type..." );
 				}
@@ -351,15 +337,9 @@ PhyloBox = function( $ ) {
 						break;
 				}
 			},
-			saveTree: function( all ) {
-				// check all
-				if ( all )
-					// save all trees
-					for ( var t in _trees )
-						_trees[t].save();
-				else
-					// save only active
-					_activeTree.save();
+			saveTree: function() {
+				// redraw tree
+				_activeTree.save();
 			},
 			// gets
 			get context() { return _context; },
@@ -501,8 +481,33 @@ PhyloBox = function( $ ) {
 		var _sandbox = sandbox,
 			_key, _view, _io, _age,
 			_data = [], _data_clone = [], _tree_data = [], _node_list = [], _nodes = [],
-			_n_leaves = 0, _n_layers = 0, _title, _environment;
-			// make tree object
+			_n_leaves = 0, _n_layers = 0, _title, _environment,
+			_nester = new Worker("static/js/2-0/nest.phylobox.worker.js");
+		// get status updates from worker
+		_nester.onmessage = function ( e ) {
+			switch( e.data.type ) {
+				case "progress":
+					//console.log( "nesting..." );
+					console.log( e.data.prop );
+					//_node_list.push( e.data.node );
+					break;
+				case "complete":
+					console.log( "nesting done!" );
+					console.log( e.data.nodes );
+					break;
+				case "log":
+					console.log( e.data.log );
+					break;
+				default:
+					console.log( e.data );
+					break;
+			}
+		};
+		// log worker errors
+		_nester.onerror = function ( e ) {
+			console.log( "Nesting Error: " + e );
+		};
+		// make tree object
 		function _nest( rid ) {
 			// root node?
 			if ( ! rid ) 
@@ -512,30 +517,45 @@ PhyloBox = function( $ ) {
 			// exit if invalid
 			if ( ! root )
 			 	return error_( "invalid tree root id" );
-			// ensure proper tree direction
-			if ( root.parent_id ) {
-				// if root is leaf, root's parent becomes root
-				if ( ! root.children ) root = _find( _tree_data, "id", root.parent_id );
-				// parent -> child
-				root.children.push( { "id": root.parent_id } );
-				// child -> parent
-				var parent = _find( _tree_data, "id", root.parent_id );
-				for ( var c in parent.children ) 
-					if ( parent.children[c].id == root.id ) 
-						parent.children.splice( parent.children.indexOf( parent.children[c] ), 1 );
-				// for ( var c in parent.children ) if ( parent.children[c].id == root.id ) delete parent.children[c];
-				if ( parent.children.length == 0 ) 
-					parent.children = null;
-				// rename parents
-				root.parent_id = null;
-				parent.parent_id = root.id;
-			}
-			// make the tree
-			_n_leaves = 0; _n_layers = 0;
+			// refresh vars
 			_node_list = [];
-			_nodes = new _Node( rid );
-			_nodes.is_root = true;
-			_branch( _nodes, root );
+			//_nester_node_list = [];
+			// start worker
+			_nester.postMessage({
+				r: root,
+				rid: rid,
+				td: _tree_data,
+			});
+
+			
+
+			// // ensure proper tree direction
+			// if ( root.parent_id ) {
+			// 	// if root is leaf, root's parent becomes root
+			// 	if ( ! root.children ) root = _find( _tree_data, "id", root.parent_id );
+			// 	// parent -> child
+			// 	root.children.push( { "id": root.parent_id } );
+			// 	// child -> parent
+			// 	var parent = _find( _tree_data, "id", root.parent_id );
+			// 	for ( var c in parent.children ) 
+			// 		if ( parent.children[c].id == root.id ) 
+			// 			parent.children.splice( parent.children.indexOf( parent.children[c] ), 1 );
+			// 	// for ( var c in parent.children ) if ( parent.children[c].id == root.id ) delete parent.children[c];
+			// 	if ( parent.children.length == 0 ) 
+			// 		parent.children = null;
+			// 	// rename parents
+			// 	root.parent_id = null;
+			// 	parent.parent_id = root.id;
+			// }
+			// // make the tree
+			// _n_leaves = 0; _n_layers = 0;
+			// _node_list = [];
+			// _nodes = new _Node( rid );
+			// _nodes.is_root = true;
+			// _branch( _nodes, root );
+			
+			
+			
 			// add extra properties
 			for ( var n in _node_list ) {
 				// assign layers
@@ -552,62 +572,11 @@ PhyloBox = function( $ ) {
 				// give it a title
 				_node_list[n].build_title();
 			}
+			
+			
+			
 		}
-		// walk node children
-		function _branch( n, d ) {
-			// ensure proper tree direction
-			for ( var c in d.children ) {
-				if ( ! d.children[c] ) continue;
-				var cd = _find( _tree_data, "id", d.children[c].id );
-				// if ( cd.parent_id && cd.parent_id != d.id )
-				if ( cd.parent_id != d.id ) {
-					// parent -> child
-					cd.children.push( { "id": cd.parent_id } );
-					// child -> parent
-					var cpd = _find( _tree_data, "id", cd.parent_id );
-					for ( var cc in cpd.children ) 
-						if ( cpd.children[cc].id == cd.id ) 
-							cpd.children.splice( cpd.children.indexOf( cpd.children[cc] ), 1 );
-					// for ( cc in cpd.children ) if ( cpd.children[cc].id == cd.id ) delete cpd.children[cc];
-					if ( cpd.children.length == 0 ) cpd.children = null;
-					// rename parents
-					cd.parent_id = d.id;
-					cpd.parent_id = cd.id;
-				}
-			}
-			// set color
-			n.color = d.color;
-			// set uri links
-	        n.uri = d.uri;
-	        // set name
-			if ( d.name ) 
-				n.name = d.name;
-	        else if ( d.taxonomy && d.taxonomy.scientific_name ) 
-				n.name = d.taxonomy.scientific_name;
-			// set taxonomy
-			n.taxonomy = d.taxonomy;
-			// set visibility
-			n.visibility = d.visibility;
-			// set length
-			n.length = d.length;
-			// move down tree
-			if ( ! d.children ) {
-				n.is_leaf = true;
-				_n_leaves ++;
-			} else 
-				for ( var c in d.children ) {
-					if ( ! d.children[c] ) continue;
-					var cn = new _Node( d.children[c].id );
-					n.add_child( cn );
-					cn.parent = n;
-					cn.n_parents = n.n_parents + 1;
-					_branch( cn, _find( _tree_data, "id", cn.id ) );
-				}
-			// max number parents = tree's layer count
-			if ( _n_layers <= n.n_parents ) _n_layers = n.n_parents + 1;
-			// collect node ref for list
-			_node_list.push( n );
-		}
+		
 		// return object with unique requested property
 		function _find( o, p, v ) {
 			// returns false if not unique !
@@ -1797,17 +1766,6 @@ PhyloBox = function( $ ) {
 		var _sandbox = s, _activeMenu;
 		// widget specific markup
 		var wHTML = "";
-		// preset fancybox options for all modals
-		var _fb_options = {
-			autoDimensions: false,
-			autoScale: false,
-			width: 550,
-			height: 300,
-			transitionIn: "fade",
-			transitionOut: "fade",
-			opacity: true,
-			modal: true
-		};
 		// hide file / edit / share menu
 		function _killMenu( e ) {
 			if ( e.target.nodeName != "INPUT" ) {
@@ -1833,7 +1791,7 @@ PhyloBox = function( $ ) {
 					// show loading
 					$.fancybox.showActivity();
 					break;
-				case "file-menu-open-file":
+				case "file-menu-new-file":
 					// hide menu
 					$( document ).unbind( "click", _killMenu );
 					$( _activeMenu ).removeClass( "menu-butt-active" );
@@ -1883,7 +1841,7 @@ PhyloBox = function( $ ) {
 			return false;
 		});
 		// see an example
-		$( "button[name='see_an_example']", _sandbox.context ).live( "click", function () {
+		$("button[name='see_an_example']", _sandbox.context ).live( "click", function () {
 			// hide modal
 			$.fancybox.close();
 			// show loading
@@ -1919,38 +1877,20 @@ PhyloBox = function( $ ) {
 			}
 		});
 		// menu file events
-		$( "#file-menu-new", _sandbox.context ).live( "click", function () {
-			// show modal window
-			$.fancybox( $("#confirm-new").html(), $.extend( _fb_options, { width: 350, height: 200 } ) );
-		});
-		$( "button[name='yes']", _sandbox.context ).live( "click", function () {
-			// show welcome modal
-			$.fancybox( $("#welcome").html(), $.extend( _fb_options, { width: 550, height: 300 } ) );
-			// save tree(s)
-			_sandbox.saveTree( true );
-			// notify sandbox
-			_sandbox.notify( "pb-reset" );
-		});
-		$( "button[name='no'], button[name='close']", _sandbox.context ).live( "click", function () {
-			// hide modal
-			$.fancybox.close( true );
-		});
-		$( "#file-menu-open-file", _sandbox.context ).live( "mouseenter", function () {
+		$( "#file-menu-new-file", _sandbox.context ).live( "mouseenter", function () {
 			$( this.nextElementSibling ).addClass( "menu-submit-hover" );
 		});
-		$( "#file-menu-open-file", _sandbox.context ).live( "mouseleave", function () {
+		$( "#file-menu-new-file", _sandbox.context ).live( "mouseleave", function () {
 			$( this.nextElementSibling ).removeClass( "menu-submit-hover" );
 		});
-		$( "#file-menu-open-file", _sandbox.context ).live( "mousedown", function () {
+		$( "#file-menu-new-file", _sandbox.context ).live( "mousedown", function () {
 			$( this.nextElementSibling ).addClass( "menu-submit-active" );
 		});
-		$( "#file-menu-open-file", _sandbox.context ).live( "mouseup", function () {
+		$( "#file-menu-new-file", _sandbox.context ).live( "mouseup", function () {
 			$( this.nextElementSibling ).removeClass( "menu-submit-active" );
 		});
 		// save active tree
 		$( "#file-menu-save-tree", _sandbox.context ).live( "click", function () {
-			// show overlay and loading 
-			$.fancybox.showLoading();
 			// save active tree
 			_sandbox.saveTree();
 		});
@@ -1963,10 +1903,6 @@ PhyloBox = function( $ ) {
 		});
 		// methods
 		return {
-			// begin with welcome modal
-			welcome: function() {
-				$.fancybox( $("#welcome").html(), _fb_options );
-			},
 			// respond to external actions
 			handle: function( type, data ) {
 				switch ( type ) {
@@ -1974,15 +1910,6 @@ PhyloBox = function( $ ) {
 					case "pb-treefocus":
 						// hide doc loader
 						$.fancybox.hideLoading();
-						break;
-					case "pb-treesave":
-						// save silently
-						if ( $( "#fancybox-loading" ).css( "display" ) != "none" ) {
-							// 
-							$.fancybox.hideActivity();
-							// show saved modal
-							$.fancybox( $("#tree-saved").html(), $.extend( _fb_options, { width: 350, height: 200 } ) );
-						}
 						break;
 				}
 			}
@@ -2026,8 +1953,10 @@ PhyloBox = function( $ ) {
 			// check already active
 			if ( $( this ).hasClass( "tool-active" ) ) 
 				return false;
-			// clear style
-			$( "#" + _activeTool, _sandbox.context ).removeClass( "tool-active" );
+			// clear styles
+			$( ".tool", _sandbox.context ).each( function( i ) { 
+				$( this ).removeClass( "tool-active" ); 
+			});
 			// add style
 			$( this ).addClass( "tool-active" );
 			// set to active
@@ -2135,11 +2064,6 @@ PhyloBox = function( $ ) {
 						$( "#select", _sandbox.context ).addClass( "tool-active" );
 						_activeTool = "select";
 						break;
-					case "pb-reset":
-						// clear style
-						$( "#" + _activeTool, _sandbox.context ).removeClass( "tool-active" );
-						_activeTool = null;
-						break;
 				}
 			}
 		};
@@ -2193,16 +2117,10 @@ PhyloBox = function( $ ) {
 						_sandbox.activeTree.view.refresh();
 						_sandbox.activeTree.view.selecting = false;
 						break;
-					// clear selected
 					case "pb-clearnode":
+						// clear selected
 						_sandbox.activeTree.view.clearSelected();
 						_sandbox.activeTree.view.refresh();
-						break;
-					// remove all tree canvas holders - all else should be garbage collected
-					case "pb-reset":
-						$( "div.tree-holder" ).each( function ( i ) {
-							$( this ).remove();
-						});
 						break;
 				}
 			}
@@ -2325,18 +2243,9 @@ PhyloBox = function( $ ) {
 							}
 						})( _sandbox.activeNode );
 						break;
-					// clear selected
 					case "pb-clearnode":
+						// clear selected
 						_clear();
-						break;
-					// clear list
-					case "pb-reset":
-						// get taxa list
-						var taxa = $( "#taxa > section > ul", _sandbox.context );
-						// empty taxa
-						taxa.empty();
-						// clear active
-						_activeNode = null;
 						break;
 				}
 			}
@@ -2349,14 +2258,11 @@ PhyloBox = function( $ ) {
 		// widget specific markup
 		var wHTML = "";
 		// wipe out title and body
-		function _clear( all ) {
+		function _clear() {
 			// title
 			$( ".panel-head", $( "#node" , _sandbox.context ) ).text( "Node" );
 			// body
-			if ( all )
-				$( "#node > section", _sandbox.context ).html( "" );
-			else
-				$( "#node > section", _sandbox.context ).html( "<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>" );
+			$( "#node > section", _sandbox.context ).html( "<h2 class='prop-title nodes-blank'>Select a node to see its properties.</h2>" );
 		}
 		// editable cells
 		$( ".editable", _sandbox.context ).live( "click", function () {
@@ -2485,13 +2391,9 @@ PhyloBox = function( $ ) {
 						else 
 							$( "#node > section", _sandbox.context ).html( uri );
 						break;
-					// clear selected
 					case "pb-clearnode":
+						// clear selected
 						_clear();
-						break;
-					// clear selected and head
-					case "pb-reset":
-						_clear( true );
 						break;
 				}
 			}
@@ -2708,9 +2610,6 @@ PhyloBox = function( $ ) {
 						// add to doc
 						$( "#doc > section", _sandbox.context ).html( name + visual + viewing + labels );
 						break;
-					case "pb-reset":
-						$( "#doc > section", _sandbox.context ).html( "" );
-						break;
 				}
 			}
 		};
@@ -2794,6 +2693,17 @@ PhyloBox = function( $ ) {
 			ea = sa + g;
 		}
 	};
+	// preset fancybox options for all modals
+	var fb_options_ = {
+		autoDimensions: false,
+		autoScale: false,
+		width: 550,
+		height: 300,
+		transitionIn: "fade",
+		transitionOut: "fade",
+		opacity: true,
+		modal: true
+	};
 /*###########################################################################
 ############################################################## PUBLIC METHODS
 ###########################################################################*/
@@ -2829,9 +2739,8 @@ PhyloBox = function( $ ) {
 			if ( ! WIDGET ) {
 				// for main app only
 				var _face = new _Interface( _context );
-				var _nav = new Navigation( _sandbox );
 				// make all modules
-				modules.push( _nav );
+				modules.push( new Navigation( _sandbox ) );
 				modules.push( new Toolbar( _sandbox ) );
 				modules.push( new TreeEditor( _sandbox ) );
 				modules.push( new TaxaList( _sandbox ) );
@@ -2877,7 +2786,7 @@ PhyloBox = function( $ ) {
 							break;
 						case "app":
 							// show modal window
-							_nav.welcome();
+							$.fancybox( $("#welcome").html(), fb_options_ );
 							break;
 						default:
 							alert( "Oops. Something's not configured properly. Check our wiki for more on developing with PhyloBox.\n\nhttps://github.com/andrewxhill/PhyloBox/wiki/_pages" );
