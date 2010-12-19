@@ -186,15 +186,15 @@ class AddNewTree(webapp.RequestHandler):
             #output = {}
             for a,b in tree.objtree.tree.items():
                 if a != 0:
-                    output.append(b.json())
-                    
+                    output.append(b.json())       
+            
             treefile = {}
             treefile['v'] = 2
             treefile['k'] = k
             treefile['date'] = str(datetime.datetime.now())
             treefile['author'] = author
             treefile['root'] = root
-            treefile['description'] = tree.description if tree.description is not None else phylourl is not None else None
+            treefile['description'] = tree.description if tree.description is not None else None#phylourl if phylourl is not None else None
             treefile['title'] = tree.title
             treefile['environment'] = {}
             treefile['environment']['root'] = tree.root

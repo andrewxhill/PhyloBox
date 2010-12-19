@@ -245,7 +245,7 @@ PhyloBox = function( $ ) {
 						// save active tree
 						_activeTree = data;
 						// tell local modules
-						for ( var m in _modules ) 
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree }] );
@@ -254,14 +254,14 @@ PhyloBox = function( $ ) {
 					case "pb-treeplot":
 					case "pb-treedraw":
 						// tell local modules
-						for ( var m in _modules ) 
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree }] );
 						break;
 					case "pb-treesave":
 						// tell local modules
-						for ( var m in _modules )
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type );
 						// tell anyone else who might be interested
 						_context.trigger( type );
@@ -271,7 +271,7 @@ PhyloBox = function( $ ) {
 					case "pb-treezoomin":
 					case "pb-treezoomout":
 						// tell local modules
-						for ( var m in _modules ) 
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree, node: _activeNode, offsets: data } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree, node: _activeNode, offsets: data }] );
@@ -279,7 +279,7 @@ PhyloBox = function( $ ) {
 					case "pb-nodehover":
 					case "pb-nodeexit":
 						// tell local modules
-						for ( var m in _modules )
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree, node: data, found: flag } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree, node: data }] );
@@ -288,21 +288,21 @@ PhyloBox = function( $ ) {
 						// save active node
 						_activeNode = data;
 						// tell local modules
-						for ( var m in _modules )
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree, node: _activeNode, found: flag } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree, node: _activeNode }] );
 						break;
 					case "pb-clearnode":
 						// tell local modules
-						for ( var m in _modules )
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree } );
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree }] );
 						break;
 					case "pb-reset":
 						// tell local modules
-						for ( var m in _modules )
+						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type );
 						// tell anyone else who might be interested
 						_context.trigger( type );
@@ -336,7 +336,7 @@ PhyloBox = function( $ ) {
 				switch ( type ) {
 					case "load":
 						// loop over trees
-						for ( var k in data ) {
+						for ( var k = 0; k < data.length; k++ ) {
 							// create a tree type
 							var t = new _Tree( this );
 							// save it
@@ -355,7 +355,7 @@ PhyloBox = function( $ ) {
 				// check all
 				if ( all )
 					// save all trees
-					for ( var t in _trees )
+					for ( var t = 0; t < _trees.length; t++ )
 						_trees[t].save();
 				else
 					// save only active
@@ -384,7 +384,8 @@ PhyloBox = function( $ ) {
 				}); 
 		}
 		// init
-        if (!p) { p={} };
+        if ( ! p ) 
+			{ p = {} };
 		if ( ! x || ! c || ! s || ! dt || ! l ) 
 			return error_( "invalid arguments..." );
 		_context = x; _caller = c; _server = s; _dataType = dt; _loader = l, _params=p;
@@ -396,9 +397,8 @@ PhyloBox = function( $ ) {
 				var type = WIDGET ? undefined : "POST";
 					server = s || _server,
 					query = WIDGET ? q + "&callback=?" : q;
-                for (p in _params){
+                for ( var p = 0; p < _params.length; p++ )
                     query = query+'&'+p+'='+_params[p];
-                }
 				$.ajax({
 		  			type: type, 
 					url: server, 
@@ -441,7 +441,7 @@ PhyloBox = function( $ ) {
 			build_title: function() {
 				if ( this.name ) _title += this.name;
 				else if ( this.taxonomy )
-					for ( var i in this.taxonomy ) {
+					for ( var i = 0; i < this.taxonomy.length; i++ ) {
 						if ( _title != "" ) _title += " | ";
 						_title += this.taxonomy[i];
 					}
@@ -515,15 +515,15 @@ PhyloBox = function( $ ) {
 			// ensure proper tree direction
 			if ( root.parent_id ) {
 				// if root is leaf, root's parent becomes root
-				if ( ! root.children ) root = _find( _tree_data, "id", root.parent_id );
+				if ( ! root.children ) 
+					root = _find( _tree_data, "id", root.parent_id );
 				// parent -> child
 				root.children.push( { "id": root.parent_id } );
 				// child -> parent
 				var parent = _find( _tree_data, "id", root.parent_id );
-				for ( var c in parent.children ) 
+				for ( var c = 0; c < parent.children.length; c++ ) 
 					if ( parent.children[c].id == root.id ) 
 						parent.children.splice( parent.children.indexOf( parent.children[c] ), 1 );
-				// for ( var c in parent.children ) if ( parent.children[c].id == root.id ) delete parent.children[c];
 				if ( parent.children.length == 0 ) 
 					parent.children = null;
 				// rename parents
@@ -537,14 +537,14 @@ PhyloBox = function( $ ) {
 			_nodes.is_root = true;
 			_branch( _nodes, root );
 			// add extra properties
-			for ( var n in _node_list ) {
+			for ( var n = 0; n < _node_list.length; n++ ) {
 				// assign layers
 				if ( _node_list[n].is_leaf ) 
 					_node_list[n].layer = _n_layers - 1;
 				else
 					_node_list[n].layer = _node_list[n].n_parents;
 				// assign siblings
-				for ( var c in _node_list[n].children ) {
+				for ( var c = 0; c < _node_list[n].children.length; c++ ) {
 					var s = _node_list[n].children.slice( 0 );
 					s.splice( s.indexOf( s[c] ), 1 );
 					_node_list[n].children[c].siblings = s;
@@ -556,53 +556,42 @@ PhyloBox = function( $ ) {
 		// walk node children
 		function _branch( n, d ) {
 			// ensure proper tree direction
-			for ( var c in d.children ) {
-				if ( ! d.children[c] ) continue;
-				var cd = _find( _tree_data, "id", d.children[c].id );
-				// if ( cd.parent_id && cd.parent_id != d.id )
-				if ( cd.parent_id != d.id ) {
-					// parent -> child
-					cd.children.push( { "id": cd.parent_id } );
-					// child -> parent
-					var cpd = _find( _tree_data, "id", cd.parent_id );
-					for ( var cc in cpd.children ) 
-						if ( cpd.children[cc].id == cd.id ) 
-							cpd.children.splice( cpd.children.indexOf( cpd.children[cc] ), 1 );
-					// for ( cc in cpd.children ) if ( cpd.children[cc].id == cd.id ) delete cpd.children[cc];
-					if ( cpd.children.length == 0 ) cpd.children = null;
-					// rename parents
-					cd.parent_id = d.id;
-					cpd.parent_id = cd.id;
-				}
-			}
-			// set color
-			n.color = d.color;
-			// set uri links
-	        n.uri = d.uri;
-	        // set name
-			if ( d.name ) 
-				n.name = d.name;
-	        else if ( d.taxonomy && d.taxonomy.scientific_name ) 
-				n.name = d.taxonomy.scientific_name;
-			// set taxonomy
-			n.taxonomy = d.taxonomy;
-			// set visibility
-			n.visibility = d.visibility;
-			// set length
-			n.length = d.length;
-			// move down tree
-			if ( ! d.children ) {
-				n.is_leaf = true;
-				_n_leaves ++;
-			} else 
-				for ( var c in d.children ) {
-					if ( ! d.children[c] ) continue;
+			if ( d.children ) {
+				for ( var c = 0; c < d.children.length; c++ ) {
+					var cd = _find( _tree_data, "id", d.children[c].id );
+					if ( cd.parent_id != d.id ) {
+						// parent -> child
+						cd.children.push( { "id": cd.parent_id } );
+						// child -> parent
+						var cpd = _find( _tree_data, "id", cd.parent_id );
+						for ( var cc = 0; cc < cpd.children.length; cc++ ) 
+							if ( cpd.children[cc].id == cd.id ) 
+								cpd.children.splice( cpd.children.indexOf( cpd.children[cc] ), 1 );
+						if ( cpd.children.length == 0 ) cpd.children = null;
+						// rename parents
+						cd.parent_id = d.id;
+						cpd.parent_id = cd.id;
+					}
 					var cn = new _Node( d.children[c].id );
 					n.add_child( cn );
 					cn.parent = n;
 					cn.n_parents = n.n_parents + 1;
 					_branch( cn, _find( _tree_data, "id", cn.id ) );
 				}
+			} else {
+				n.is_leaf = true;
+				_n_leaves ++;
+			}
+			// add props
+			n.color = d.color;
+	        n.uri = d.uri;
+			if ( d.name ) 
+				n.name = d.name;
+	        else if ( d.taxonomy && d.taxonomy.scientific_name ) 
+				n.name = d.taxonomy.scientific_name;
+			n.taxonomy = d.taxonomy;
+			n.visibility = d.visibility;
+			n.length = d.length;
 			// max number parents = tree's layer count
 			if ( _n_layers <= n.n_parents ) _n_layers = n.n_parents + 1;
 			// collect node ref for list
@@ -612,7 +601,7 @@ PhyloBox = function( $ ) {
 		function _find( o, p, v ) {
 			// returns false if not unique !
 			var r, n = 0;
-			for ( var i in o ) 
+			for ( var i = 0; i < o.length; i++ ) 
 				if ( o[i][p] == v ) { 
 					r = o[i]; 
 					n ++; 
@@ -742,7 +731,7 @@ PhyloBox = function( $ ) {
 			// save tree
 			save: function() {
 				// update phyloJSON nodes with Node properties
-				for ( var n in _node_list ) {
+				for ( var n = 0; n < _node_list.length; n++ ) {
 					var pj_node = _find( _tree_data, "id", _node_list[n].id );
 					pj_node.color = _node_list[n].color;
 			        pj_node.visibility = _node_list[n].visibility;
@@ -870,14 +859,14 @@ PhyloBox = function( $ ) {
 					draw: function( ctx ) {
 						// check visibility
 				        if ( _node.visibility ) {
-							// scale radius on depth
-							var scale = ( _point.z + 3000 ) / 6000;
+							// scale alpha and radius on depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
+							var scale = 0.7 - ( (_point.z / ( _view.max_z / 2 ) ) * 0.3 );
 					        // set styles
 			                ctx.fillStyle = isHex_( _node.color );
 							ctx.globalAlpha = scale;
 					        // draw the line
 					        ctx.beginPath();
-							if ( scale > 0 ) 
+							if ( scale > 0 )	
 								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * scale, 0, 2 * Math.PI, false );
 					        ctx.fill();
 							// leaf label
@@ -917,8 +906,6 @@ PhyloBox = function( $ ) {
 								var label = _node.name || _node.id;
 								ctx.fillText( label, lx, ly );
 							}
-							// branch label -- coming soon
-							if ( _view.tree.environment.branchlabels ) {  }
 						}
 						// selected
 						if ( _node.selected ) {
@@ -965,15 +952,6 @@ PhyloBox = function( $ ) {
 				var _node, _view,
 					_pointA, _pointB, _pointC, 
 					_controlP1, _controlP2;
-				// improvable line depth calc
-				function _depth() { 
-					return Math.max( Math.min( _pointA.z, _pointB.z ), 0.0001 ); 
-				}
-				// for shading
-				function _dimming() {
-					// calc dimming
-					return Math.abs(1 / _depth() )*100;
-				}
 				// init
 				_node = nodeA;
 				_pointA = nodeA.point3D;
@@ -1161,9 +1139,12 @@ PhyloBox = function( $ ) {
 					draw: function( ctx ) {
 						// check visibility
 				        if( ! _node.visibility ) return false;
+						// scale alpha with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
+						var scale = 0.7 - ( (_pointB.z / ( _view.max_z / 2 ) ) * 0.3 );
 				     	// set styles
 				        ctx.strokeStyle = isHex_( _node.color );
-				        ctx.globalAlpha = _dimming();
+				        ctx.globalAlpha = scale;
+						//ctx.globalCompositeOperation = "xor";
 				        ctx.lineWidth  = _view.tree.environment.width;
 						// draw the line
 				        ctx.beginPath();
@@ -1179,6 +1160,7 @@ PhyloBox = function( $ ) {
 								break;
 						}
 						ctx.stroke();
+						//ctx.globalCompositeOperation = "source-over";
 					},
 					// gets
 					get points() { return [ _pointA, _pointB ] },
@@ -1229,7 +1211,7 @@ PhyloBox = function( $ ) {
 				// update coordinates of all points
 				function _update() {
 					// points
-					for ( var d in _d ) {
+					for ( var d = 0; d < _d.length; d++ ) {
 						_d[d].point.setVanishingPoint( _vpx, _vpy );
 						_d[d].point.setCenter( _cx, _cy, _cz );
 						_d[d].point.x += _dx;
@@ -1240,7 +1222,7 @@ PhyloBox = function( $ ) {
 					 	_d[d].point.rotateZ( _az );
 					}
 					// set control points vanishing point
-					for ( var cp in _cp ) {
+					for ( var cp = 0; cp < _cp.length; cp++ ) {
 						_cp[cp].setVanishingPoint( _vpx, _vpy );
 						_cp[cp].setCenter( _cx, _cy, _cz );
 						_cp[cp].x += _dx;
@@ -1263,7 +1245,6 @@ PhyloBox = function( $ ) {
 					// enable css3 color words
 		            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 					_ctx.lineWidth = 1;
-                    
                     //_ctx.font = _sandbox.options.labelSize + "px Plain";
                     _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
 					//_ctx.font = "8px Plain";
@@ -1272,9 +1253,12 @@ PhyloBox = function( $ ) {
 						_ctx.clearRect( 0, 0, _c_width(), _c_height() );
 					else
 						_ctx.fillRect( 0, 0, _c_width(), _c_height() );
-					// draw objects
-					for ( var d in _d ) _d[d].draw( _ctx );
-					for ( var l in _l ) _l[l].draw( _ctx );
+					// draw dots
+					for ( var d = 0; d < _d.length; d++ )
+						_d[d].draw( _ctx );
+					// draw lines
+					for ( var l = 0; l < _l.length; l++ )
+						_l[l].draw( _ctx );
 					// check locked
 					if ( _locked ) {
 						// draw lock
@@ -1353,7 +1337,7 @@ PhyloBox = function( $ ) {
 							// search for nearby nodes
 							var nodes = _tree.node_list,
 								r = _h_radius;
-							for ( var n in nodes ) {
+							for ( var n = 0; n < nodes.length; n++ ) {
 								var p = {}; 
 								p.x = nodes[n].point3D.screenX,
 								p.y = nodes[n].point3D.screenY;
@@ -1382,7 +1366,7 @@ PhyloBox = function( $ ) {
 							// search for nearby nodes
 							var nodes = _tree.node_list,
 								r = _h_radius;
-							for ( var n in nodes ) {
+							for ( var n = 0; n < nodes.length; n++ ) {
 								var p = {}; 
 								p.x = nodes[n].point3D.screenX,
 								p.y = nodes[n].point3D.screenY;
@@ -1615,8 +1599,10 @@ PhyloBox = function( $ ) {
 						_cp = [];
 						// parse on layer
 						var nls = [];
-						for ( var i = 0; i < _tree.n_layers; i++ ) nls.push( [] );
-						for ( var n in _tree.node_list ) nls[_tree.node_list[n].layer].push( _tree.node_list[n] );
+						for ( var i = 0; i < _tree.n_layers; i++ ) 
+							nls.push( [] );
+						for ( var n = 0; n < _tree.node_list.length; n++ ) 
+							nls[_tree.node_list[n].layer].push( _tree.node_list[n] );
 						nls.reverse();
 						// calculate coordinates
 						switch ( _tree.environment.viewmode ) {
@@ -1631,8 +1617,8 @@ PhyloBox = function( $ ) {
 										var gap_y = _height / ( _tree.n_leaves - 1 );
 										_max_z = ( _tree.n_layers - 1 ) * gap_x;
 										var j = 0;
-										for ( var l in nls ) {
-											for ( var n in nls[l] ) {
+										for ( var l = 0; l < nls.length; l++ ) {
+											for ( var n = 0; n < nls[l].length; n++ ) {
 												var x = ( nls[l][n].layer * gap_x ) - _vpx;
 												if ( nls[l][n].is_leaf ) {
 													var y = j * gap_y - _vpy;
@@ -1643,7 +1629,7 @@ PhyloBox = function( $ ) {
 													var y = min_y + ( ( max_y - min_y ) / 2 );
 												}
 												var z = _tree.environment.threeD ? nls[l][n].n_parents * gap_x - ( _max_z / 2 ) : 1;
-						                        nls[l][n].point3D =  new _Engine.Point3D( x, y, z );
+												nls[l][n].point3D =  new _Engine.Point3D( x, y, z );
 											}
 										}
 										_gap = gap_x;
@@ -1656,8 +1642,8 @@ PhyloBox = function( $ ) {
 								var gap_t = 2 * Math.PI / _tree.n_leaves;
 								_max_z = ( _tree.n_layers - 1 ) * gap_r;
 								var j = 0;
-								for ( var l in nls ) {
-									for ( var n in nls[l] ) {
+								for ( var l = 0; l < nls.length; l++ ) {
+									for ( var n = 0; n < nls[l].length; n++ ) {
 										var r = nls[l][n].layer * gap_r;
 										if ( nls[l][n].is_leaf ) {
 											var t = j * gap_t;
@@ -1678,13 +1664,14 @@ PhyloBox = function( $ ) {
 								break;	
 						}
 						// make dots
-						for ( var n in _tree.node_list ) _d.push( new _Engine.Dot( _tree.node_list[n], this ) );
+						for ( var n = 0; n < _tree.node_list.length; n++ ) 
+							_d.push( new _Engine.Dot( _tree.node_list[n], this ) );
 						// make lines
 						this.connect( _tree.nodes );
 						// zoom
 						_cz = _tree.environment.threeD ? _max_z : 0;
 						// update points
-						for ( var d in _d ) {
+						for ( var d = 0; d < _d.length; d++ ) {
 							_d[d].point.setVanishingPoint( _vpx, _vpy );
 							_d[d].point.setCenter( _cx, _cy, _cz );
 							_d[d].point.x += _dx;
@@ -1696,10 +1683,10 @@ PhyloBox = function( $ ) {
 						}
 						// check options color
 						if ( _sandbox.options.branchColor !== null )
-			                for ( var d in _d )
+			                for ( var d = 0; d < _d.length; d++ )
 			                    _d[d].node.color = isHex_( _sandbox.options.branchColor );
 						// update control points
-						for ( var cp in _cp ) {
+						for ( var cp = 0; cp < _cp.length; cp++ ) {
 							_cp[cp].setVanishingPoint( _vpx, _vpy );
 							_cp[cp].setCenter( _cx, _cy, _cz );
 							_cp[cp].x += _dx;
@@ -1709,7 +1696,7 @@ PhyloBox = function( $ ) {
 						 	_cp[cp].rotateY( _ay );
 						 	_cp[cp].rotateZ( _az );
 						}
-						// first render
+						// first render ---------------->>>>>>
 			            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 			            _ctx.lineWidth = 1;
                         _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
@@ -1722,9 +1709,12 @@ PhyloBox = function( $ ) {
 							_ctx.fillRect( 0, 0, _c_width(), _c_height() );
 						// add to link style
 						_update_links = true;
-						// draw objects
-						for ( var d in _d ) _d[d].draw( _ctx );
-						for ( var l in _l ) _l[l].draw( _ctx );
+						// draw dots
+						for ( var d = 0; d < _d.length; d++ )
+							_d[d].draw( _ctx );
+						// draw lines
+						for ( var l = 0; l < _l.length; l++ )
+							_l[l].draw( _ctx );
 						// check boundaries
 						if ( _boundaries ) _showBounds();
 						// update and position title
@@ -1754,7 +1744,7 @@ PhyloBox = function( $ ) {
 					},
 					// connect nodes with lines
 					connect: function( node ) {
-				        for ( var c in node.children ) {
+				        for ( var c = 0; c < node.children.length; c++ ) {
 							var sp = node.children[c].siblings.length > 0 ? node.children[c].siblings[0].point3D : false;
 							var l = new _Engine.Line( node, node.children[c], sp, this );
 							var cp1 = l.controlP1;
@@ -1785,6 +1775,7 @@ PhyloBox = function( $ ) {
 					get ay(v) { return _ay; },
 					get az(v) { return _az; },
 					get gap() { return _gap; },
+					get max_z() { return _max_z; },
 					get h_radius() { return _h_radius; },
 					get selecting() { return _selecting; },
 					get hovered_node() { return _hovered_node; },
@@ -2295,7 +2286,7 @@ PhyloBox = function( $ ) {
 						// empty taxa
 						taxa.empty();
 						// walk nodes
-						for ( var n in nodes ) {
+						for ( var n = 0; n < nodes.length; n++ ) {
 							var node = nodes[n];
 							// color dot
 							var info = "<div class='taxa-right'>";
@@ -2342,7 +2333,7 @@ PhyloBox = function( $ ) {
 						if ( data.found ) _navTo( _sandbox.activeNode );
 						// walk kids
 						( function( n ) {
-							for ( var c in n.children ) {
+							for ( var c = 0; c < n.children.length; c++ ) {
 								n.children[c].link.css( "padding-left", "20px" );
 								arguments.callee( n.children[c] );
 							}
@@ -2410,7 +2401,7 @@ PhyloBox = function( $ ) {
 			_sandbox.activeNode.color = $( this ).val();
 			// walk kids
 			( function ( n ) {
-				for ( var c in n.children ) {
+				for ( var c = 0; c < n.children.length; c++ ) {
 					n.children[c].color = _sandbox.activeNode.color;
 	            	arguments.callee( n.children[c] );
 	        	}
@@ -2426,7 +2417,7 @@ PhyloBox = function( $ ) {
 			_sandbox.activeNode.visibility = ! _sandbox.activeNode.visibility;
 			// walk kids
 			( function ( n ) {
-				for ( var c in n.children ) {
+				for ( var c = 0; c < n.children.length; c++ ) {
 					n.children[c].visibility = _sandbox.activeNode.visibility;
 	            	arguments.callee( n.children[c] );
 	        	}
@@ -2563,13 +2554,13 @@ PhyloBox = function( $ ) {
 		});
 		// change branch width
 		$( "#tree-prop-bw", _sandbox.context ).live( "change", function () {
-			_sandbox.activeTree.environment.width = parseInt( $(this).val() );
+			_sandbox.activeTree.environment.width = parseFloat( $(this).val() );
 			// notify sandbox
 			_sandbox.notify( "pb-treedraw" );
 		});
 		// change node radius width
 		$( "#tree-prop-nr", _sandbox.context ).live( "change", function () {
-			_sandbox.activeTree.environment.radius = parseInt( $(this).val() );
+			_sandbox.activeTree.environment.radius = parseFloat( $(this).val() );
 			// notify sandbox
 			_sandbox.notify( "pb-treedraw" );
 		});
@@ -2719,12 +2710,12 @@ PhyloBox = function( $ ) {
 						labels +=				_sandbox.activeTree.environment.htulabels ? "<input type='checkbox' id='tree-prop-hl' checked='checked' />" : "<input type='checkbox' id='tree-prop-hl' />";
 						labels +=			"</td>";
 						labels +=		"</tr>";
-						labels +=		"<tr>";
-						labels += 			"<td align='right'>branch labels</td>";
-						labels += 			"<td>";
-						labels +=				_sandbox.activeTree.environment.branchlabels ? "<input type='checkbox' id='tree-prop-bl' checked='checked' disabled='disabled' />" : "<input type='checkbox' id='tree-prop-bl' disabled='disabled' />";
-						labels +=			"</td>";
-						labels +=		"</tr>";
+						// labels +=		"<tr>";
+						// labels += 			"<td align='right'>branch labels</td>";
+						// labels += 			"<td>";
+						// labels +=				_sandbox.activeTree.environment.branchlabels ? "<input type='checkbox' id='tree-prop-bl' checked='checked' disabled='disabled' />" : "<input type='checkbox' id='tree-prop-bl' disabled='disabled' />";
+						// labels +=			"</td>";
+						// labels +=		"</tr>";
 						labels +=		"<tr><td colspan='2' class='empty'>&nbsp;</td></tr>";
 						labels += 	"</tbody>";
 						labels += "</table>";
@@ -2885,7 +2876,7 @@ PhyloBox = function( $ ) {
 					modules.push( new Feedback( _sandbox ) );
 			}
 			// register all created modules
-			for ( var m in modules )
+			for ( var m = 0; m < modules.length; m++ )
 				_sandbox.register( modules[m] );
 			// methods --> available to user
 			return {
