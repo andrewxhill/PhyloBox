@@ -1139,13 +1139,13 @@ PhyloBox = function( $ ) {
 					draw: function( ctx ) {
 						// check visibility
 				        if( ! _node.visibility ) return false;
-						// scale alpha with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
+						// scale alpha and linw width with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
 						var scale = 0.7 - ( (_pointB.z / ( _view.max_z / 2 ) ) * 0.3 );
 				     	// set styles
 				        ctx.strokeStyle = isHex_( _node.color );
 				        ctx.globalAlpha = scale;
 						//ctx.globalCompositeOperation = "xor";
-				        ctx.lineWidth  = _view.tree.environment.width;
+				        ctx.lineWidth  = _view.tree.environment.width * scale;
 						// draw the line
 				        ctx.beginPath();
 				        ctx.moveTo( _pointA.screenX, _pointA.screenY );
@@ -2914,3 +2914,4 @@ PhyloBox = function( $ ) {
 	};
 //####################################################################### END
 }( jQuery );
+// x || (x = y)
