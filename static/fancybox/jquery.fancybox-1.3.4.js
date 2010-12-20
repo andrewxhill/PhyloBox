@@ -3,11 +3,11 @@
  * Simple and fancy lightbox alternative
  *
  * Examples and documentation at: http://fancybox.net
- * 
+ *
  * Copyright (c) 2008 - 2010 Janis Skarnelis
  * That said, it is hardly a one-person project. Many people have submitted bugs, code, and offered their advice freely. Their support is greatly appreciated.
- * 
- * Version: 1.3.3 (04/11/2010)
+ *
+ * Version: 1.3.4 (11/11/2010)
  * Requires: jQuery v1.3+
  *
  * Dual licensed under the MIT and GPL licenses:
@@ -141,9 +141,13 @@
 			selectedOpts.href = href;
 			selectedOpts.title = title;
 
-			if (selectedOpts.autoDimensions && selectedOpts.type !== 'iframe' && selectedOpts.type !== 'swf') {
-				selectedOpts.width = 'auto';
-				selectedOpts.height = 'auto';
+			if (selectedOpts.autoDimensions) {
+				if (selectedOpts.type == 'html' || selectedOpts.type == 'inline' || selectedOpts.type == 'ajax') {
+					selectedOpts.width = 'auto';
+					selectedOpts.height = 'auto';
+				} else {
+					selectedOpts.autoDimensions = false;	
+				}
 			}
 
 			if (selectedOpts.modal) {
@@ -213,7 +217,6 @@
 
 				case 'swf':
 					selectedOpts.scrolling = 'no';
-					selectedOpts.autoDimensions = false;
 
 					str = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="' + selectedOpts.width + '" height="' + selectedOpts.height + '"><param name="movie" value="' + href + '"></param>';
 					emb = '';
@@ -268,14 +271,31 @@
 				break;
 
 				case 'iframe':
-					selectedOpts.autoDimensions = false;
 					_show();
 				break;
 			}
 		},
 
 		_process_inline = function() {
-			tmp.wrapInner('<div style="width:' + (selectedOpts.width == 'auto' ? 'auto' : selectedOpts.width + 'px') + ';height:' + (selectedOpts.height == 'auto' ? 'auto' : selectedOpts.height + 'px') + ';overflow: ' + (selectedOpts.scrolling == 'auto' ? 'auto' : (selectedOpts.scrolling == 'yes' ? 'scroll' : 'hidden')) + '"></div>');
+			var
+				w = selectedOpts.width,
+				h = selectedOpts.height;
+
+			if (w.toString().indexOf('%') > -1) {
+				w = parseInt( ($(window).width() - (selectedOpts.margin * 2)) * parseFloat(w) / 100, 10) + 'px';
+
+			} else {
+				w = w == 'auto' ? 'auto' : w + 'px';	
+			}
+			
+			if (h.toString().indexOf('%') > -1) {
+				h = parseInt( ($(window).height() - (selectedOpts.margin * 2)) * parseFloat(h) / 100, 10) + 'px';
+
+			} else {
+				h = h == 'auto' ? 'auto' : h + 'px';	
+			}
+
+			tmp.wrapInner('<div style="width:' + w + ';height:' + h + ';overflow: ' + (selectedOpts.scrolling == 'auto' ? 'auto' : (selectedOpts.scrolling == 'yes' ? 'scroll' : 'hidden')) + ';position:relative;"></div>');
 
 			selectedOpts.width = tmp.width();
 			selectedOpts.height = tmp.height();
@@ -351,7 +371,6 @@
 			_process_title();
 
 			if (wrap.is(":visible")) {
-				
 				$( close.add( nav_left ).add( nav_right ) ).hide();
 
 				pos = wrap.position(),
@@ -379,7 +398,6 @@
 							'border-width' : currentOpts.padding,
 							'width'	: final_pos.width - currentOpts.padding * 2,
 							'height' : selectedOpts.autoDimensions ? 'auto' : final_pos.height - titleHeight - currentOpts.padding * 2
-							//'height' : currentOpts.type == 'image' || currentOpts.type == 'swf' || currentOpts.type == 'iframe' ? final_pos.height - titleHeight - currentOpts.padding * 2 : 'auto' 
 						});
 
 					if (equal) {
@@ -435,12 +453,10 @@
 				.css({
 					'width' : final_pos.width - currentOpts.padding * 2,
 					'height' : selectedOpts.autoDimensions ? 'auto' : final_pos.height - titleHeight - currentOpts.padding * 2
-					//'height' : currentOpts.type == 'image' || currentOpts.type == 'swf' || currentOpts.type == 'iframe' ? final_pos.height - titleHeight - currentOpts.padding * 2 : 'auto' 
 				})
 				.html( tmp.contents() );
 
 			wrap
-				//.hide()
 				.css(final_pos)
 				.fadeIn( currentOpts.transitionIn == 'none' ? 0 : currentOpts.speedIn, _finish );
 		},
@@ -566,13 +582,10 @@
 			}
 
 			if (selectedOpts.autoDimensions) {
-				wrap.css('height', 'auto');
 				content.css('height', 'auto');
 			}
 
-			//if (currentOpts.type !== 'image' && currentOpts.type !== 'swf' && currentOpts.type !== 'iframe') {
-				//content.css('height', 'auto');
-			//}
+			wrap.css('height', 'auto');
 
 			if (titleStr && titleStr.length) {
 				title.show();
@@ -583,7 +596,7 @@
 			}
 
 			_set_navigation();
-						
+	
 			if (currentOpts.hideOnContentClick)	{
 				content.bind('click', $.fancybox.close);
 			}
@@ -862,6 +875,20 @@
 	$.fancybox.hideActivity = function() {
 		loading.hide();
 	};
+	
+	// swp
+	
+	$.fancybox.showLoading = function() {
+		overlay.show();
+		$.fancybox.showActivity();
+	};
+	
+	$.fancybox.hideLoading = function() {
+		$.fancybox.hideActivity();
+		overlay.fadeOut('fast');
+	};
+	
+	// swp
 
 	$.fancybox.next = function() {
 		return $.fancybox.pos( currentIndex + 1);
@@ -909,7 +936,7 @@
 	};
 
 	// Note: within an iframe use - parent.$.fancybox.close();
-	$.fancybox.close = function() {
+	$.fancybox.close = function( hideOverlay ) {
 		if (busy || wrap.is(':hidden')) {
 			return;
 		}
@@ -939,7 +966,7 @@
 		wrap.stop();
 
 		function _cleanup() {
-			overlay.fadeOut('fast');
+			if ( hideOverlay ) overlay.fadeOut('fast');
 
 			title.empty().hide();
 			wrap.hide();
@@ -1032,7 +1059,7 @@
 		);
 
 		outer = $('<div id="fancybox-outer"></div>')
-			.append('<div class="fancybox-bg" id="fancybox-bg-n"></div><div class="fancybox-bg" id="fancybox-bg-ne"></div><div class="fancybox-bg" id="fancybox-bg-e"></div><div class="fancybox-bg" id="fancybox-bg-se"></div><div class="fancybox-bg" id="fancybox-bg-s"></div><div class="fancybox-bg" id="fancybox-bg-sw"></div><div class="fancybox-bg" id="fancybox-bg-w"></div><div class="fancybox-bg" id="fancybox-bg-nw"></div>')
+			//.append('<div class="fancybox-bg" id="fancybox-bg-n"></div><div class="fancybox-bg" id="fancybox-bg-ne"></div><div class="fancybox-bg" id="fancybox-bg-e"></div><div class="fancybox-bg" id="fancybox-bg-se"></div><div class="fancybox-bg" id="fancybox-bg-s"></div><div class="fancybox-bg" id="fancybox-bg-sw"></div><div class="fancybox-bg" id="fancybox-bg-w"></div><div class="fancybox-bg" id="fancybox-bg-nw"></div>')
 			.appendTo( wrap );
 
 		outer.append(
@@ -1059,11 +1086,13 @@
 
 		if ($.fn.mousewheel) {
 			wrap.bind('mousewheel.fb', function(e, delta) {
-				if (busy || currentOpts.type == 'image') {
+				if (busy) {
 					e.preventDefault();
-				}
 
-				$.fancybox[ delta > 0 ? 'prev' : 'next']();
+				} else if ($(e.target).get(0).clientHeight == 0 || $(e.target).get(0).scrollHeight === $(e.target).get(0).clientHeight) {
+					e.preventDefault();
+					$.fancybox[ delta > 0 ? 'prev' : 'next']();
+				}
 			});
 		}
 
