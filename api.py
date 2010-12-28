@@ -194,7 +194,13 @@ class AddNewTree(webapp.RequestHandler):
             treefile['date'] = str(datetime.datetime.now())
             treefile['author'] = author
             treefile['root'] = root
-            treefile['description'] = tree.description if tree.description is not None else None#phylourl if phylourl is not None else None
+            
+            if tree.description is not None:
+                treefile['description'] = tree.description
+            elif fileurl is not None:
+                treefile['description'] = fileurl
+            else:
+                treefile['description'] = None
             treefile['title'] = tree.title
             treefile['environment'] = {}
             treefile['environment']['root'] = tree.root
@@ -430,8 +436,6 @@ class Annotations(webapp.RequestHandler):
     annotation.triplet = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
     annotation.temporary = nodeindex.temporary
     annotation.put()
-    
-    
     
 class LookUp(webapp.RequestHandler):
   def getChildren(self,childKey,output,depth=0,maxDepth=-1,root=False):
