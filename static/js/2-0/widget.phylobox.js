@@ -37,7 +37,6 @@ style.href = version+"static/css/2-0/widget.style.css";
 style.media = "screen";
 head.appendChild(style);
 
-
 if (typeof PbEvent != 'function'){
     var script = document.createElement("script");
     script.type = "text/javascript";
@@ -59,6 +58,7 @@ PhyBox = function(divid, options) {
             head.appendChild(script);
             script.type = "text/javascript";
             script.setAttribute('src', "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js");
+			//script.setAttribute('src', version+"static/js/2-0/jquery.js");
             script.onload = function() { 
                 jQuery.noConflict(); 
                 _this.delay = _this.delay - 1000;
@@ -135,5 +135,3 @@ PhyBox = function(divid, options) {
         return new PhyloBox.Viz(divid,options);
     }
 };
-
-

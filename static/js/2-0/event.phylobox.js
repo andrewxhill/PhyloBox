@@ -12,13 +12,13 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-PbEvent = function() {
+PbEvent = (function () {
 	// supported phylobox events
 	var _events = [
 		"pb-nodeclick",
-		"pb-nodekill",
-		"pb-nodeflip",
 		"pb-nodechange",
+		"pb-cladekill",
+		"pb-cladeflip",
 		"pb-pan",
 		"pb-rotate",
 		"pb-zoom",
@@ -56,4 +56,4 @@ PbEvent = function() {
 				return _error( "invalid PhyloBox event requested..." );
 		}
 	}
-}();
+})();

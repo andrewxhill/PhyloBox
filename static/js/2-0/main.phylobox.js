@@ -13,7 +13,7 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 
-PhyloBox = function( $ ) {
+PhyloBox = (function ( $ ) {
 	// constants
 	var HOST = window.location.host,
 		WIDGET = (window.location.pathname).split('/')[1] == "examples" ||
@@ -22,8 +22,6 @@ PhyloBox = function( $ ) {
 			 HOST != "2-0.latest.phylobox.appspot.com"),
 		LOCAL = true;
         HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? "http://" + HOST + "/" : "http://2-0.latest.phylobox.appspot.com/";
-		//HOME = LOCAL ? "http://localhost:8080/" : "http://2-0.latest.phylobox.appspot.com/";
-    //console.log(HOME);
     var API_TREE = HOME + "api/lookup/",
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
@@ -300,6 +298,20 @@ PhyloBox = function( $ ) {
 						// tell anyone else who might be interested
 						_context.trigger( type, [{ tree: _activeTree }] );
 						break;
+					case "pb-cladeflip":
+						// tell local modules
+						for ( var m = 0; m < _modules.length; m++ )
+							_modules[m].handle( type, { tree: _activeTree, node: data } );
+						// tell anyone else who might be interested
+						_context.trigger( type, [{ tree: _activeTree, node: data }] );
+						break;
+					case "pb-cladeflipped":
+						// tell local modules
+						for ( var m = 0; m < _modules.length; m++ )
+							_modules[m].handle( type, { tree: _activeTree, node: data } );
+						// tell anyone else who might be interested
+						_context.trigger( type, [{ tree: _activeTree, node: data }] );
+						break;
 					case "pb-reset":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
@@ -499,16 +511,17 @@ PhyloBox = function( $ ) {
 	var _Tree = function( sandbox ) {
 		// private vars
 		var _sandbox = sandbox,
-			_key, _view, _io, _age,
-			_data = [], _data_clone = [], _tree_data = [], _node_list = [], _nodes = [],
-			_n_leaves = 0, _n_layers = 0, _title, _environment;
-			// make tree object
-		function _nest( rid ) {
+			_key, _view, _io, _age, 
+			_rid, _data = [], _data_clone = [], _tree_data = [], _node_list = [], _nodes = [],
+			_n_leaves = 0, _n_layers = 0, _title, _environment,
+			_renesting = false;
+		// make tree object
+		function _nest() {
 			// root node?
-			if ( ! rid ) 
+			if ( ! _rid ) 
 				return error_( "no root node provided for nest..." );
 			// get the root json object
-			var root = _find( _tree_data, "id", rid );
+			var root = _find( _tree_data, "id", _rid );
 			// exit if invalid
 			if ( ! root )
 			 	return error_( "invalid tree root id" );
@@ -531,9 +544,10 @@ PhyloBox = function( $ ) {
 				parent.parent_id = root.id;
 			}
 			// make the tree
-			_n_leaves = 0; _n_layers = 0;
+			_n_leaves = 0;
+			_n_layers = 0;
 			_node_list = [];
-			_nodes = new _Node( rid );
+			_nodes = new _Node( _rid );
 			_nodes.is_root = true;
 			_branch( _nodes, root );
 			// add extra properties
@@ -553,31 +567,42 @@ PhyloBox = function( $ ) {
 				_node_list[n].build_title();
 			}
 		}
-		// walk node children
+		// recursive branching
 		function _branch( n, d ) {
-			// ensure proper tree direction
+			// walk node children
 			if ( d.children ) {
-				for ( var c = 0; c < d.children.length; c++ ) {
-					var cd = _find( _tree_data, "id", d.children[c].id );
-					if ( cd.parent_id != d.id ) {
-						// parent -> child
-						cd.children.push( { "id": cd.parent_id } );
-						// child -> parent
-						var cpd = _find( _tree_data, "id", cd.parent_id );
-						for ( var cc = 0; cc < cpd.children.length; cc++ ) 
-							if ( cpd.children[cc].id == cd.id ) 
-								cpd.children.splice( cpd.children.indexOf( cpd.children[cc] ), 1 );
-						if ( cpd.children.length == 0 ) cpd.children = null;
-						// rename parents
-						cd.parent_id = d.id;
-						cpd.parent_id = cd.id;
+				// check nesting mode
+				if ( _renesting )
+					// ensure proper tree direction
+					for ( var c = 0; c < d.children.length; c++ ) {
+						// get data child
+						var cd = _find( _tree_data, "id", d.children[c].id );
+						// check relationships
+						if ( cd.parent_id != d.id ) {
+							// parent -> child
+							cd.children.push( { "id": cd.parent_id } );
+							// child -> parent
+							var cpd = _find( _tree_data, "id", cd.parent_id );
+							for ( var cc = 0; cc < cpd.children.length; cc++ ) 
+								if ( cpd.children[cc].id == cd.id ) 
+									cpd.children.splice( cpd.children.indexOf( cpd.children[cc] ), 1 );
+							if ( cpd.children.length == 0 ) cpd.children = null;
+							// rename parents
+							cd.parent_id = d.id;
+							cpd.parent_id = cd.id;
+						}
 					}
+				// make nodes for the children
+				for ( var c = 0; c < d.children.length; c++ ) {
+					// make a new node and set children / parent
 					var cn = new _Node( d.children[c].id );
 					n.add_child( cn );
 					cn.parent = n;
 					cn.n_parents = n.n_parents + 1;
+					// branch the new node
 					_branch( cn, _find( _tree_data, "id", cn.id ) );
 				}
+			// all done, we're at a leaf
 			} else {
 				n.is_leaf = true;
 				_n_leaves ++;
@@ -686,16 +711,23 @@ PhyloBox = function( $ ) {
 			make: function( data ) {
 				// store data
 				_data = data;
-				// nest this tree around the root
-				var ir = _data.environment.root ? 
-					_data.environment.root : 
-					_data.root ? 
-						_data.root : 
-						_data.tree[0].id;
-				this.nest( ir );
+				// nest this tree around the original root
+				this.nest();
 			},
-			// pre nesting setup
+			// pre-nesting setup
 			nest: function( rid ) {
+				// save root id
+				if ( rid ) {
+					_rid = rid;
+					_renesting = true;
+				} else {
+					_rid = rid || _data.environment.root ? 
+						_data.environment.root : 
+						_data.root ? 
+							_data.root : 
+							_data.tree[0].id;
+					_renesting = false;
+				}
 				// clone the original data
 				_data_clone = $.extend( true, {}, _data );
 				// combine options
@@ -724,9 +756,15 @@ PhyloBox = function( $ ) {
 				// break up data
 				_tree_data = _data.tree;
 				_environment = _data.environment;
-				_environment.root = rid;
+				_environment.root = _rid;
 				// (re)nest
-				_nest( rid );
+				_nest();
+			},
+			// flip clade about node
+			flip: function( n ) {
+				// reverse node phyloJSON children array
+				_find( _tree_data, "id", n.id ).children.reverse();
+				_nest();
 			},
 			// save tree
 			save: function() {
@@ -1274,14 +1312,14 @@ PhyloBox = function( $ ) {
 						_ctx.fill();
 					}
 					// check selecting
-					else if ( _selecting ) {
-						// draw mouse
-						_ctx.fillStyle = "#ff0000";
-						_ctx.globalAlpha = 0.3;
-						_ctx.beginPath();
-						_ctx.arc( _m.x, _m.y, _h_radius, 0, 2 * Math.PI, false );
-						_ctx.fill();
-					}
+					// else if ( _selecting ) {
+					// 	// draw mouse
+					// 	_ctx.fillStyle = "#ff0000";
+					// 	_ctx.globalAlpha = 0.3;
+					// 	_ctx.beginPath();
+					// 	_ctx.arc( _m.x, _m.y, _h_radius, 0, 2 * Math.PI, false );
+					// 	_ctx.fill();
+					// }
 					// check boundaries
 					if ( _boundaries ) _showBounds();
 					// kill link updates
@@ -1346,6 +1384,67 @@ PhyloBox = function( $ ) {
 									_f.y = p.y;
 									// notify sandbox
 									_sandbox.notify( "pb-nodeclick", nodes[n], true );
+									// clear flag
+									_locked = true;
+									break;
+								}
+							}
+							// draw
+							_render();
+							// clear
+							_selecting = false;
+							_locked = false;
+							break;
+						case "mousesearch":
+							// set
+							_m = m;
+							_selecting = true;
+							// notify sandbox
+							_sandbox.notify( "pb-nodeexit", _hovered_node, true );
+							// search for nearby nodes
+							var nodes = _tree.node_list,
+								r = _h_radius;
+							for ( var n = 0; n < nodes.length; n++ ) {
+								var p = {}; 
+								p.x = nodes[n].point3D.screenX,
+								p.y = nodes[n].point3D.screenY;
+								if( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
+									_f.x = p.x;
+									_f.y = p.y;
+									_locked = true;
+									_hovered_node = nodes[n];
+									// notify sandbox
+									_sandbox.notify( "pb-nodehover", nodes[n], true );
+									break;
+								}
+							}
+							// draw
+							_render();
+							// clear
+							_selecting = false;
+							_locked = false;
+							break;
+					}
+				}
+				function _flip( e, t, m ) {
+					// determine action
+					switch ( t ) {
+						case "mousedown":
+							// set
+							_m = m;
+							_selecting = true;
+							// search for nearby nodes
+							var nodes = _tree.node_list,
+								r = _h_radius;
+							for ( var n = 0; n < nodes.length; n++ ) {
+								var p = {}; 
+								p.x = nodes[n].point3D.screenX,
+								p.y = nodes[n].point3D.screenY;
+								if ( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
+									_f.x = p.x;
+									_f.y = p.y;
+									// notify sandbox
+									_sandbox.notify( "pb-cladeflip", nodes[n], true );
 									// clear flag
 									_locked = true;
 									break;
@@ -1537,6 +1636,7 @@ PhyloBox = function( $ ) {
 				_canvas[0].onselectstart = function() { return false; };
 		        // add tool events
 				_canvas.bind( "pb-select", _select );
+				_canvas.bind( "pb-flip", _flip );
 				_canvas.bind( "pb-translate", _translate );
 				_canvas.bind( "pb-rotate", _rotate );
 				_canvas.bind( "pb-zin", _zin );
@@ -1700,8 +1800,6 @@ PhyloBox = function( $ ) {
 			            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 			            _ctx.lineWidth = 1;
                         _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
-                        //_ctx.font.replace('pxpx','px');
-						//_ctx.font = "8px Plain";
 						_ctx.globalAlpha = 1;
 						if ( _tree.environment.color === false )
 							_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -1985,7 +2083,7 @@ PhyloBox = function( $ ) {
 			handle: function( type, data ) {
 				switch ( type ) {
 					// create the list
-					case "pb-treefocus":
+					case "pb-treefocus": case "pb-cladeflipped":
 						// hide doc loader
 						$.fancybox.hideLoading();
 						break;
@@ -1997,6 +2095,10 @@ PhyloBox = function( $ ) {
 							// show saved modal
 							$.fancybox( $("#tree-saved").html(), $.extend( _fb_options, { width: 350, height: 200 } ) );
 						}
+						break;
+					case "pb-cladeflip":
+						// show overlay and loading 
+						$.fancybox.showLoading();
 						break;
 				}
 			}
@@ -2098,7 +2200,7 @@ PhyloBox = function( $ ) {
 			var pre = WIDGET ? HOME : "";
 			// set cursor
 			switch( _activeTool ) {
-				case "select":
+				case "select": case "flip":
 					$( this ).css( "cursor", "default" );
 					break;
 				case "translate":
@@ -2176,7 +2278,8 @@ PhyloBox = function( $ ) {
 							$( this ).css( "height", ( 100 / _sandbox.trees.length ) + "%" );
 						});
 						// auto-fit
-						$( window ).trigger( "resize" );
+						if ( _sandbox.trees.length > 1 ) 
+							$( window ).trigger( "resize" );
 						break;
 					case "pb-treeblur":
 						// redraw tree
@@ -2211,6 +2314,17 @@ PhyloBox = function( $ ) {
 					case "pb-clearnode":
 						_sandbox.activeTree.view.clearSelected();
 						_sandbox.activeTree.view.refresh();
+						break;
+					// flip clade at node
+					case "pb-cladeflip":
+						setTimeout( function () {
+							// flip clade
+							_sandbox.activeTree.view.tree.flip( data.node );
+							// replot tree
+							_sandbox.activeTree.view.replot();
+							// notify sandbox
+							_sandbox.notify( "pb-cladeflipped", data.node );
+						}, 50);
 						break;
 					// remove all tree canvas holders - all else should be garbage collected
 					case "pb-reset":
@@ -2271,7 +2385,7 @@ PhyloBox = function( $ ) {
 			handle: function( type, data ) {
 				switch ( type ) {
 					// create the list
-					case "pb-treefocus":
+					case "pb-treefocus": case "pb-cladeflipped":
 						// use active tree
 						var node_list = _sandbox.activeTree.node_list;
 						// order nodes by id
@@ -2913,5 +3027,4 @@ PhyloBox = function( $ ) {
 		}
 	};
 //####################################################################### END
-}( jQuery );
-// x || (x = y)
+})( jQuery );
