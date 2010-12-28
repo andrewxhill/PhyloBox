@@ -44,9 +44,9 @@
 			function myF( e, data ) {
 				// do something...
 				if ( data.node.name )
-					$( ".eventLog" ).html( "You clicked " + data.node.name + "!" );
+					jQuery( ".eventLog" ).html( "You clicked " + data.node.name + "!" );
 				else
-					$( ".eventLog" ).html( "You clicked " + data.node.id + "!" );
+					jQuery( ".eventLog" ).html( "You clicked " + data.node.id + "!" );
 			}
 			// bind custom event handler to the phylobox "pb-nodeclick" event for this instance
 			PbEvent.addListener( myPhylobox, "pb-nodeclick", myF );
