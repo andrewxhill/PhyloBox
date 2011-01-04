@@ -341,6 +341,13 @@ PhyloBox = (function ( $ ) {
 					_activeTree = t;
 					// go
 					t.begin( data );
+                    
+                    if (!WIDGET){
+                        _histKey = typeof data == "string" ? data : data.k;
+                        _histTitle = typeof data == "string" ? data : data.title;
+                        _histUrl = 'http://' + HOST + '?k=' + _histKey;
+                        window.history.pushState('', _histTitle, _histUrl);
+                    }
 				}
 			},
 			receive: function( type, data ) {
@@ -703,6 +710,10 @@ PhyloBox = (function ( $ ) {
 						break;
 					case "save":
 						// notify sandbox
+                        if (!WIDGET){
+                            _histUrl = 'http://' + HOST + '?k=' + data.key;
+                            window.history.pushState('', data.key, _histUrl);
+                        }
 						_sandbox.notify( "pb-treesave", __this );
 						break;
 				}
@@ -787,6 +798,7 @@ PhyloBox = (function ( $ ) {
 				}, API_SAVE_TREE );
 			},
 			// gets
+			get key() { return _key; },
 			get nodes() { return _nodes; },
 			get node_list() { return _node_list; },
 			get n_leaves() { return _n_leaves; },

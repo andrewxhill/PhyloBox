@@ -1,6 +1,12 @@
 from google.appengine.ext import db
+from google.appengine.api import users
 import os
 
+class UserProfile(db.Model):
+  user = db.UserProperty  ()
+  
+    
+    
 class Collection(db.Model):
   trees = db.ListProperty(db.Key)
   temporary = db.BooleanProperty(default=False)
@@ -15,17 +21,16 @@ class Tree(db.Model):  #stores JSON encoded elements of the tree, not for search
   version = db.StringProperty(default=str(os.environ['CURRENT_VERSION_ID'].split('.')[0]))   
   description = db.TextProperty()               
   addtime = db.DateTimeProperty(auto_now_add=True)   
-  users = db.StringListProperty()     #google username author of the tree
+  users = db.ListProperty(db.Key)     #google username author of the tree
   
 class TreeIndex(db.Model): #searchable indexes of the trees
   #key = Tree.key(), something
   title = db.StringProperty()                   #tree title
   author = db.StringProperty()   
-  users = db.StringListProperty()     #google username author of the tree
+  users = db.ListProperty(db.Key)     #google username author of the tree
   scientificName = db.StringProperty()          #scientific name
   scientificNameId = db.StringProperty()        #scientific name id
   scientificNameAuthority = db.StringProperty() #scientific name authority
-  users = db.StringListProperty()     #google username author of the tree
   root = db.StringProperty()                    #rootnode id of the given tree
   addtime = db.DateTimeProperty(auto_now_add=True)
   temporary = db.BooleanProperty(default=False)

@@ -71,20 +71,7 @@ class MainPage(webapp.RequestHandler):
     path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
     data = template.render(path, template_values)
     self.response.out.write(data)
-        
-class SignOut(webapp.RequestHandler):
-  def get(self):
-    self.redirect(users.create_logout_url("/"))
-    
-class SignIn(webapp.RequestHandler):
-    def get(self):
-        user = users.get_current_user()
-        if user:
-            self.response.headers['Content-Type'] = 'text/plain'
-            self.response.out.write('Hello, ' + user.nickname())
-        else:
-            self.redirect(users.create_login_url(self.request.uri))
-            
+
 class ProjectViewer(webapp.RequestHandler):
   def get(self):
     user,url,url_linktext = GetCurrentUser(self)
@@ -164,8 +151,6 @@ class Examples(webapp.RequestHandler):
         self.response.out.write(template.render(path, {}))
 
 application = webapp.WSGIApplication([('/', MainPage),
-                                      ('/signin', SignIn),
-                                      ('/signout', SignOut),
                                       ('/projects', ProjectViewer),
                                       ('/examples/([^/]+)?', Examples)],      
                                      debug=False)

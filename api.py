@@ -94,7 +94,17 @@ class AddNewTree(webapp.RequestHandler):
     self.post()
       
   def post(self):
+    k = None
+    userKey = None
     user,url,url_linktext = GetCurrentUser(self)
+    if users.get_current_user() is not None:
+        userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+        userProfile = UserProfile.get(userKey)
+        if userProfile is None:
+            userProfile = UserProfile(key=userKey)
+            userProfile.user = users.get_current_user()
+            userProfile.put()
+    
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
     cachetime = 9000
@@ -102,6 +112,8 @@ class AddNewTree(webapp.RequestHandler):
     treeCollection = []
     collectionKeys = []
     treeSizes = []
+    
+    wasCached = False
     
     #if self.request.params.get('phyloFile', None) is None:
     fileurl = self.request.params.get('phyloUrl', None)
@@ -113,6 +125,7 @@ class AddNewTree(webapp.RequestHandler):
             if result.status_code == 200:
                 treefile = result.content
         else:
+            wasCached = True
             treeCollection.append(simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True)))
             collectionKeys.append(k)
             treeSizes.append(len(treeCollection[0]))
@@ -121,10 +134,9 @@ class AddNewTree(webapp.RequestHandler):
     
     
     if treefile is not None:
-        if fileurl is not None:
-            k="phylobox-%s-%s" % (version,hash(fileurl))
-        else:
+        if k is None:
             k = "phylobox-"+version+"-"+str(uuid.uuid4())
+            
         treefile = UnzipFiles(treefile)
         
         treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
@@ -257,18 +269,19 @@ class AddNewTree(webapp.RequestHandler):
             #logging.error(memcache.get("tree-data-%s" % k))
             
     for t in treeCollection:
-        k = t['k']
-        params = {
-                'key': k,
-                'memcache': True,
-                'temporary': True
-            }
-        
-        taskqueue.add(
-            queue_name='tree-processing-queue',
-            url='/api/save', 
-            params=params,
-            name="02-%s-%s" % (k.replace('-',''),int(time.time())))
+        if wasCached is False:
+            k = t['k']
+            params = {
+                    'key': k,
+                    'memcache': True,
+                    'temporary': True,
+                    'userKey': userKey
+                }
+            taskqueue.add(
+                queue_name='tree-processing-queue',
+                url='/api/save', 
+                params=params,
+                name="02-%s-%s" % (k.replace('-',''),int(time.time())))
         
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
@@ -362,6 +375,15 @@ class TreeSave(webapp.RequestHandler):
     
     isMemcache = self.request.params.get('memcache', False) 
     
+    userKey = self.request.params.get('userKey', None) 
+    
+    if userKey is None and users.get_current_user() is not None:
+        userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+        userProfile = UserProfile.get_or_insert(str(users.get_current_user()).lower())
+    else:
+        userKey = db.Key(userKey)
+        userProfile = db.get(userKey)
+        
     if isMemcache:
         data = memcache.get("tree-data-%s" % k)
         treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True))
@@ -386,8 +408,8 @@ class TreeSave(webapp.RequestHandler):
         treefile["key"] = k
         key = db.Key.from_path('Tree', k)
         tree = Tree(key = key)
-        if users.get_current_user() is not None:
-            tree.users = [users.get_current_user()]
+        
+        tree.users = [userKey]
         
         
     tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
@@ -400,7 +422,8 @@ class TreeSave(webapp.RequestHandler):
     tree.description = treefile["description"] if "description" in treefile.keys() else None
     tree.put()
     
-    params = {'key': k}
+    params = {'key': k, 'userKey': userKey}
+    
     if temporary is not None:
         params['temporary'] = True
         
@@ -409,6 +432,7 @@ class TreeSave(webapp.RequestHandler):
         params=params,
         name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
         
+    
     out = {'key': k}
     self.response.out.write(simplejson.dumps(out))
     
@@ -424,13 +448,22 @@ class Annotations(webapp.RequestHandler):
     n = self.request.params.get('name', None)
     v = self.request.params.get('value', None)
     
+    userKey = self.request.params.get('userKey', None) 
+    
+    if userKey is None and users.get_current_user() is not None:
+        userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+        userProfile = UserProfile.get_or_insert(str(users.get_current_user()).lower())
+    else:
+        userKey = db.Key(userKey)
+        userProfile = db.get(userKey)
+    
     indexkey = db.Key.from_path('Tree', k, 'Node', str(node), 'NodeIndex', str(node))
     nodeindex = db.get(indexkey)
     annotation = Annotation(parent=nodeindex.key())
     
     annotation.node = nodeindex
     annotation.category = c
-    annotation.user = users.get_current_user()
+    annotation.user = userKey
     annotation.name = n
     annotation.value = v
     annotation.triplet = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
@@ -456,11 +489,17 @@ class LookUp(webapp.RequestHandler):
     #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
     k = self.request.params.get('k',None)
     data = memcache.get("tree-data-%s" % k)
+    
+    treeData = None
     #logging.error(data)
     if data is None:
-        data = db.get(db.Key.from_path('Tree', k)).data
-        memcache.set("tree-data-%s" % k, data, 2000)
-    treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
+        data = db.get(db.Key.from_path('Tree', k))
+        if data:
+            data = data.data
+            memcache.set("tree-data-%s" % k, data, 2000)
+            treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
+    else:
+        treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
     #logging.error(treeData)
     return treeData 
     
