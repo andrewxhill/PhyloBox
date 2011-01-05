@@ -2088,8 +2088,7 @@ PhyloBox = (function ( $ ) {
 			// save active tree
 			_sandbox.saveTree();
 		});
-		// open png version of tree
-		$( "#file-menu-export-png", _sandbox.context ).live( "click", function () {
+        $( "#file-menu-export-png", _sandbox.context ).live( "click", function () {
             var ctx = _sandbox.activeTree.view.canvas[0];
             var ow = $(ctx).width();
             var oh = $(ctx).height();

@@ -416,7 +416,8 @@ class TreeSave(webapp.RequestHandler):
     
     key = db.Key.from_path('Tree', k)
     tree = db.get(key)
-    if tree is None or users.get_current_user() not in tree.users:
+    existing = True
+    if tree is None or (users.get_current_user() is not None and userKey not in tree.users):
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         #k = "phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43"
         treefile["key"] = k
@@ -424,33 +425,49 @@ class TreeSave(webapp.RequestHandler):
         tree = Tree(key = key)
         if userKey is not None:
             tree.users = [userKey]
+        existing = False
         
+    if users.get_current_user() is not None and userKey in tree.users:
+        if tree.environment and 'subtree' in tree.environment.keys():
+            orig = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
+            reps = []
+            tree = []
+            for node in treefile["tree"]:
+                reps.append(node['id'])
+                tree.append(node)
+            for node in orig["tree"]:
+                if node['id'] in reps:
+                    pass
+                else:
+                    tree.append(node)
+            orig["tree"] = tree
+            tree.data = orig
+            tree.put()
+            
+        else:
+            tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+            tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
+            
+            #treefile = simplejson.loads(treefile)
+            tree.title = treefile["title"] if "title" in treefile.keys() else None
+            tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
+            tree.author = treefile["author"] if "author" in treefile.keys() else None
+            tree.description = treefile["description"] if "description" in treefile.keys() else None
+            tree.put()
         
-    tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
-    tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
-    
-    #treefile = simplejson.loads(treefile)
-    tree.title = treefile["title"] if "title" in treefile.keys() else None
-    tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
-    tree.author = treefile["author"] if "author" in treefile.keys() else None
-    tree.description = treefile["description"] if "description" in treefile.keys() else None
-    tree.put()
-    
-    params = {'key': k, 'userKey': userKey}
-    
-    if temporary is not None:
-        params['temporary'] = True
+        params = {'key': k, 'userKey': userKey}
         
-    taskqueue.add(
-        url='/task/treeparse', 
-        params=params,
-        name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
+        if temporary is not None:
+            params['temporary'] = True
+            
+        taskqueue.add(
+            url='/task/treeparse', 
+            params=params,
+            name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
+            
         
-    
-    out = {'key': k}
-    self.response.out.write(simplejson.dumps(out))
-    
-    
+        out = {'key': k}
+        self.response.out.write(simplejson.dumps(out))
       
 class Annotations(webapp.RequestHandler):
   def get(self):
@@ -547,6 +564,7 @@ class LookUp(webapp.RequestHandler):
         out = []
         tree = db.get(db.Key.from_path('Tree', k))
         env = simplejson.loads(tree.environment)
+        env['subtree'] = True
         env['root'] = rootId
         output = """{
             "description": "%s: subqueried at %s", 
