@@ -48,7 +48,10 @@ class TreeParse(webapp.RequestHandler):
             tree = db.get(db.Key.from_path('Tree', k)).data
         treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree),iszip=True))
 
-    params = {'key': k, 'userKey': userKey}
+    params = {'key': k}
+    if userKey is not None:
+        params['userKey'] = userKey
+        
     if temporary is not None:
         params['temporary'] = 1
     taskqueue.add(
@@ -130,7 +133,9 @@ class TreeSplit(webapp.RequestHandler):
             nodePuts.append(newnode)
             #newnode.put()
             
-            newTask = {'params': {'key': k,'userKey':userKey,'id':node["id"]}}
+            newTask = {'params': {'key': k,'id':node["id"]}}
+            if userKey is not None:
+                newTask['userKey'] = userKey
             newTask['name'] = "%s-%s-%s" % (int(time.time()/10),k.replace('-',''),node["id"])
             
             if temporary is not None:
@@ -149,8 +154,10 @@ class TreeSplit(webapp.RequestHandler):
                         name=task['name'])
                 
                 params = {'offset': nodeCt,
-                          'userKey':userKey,
                           'key': k}
+                if userKey is not None:
+                    params['userKey'] = userKey 
+                
                 if temporary is not None:
                     params['temporary'] = 1
                     

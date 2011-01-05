@@ -275,8 +275,10 @@ class AddNewTree(webapp.RequestHandler):
                     'key': k,
                     'memcache': True,
                     'temporary': True,
-                    'userKey': userKey
                 }
+            if userKey is not None:
+                params['userKey'] = userKey 
+                
             taskqueue.add(
                 queue_name='tree-processing-queue',
                 url='/api/save', 
@@ -377,9 +379,10 @@ class TreeSave(webapp.RequestHandler):
     
     userKey = self.request.params.get('userKey', None) 
     
-    if userKey is None and users.get_current_user() is not None:
-        userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
-        userProfile = UserProfile.get_or_insert(str(users.get_current_user()).lower())
+    if userKey is None:
+        if users.get_current_user() is not None:
+            userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+            userProfile = UserProfile.get_or_insert(str(users.get_current_user()).lower())
     else:
         userKey = db.Key(userKey)
         userProfile = db.get(userKey)
@@ -408,8 +411,8 @@ class TreeSave(webapp.RequestHandler):
         treefile["key"] = k
         key = db.Key.from_path('Tree', k)
         tree = Tree(key = key)
-        
-        tree.users = [userKey]
+        if userKey is not None:
+            tree.users = [userKey]
         
         
     tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))

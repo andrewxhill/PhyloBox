@@ -22,7 +22,9 @@
 	<script type="text/javascript" src="/static/fancybox/jquery.fancybox-1.3.4.js"></script>
 	<script type="text/javascript" src="/static/js/2-0/main.phylobox.js"></script>
     <script type="text/javascript" >
-        var User = [];
+        var USER;
+        
+        
         function getVars() {
             var vars = [], hash;
             var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
@@ -56,9 +58,11 @@
                     if (!USER.user){
                         $('.userAction').attr('href','/_ah/login?continue=' + window.location.href);
                         $('.userAction').html('Sign In');
+                        $('.menu-item-user').attr('class','menu-item-anon');
                     } else {
                         $('.userAction').attr('href','/_ah/login?action=Logout&continue=' + window.location.href);
                         $('.userAction').html('Sign Out');
+                        $('.menu-item-anon').attr('class','menu-item-user');
                     }
                     
                 },
@@ -119,8 +123,8 @@
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="file-menu-save-tree" class="menu-item">Save Tree</a></li>
-								<li><a href="javascript:;" id="" class="menu-item">Save Group</a></li>
+								<li><a href="javascript:;" id="file-menu-save-tree" class="menu-item-anon">Save Tree</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Save Group</a></li>
 								<li><a href="javascript:;" id="" class="menu-item-off">Fork...</a></li>
 							</ul>
 							<div class="menu-separator"></div>
@@ -128,11 +132,11 @@
 								<li><a href="javascript:;" id="" class="menu-item-off">Export as PhyloJson</a></li>
 								<li><a href="javascript:;" id="" class="menu-item-off">Export as SVG</a></li>
 								<li><a href="javascript:;" id="" class="menu-item-off">Export as JPEG</a></li>
-								<li><a href="javascript:;" id="" class="menu-item-off">Export as PNG</a></li>
+								<li><a href="javascript:;" id="file-menu-export-png" class="menu-item">Export as PNG</a></li>
 							</ul>
 							<div class="menu-separator"></div>
 							<ul>
-								<li><a href="javascript:;" id="" class="menu-item-off">Print</a></li>
+								<li><a href="javascript:;" id="" class="menu-item">Print</a></li>
 							</ul>
 						</div>
 					</li>

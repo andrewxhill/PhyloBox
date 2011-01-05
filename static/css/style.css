@@ -460,15 +460,18 @@ a.menu-submit-active {
 	background: rgba(255,255,255,0.5); 
 }
 
+a.menu-item-anon, 
 a.menu-item-off { 
 	color: silver !important; 
 }
 
+a.menu-item-anon:hover,
 a.menu-item-off:hover { 
 	color: silver !important; 
 	background: none !important; 
 }
 
+a.menu-item-anon:active,
 a.menu-item-off:active { 
 	color: silver !important; 
 	background: none !important; 
