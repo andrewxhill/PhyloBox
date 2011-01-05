@@ -1970,12 +1970,16 @@ PhyloBox = (function ( $ ) {
 				case "file-menu-open-file":
 					// hide menu
 					$( document ).unbind( "click", _killMenu );
-					$( _activeMenu ).removeClass( "menu-butt-active" );
-					$( _activeMenu.nextElementSibling ).hide();
-					_activeMenu = null;
+                    if (_activeMenu){
+                        $( _activeMenu ).removeClass( "menu-butt-active" );
+                        $( _activeMenu.nextElementSibling ).hide();
+                         _activeMenu = null;
+                    }
 					// show overlay and loading 
 					$.fancybox.showLoading();
 					break;
+				case "drag-drop-open-file":
+                    break;
 			}
 			// save ref to parent
 			var parent = this.parentNode;
@@ -1991,7 +1995,7 @@ PhyloBox = (function ( $ ) {
 				var data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "pre" ).html() );
 				if ( ! data )
 					data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "body" ).html() );
-				// make a tree
+                // make a tree
 				_sandbox.load( data );
 				// clean up -- safari needs the delay
 				setTimeout( function () {
@@ -1999,23 +2003,59 @@ PhyloBox = (function ( $ ) {
 					$( "#file-form", _sandbox.context ).remove();
 				}, 1000 );
 			};
-			// add load event to iframe
-			$( "#uploader", _sandbox.context ).bind( "load", uploaded );
-			// create the upload form
-			var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
-			// add to doc
-		    $( form ).appendTo( _sandbox.context );
-			// change form's target to the iframe (this is what simulates ajax)
-		    $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
-			// add the file input to the form
-			$( this ).appendTo( "#file-form", _sandbox.context );
-			// submit form
-		    $( "#file-form", _sandbox.context ).submit();
-			// re-attach input field
-			$( this ).prependTo( parent );
-			// ensure single submit
-			return false;
+            if (this.id=="drag-drop-open-file"){
+                var d = myLocalStorage.getItem("drag-drop-file").value;
+                var params = {'stringXml':d};
+                $.ajax({
+                  url: "/api/new",
+                  dataType: 'json',
+                  type: 'POST',
+                  data: params,
+                  success: function(json){
+                      // hide modal
+					  $.fancybox.close();
+					  // show loading
+					  $.fancybox.showActivity();
+                      if (_activeMenu){
+                        $( _activeMenu ).removeClass( "menu-butt-active" );
+                        $( _activeMenu.nextElementSibling ).hide();
+                         _activeMenu = null;
+                      }
+                      _sandbox.load( json );
+                    },
+                });
+                
+            } else {
+                // add load event to iframe
+                $( "#uploader", _sandbox.context ).bind( "load", uploaded );
+                // create the upload form
+                var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
+                // add to doc
+                $( form ).appendTo( _sandbox.context );
+                // change form's target to the iframe (this is what simulates ajax)
+                $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
+                // add the file input to the form
+                $( this ).appendTo( "#file-form", _sandbox.context );
+                // submit form
+                $( "#file-form", _sandbox.context ).submit();
+                // re-attach input field
+                $( this ).prependTo( parent );
+                
+                // ensure single submit
+                return false;
+            }
 		});
+        //handle drag-drop files
+        $( "#drag-drop-open-filex", _sandbox.context ).live( "change", function () {
+            alert('oh');
+            // hide modal
+			$.fancybox.close();
+			// show loading
+			$.fancybox.showActivity();
+			// load an example tree from url
+			_sandbox.load( myLocalStorage.getItem("drag-drop-file") );
+            
+        });
 		// see an example
 		$( "button[name='see_an_example']", _sandbox.context ).live( "click", function () {
 			// hide modal

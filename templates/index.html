@@ -23,7 +23,8 @@
 	<script type="text/javascript" src="/static/js/2-0/main.phylobox.js"></script>
     <script type="text/javascript" >
         var USER;
-        
+        var dragdrop;
+        var DROPFILE;
         
         function getVars() {
             var vars = [], hash;
@@ -46,9 +47,57 @@
             return vars;
         };
         
+        var host = location.hostname;
+        var myLocalStorage = globalStorage[host];
+        
+        function dragDropSetup(){
+            
+            
+            function dragenter(e) {
+                dragdrop.setAttribute("dragenter", true);
+            }
+
+            function dragleave(e) {
+                dragdrop.removeAttribute("dragenter");
+            }
+            
+            function dragover(e) {
+                e.preventDefault();
+            }
+
+            function drop(e) {
+                var dt = e.dataTransfer;
+                //var files = dt.files;
+
+                e.preventDefault();
+
+                if (dt.files.length == 0) {
+                    //send data as file
+                    return;
+                }
+                for (var i = 0; i < dt.files.length; i++) {
+                    var file = dt.files[i];
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                          myLocalStorage.setItem("drag-drop-file", e.target.result);
+                          $('#drag-drop-open-file').trigger('change');
+                        };
+                    reader.readAsText(file, "UTF-8");
+                    
+                }
+            }
+            dragdrop = document.body;
+            window.addEventListener("dragleave", dragleave, true);
+            dragdrop.addEventListener("dragover", dragover, true);
+            dragdrop.addEventListener("drop", drop, true);
+            
+        }
         function init() {
             var myBox;
             var vars = getVars();
+            
+            dragDropSetup();
+            
             if ( vars.k ) {
                 var key = vars['k'];
                 options = {};
@@ -340,6 +389,8 @@
 			</div>
 		</div>
 	</div>
+    <div id="drag-drop-open-filex" style="visibility: hidden;" ></div>
+    <input type="file" id="drag-drop-open-file" class="drag-drop-file" size="0" style="visibility: hidden;" name="phyloFile" />
     <script type="text/javascript">
         var uservoiceOptions = {
           /* required */

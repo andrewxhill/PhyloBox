@@ -128,6 +128,7 @@ class AddNewTree(webapp.RequestHandler):
     
     #if self.request.params.get('phyloFile', None) is None:
     fileurl = self.request.params.get('phyloUrl', None)
+    stringxml = self.request.params.get('stringXml', None)
     if fileurl is not None:
         k="phylobox-%s-%s" % (version,hash(fileurl))
         data = memcache.get("tree-data-"+k)
@@ -140,9 +141,19 @@ class AddNewTree(webapp.RequestHandler):
             treeCollection.append(simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True)))
             collectionKeys.append(k)
             treeSizes.append(len(treeCollection[0]))
+    elif stringxml is not None:
+        treefile = ET.fromstring(stringxml.strip())
+        treefile = ET.tostring(treefile) #.read()
+        #logging.error(treefile)
     else:
         treefile = self.request.params.get('phyloFile', None)
-    
+    """
+    if treefile is None:
+        try:
+            treefile = self.request.body
+        except:
+            pass
+    """
     
     if treefile is not None:
         if k is None:
@@ -167,7 +178,7 @@ class AddNewTree(webapp.RequestHandler):
             xmlType = 'nexml'
             treexml = treexml.findall(NS_XML+'trees')[0]
             topE = 'tree'
-        logging.error(xmlType)
+            
         for treeXML in treexml.findall(NS_XML+topE):
             
             background = "23232F"
@@ -295,7 +306,7 @@ class AddNewTree(webapp.RequestHandler):
                 url='/api/save', 
                 params=params,
                 name="02-%s-%s" % (k.replace('-',''),int(time.time())))
-        
+    
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
