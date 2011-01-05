@@ -49,25 +49,6 @@
         function init() {
             var myBox;
             var vars = getVars();
-            
-            $.ajax({
-              url: "/api/user",
-              dataType: 'json',
-              success: function(json){
-                    USER = json; 
-                    if (!USER.user){
-                        $('.userAction').attr('href','/_ah/login?continue=' + window.location.href);
-                        $('.userAction').html('Sign In');
-                        $('.menu-item-user').attr('class','menu-item-anon');
-                    } else {
-                        $('.userAction').attr('href','/_ah/login?action=Logout&continue=' + window.location.href);
-                        $('.userAction').html('Sign Out');
-                        $('.menu-item-anon').attr('class','menu-item-user');
-                    }
-                    
-                },
-            });
-            
             if ( vars.k ) {
                 var key = vars['k'];
                 options = {};
@@ -84,6 +65,32 @@
                 myBox.drawTree("app");
             }
         };
+        //window.history.onpopstate = function(){alert('hi')};
+        function appendHistory(title,url,object){
+            if (url) {
+                window.history.pushState(object, title, url);
+            } else {
+                url = '/';
+            }
+            $.ajax({
+              url: "/api/user",
+              dataType: 'json',
+              data: 'url='+url,
+              success: function(json){
+                    USER = json; 
+                    if (!USER.user){
+                        $('.userAction').attr('href',USER.endpoint);
+                        $('.userAction').html('Sign In');
+                        $('.menu-item-user').attr('class','menu-item-anon');
+                    } else {
+                        $('.userAction').attr('href', USER.endpoint);
+                        $('.userAction').html('Sign Out');
+                        $('.menu-item-anon').attr('class','menu-item-user');
+                    }
+                },
+            });
+        };
+        appendHistory(window.location.href);
     </script>
 </head>
 <body onload="init()">

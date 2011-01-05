@@ -346,7 +346,8 @@ PhyloBox = (function ( $ ) {
                         _histKey = typeof data == "string" ? data : data.k;
                         _histTitle = typeof data == "string" ? data : data.title;
                         _histUrl = 'http://' + HOST + '?k=' + _histKey;
-                        window.history.pushState('', _histTitle, _histUrl);
+                        appendHistory(_histTitle,_histUrl,'');
+                        //window.history.pushState('', _histTitle, _histUrl);
                     }
 				}
 			},
@@ -714,7 +715,8 @@ PhyloBox = (function ( $ ) {
 						// notify sandbox
                         if (!WIDGET){
                             _histUrl = 'http://' + HOST + '?k=' + data.key;
-                            window.history.pushState('', data.key, _histUrl);
+                            //window.history.pushState('', data.key, _histUrl);
+                            appendHistory(data.key, _histUrl, '');
                         }
 						_sandbox.notify( "pb-treesave", __this );
 						break;

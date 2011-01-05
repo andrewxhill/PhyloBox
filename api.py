@@ -33,18 +33,29 @@ from NewickParser import *
 
 ##################################################
 class UserInfo(webapp.RequestHandler):
+  def removeRedirect(self,url):
+      out = ''
+      url = url.split('?',1)
+      out+=url[0]+'?'
+      for u in url[1].split('&'):
+          u = u.split('=')
+          if u[0] != 'continue':
+              out+= '%s=%s&' % (u[0],u[1])
+      return out
+      
   def get(self):
     self.post()
   def post(self):
+    url = self.request.params.get('url', "/") 
     if users.get_current_user():
         d = {"user":users.get_current_user().nickname(),
              "email":users.get_current_user().email(),
-             "endpoint": users.create_logout_url(self.request.uri)
+             "endpoint": users.create_logout_url(url)
             }
     else:
         d = {"user":None,
              "email":None,
-             "endpoint": users.create_login_url(self.request.uri)
+             "endpoint": users.create_login_url(url)
             }
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(simplejson.dumps(d).replace('\\/','/'))
