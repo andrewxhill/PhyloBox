@@ -25,6 +25,13 @@
         var USER;
         var dragdrop;
         var DROPFILE;
+        var myStorage
+        if(sessionStorage == null){
+            var host = location.hostname;
+            myStorage = globalStorage[host];
+        } else {
+            myStorage = sessionStorage;
+        }
         
         function getVars() {
             var vars = [], hash;
@@ -47,8 +54,6 @@
             return vars;
         };
         
-        var host = location.hostname;
-        var myLocalStorage = globalStorage[host];
         
         function dragDropSetup(){
             
@@ -79,11 +84,11 @@
                     var file = dt.files[i];
                     var reader = new FileReader();
                     reader.onload = function(e) {
-                          myLocalStorage.setItem("drag-drop-file", e.target.result);
+                          DROPFILE = e.target.result;
+                          myStorage.setItem("dragdropfile", e.target.result);
                           $('#drag-drop-open-file').trigger('change');
                         };
                     reader.readAsText(file, "UTF-8");
-                    
                 }
             }
             dragdrop = document.body;
@@ -154,7 +159,7 @@
 			</div>
 			<nav>
 				<ul>
-					<li><a href="javascript:;" class="option-butt">Help</a></li>
+					<li><a href="javascript:;" class="option-butt" id="phylobox-help">Help</a></li>
 					<li><a href="javascript:;" class="option-butt printCanvas">Print</a></li>
                     <li><a href="javascript:;" class="option-butt userAction">Sign In</a></li>
 				</ul>

@@ -2004,7 +2004,8 @@ PhyloBox = (function ( $ ) {
 				}, 1000 );
 			};
             if (this.id=="drag-drop-open-file"){
-                var d = myLocalStorage.getItem("drag-drop-file").value;
+                var d = myStorage.getItem("dragdropfile");
+                
                 var params = {'stringXml':d};
                 $.ajax({
                   url: "/api/new",
@@ -2012,6 +2013,7 @@ PhyloBox = (function ( $ ) {
                   type: 'POST',
                   data: params,
                   success: function(json){
+                      myStorage.removeItem("dragdropfile");
                       // hide modal
 					  $.fancybox.close();
 					  // show loading
@@ -2045,17 +2047,6 @@ PhyloBox = (function ( $ ) {
                 return false;
             }
 		});
-        //handle drag-drop files
-        $( "#drag-drop-open-filex", _sandbox.context ).live( "change", function () {
-            alert('oh');
-            // hide modal
-			$.fancybox.close();
-			// show loading
-			$.fancybox.showActivity();
-			// load an example tree from url
-			_sandbox.load( myLocalStorage.getItem("drag-drop-file") );
-            
-        });
 		// see an example
 		$( "button[name='see_an_example']", _sandbox.context ).live( "click", function () {
 			// hide modal
@@ -2128,6 +2119,10 @@ PhyloBox = (function ( $ ) {
 			// save active tree
 			_sandbox.saveTree();
 		});
+        $( "#phylobox-help", _sandbox.context ).live( "click", function () {
+            window.open('https://github.com/andrewxhill/PhyloBox/wiki/_pages','PhyloBox-Help');
+            
+        });
         $( "#file-menu-export-png", _sandbox.context ).live( "click", function () {
             var ctx = _sandbox.activeTree.view.canvas[0];
             var ow = $(ctx).width();
