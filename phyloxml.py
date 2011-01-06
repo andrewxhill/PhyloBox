@@ -59,7 +59,7 @@ class PhyloXMLtoTree():
             tmp = node.find(NS_PXML + 'taxonomy')
             if tmp:
                 for name in tmp:
-                    taxonomy[str(name.tag).replace(NS_PXML,'')] = str(name.text)
+                    taxonomy[name.tag.replace(NS_PXML,'')] = name.text
                 data['taxonomy']=taxonomy
                 
             tmp = node.find(NS_PXML + 'node_id')

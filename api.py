@@ -5,7 +5,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from google.appengine.api import memcache, urlfetch
 from google.appengine.api import users
-from google.appengine.api.labs import taskqueue
+from google.appengine.api import taskqueue
 
 import xml.etree.cElementTree as ET
 NS_PXML = '{http://www.phyloxml.org}'
@@ -147,20 +147,13 @@ class AddNewTree(webapp.RequestHandler):
         #logging.error(treefile)
     else:
         treefile = self.request.params.get('phyloFile', None)
-    """
-    if treefile is None:
-        try:
-            treefile = self.request.body
-        except:
-            pass
-    """
     
     if treefile is not None:
         if k is None:
             k = "phylobox-"+version+"-"+str(uuid.uuid4())
             
         treefile = UnzipFiles(treefile)
-        
+        treefile = treefile.decode('latin1').encode('utf8')
         treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
         
         try:
@@ -285,7 +278,16 @@ class AddNewTree(webapp.RequestHandler):
                         tmpEntry.put()
                         stored = True
             """
-            memcache.set("tree-data-%s" % k, treefilezip, cachetime)
+            try:
+                inMemcache = True
+                memcache.set("tree-data-%s" % k, treefilezip, cachetime)
+            except:
+                userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+                tree = Tree.get_or_insert(k)
+                tree.data = treefilezip
+                tree.users.append(userKey)
+                tree.put()
+                inMemcache = False
             #logging.error("tree-data-%s" % k)
             #simplejson.loads(UnzipFiles(StringIO.StringIO(treefilezip),iszip=True))
             #logging.error(memcache.get("tree-data-%s" % k))
@@ -295,9 +297,11 @@ class AddNewTree(webapp.RequestHandler):
             k = t['k']
             params = {
                     'key': k,
-                    'memcache': True,
                     'temporary': True,
                 }
+            if inMemcache:
+                params['memcache'] = True
+                
             if userKey is not None:
                 params['userKey'] = userKey 
                 
@@ -322,8 +326,8 @@ class AddNewTree(webapp.RequestHandler):
         self.response.out.write("http://phylobox.appspot.com/#%s" % (k))
     else:
         if len(collectionKeys)==1:
-            if max(treeSizes) > 2000:
-                #logging.error('very large tree')
+            if max(treeSizes) > 8000:
+                logging.error('very large tree')
                 self.response.out.write(str(simplejson.dumps(
                     {"error": "your tree is very large", "suggestions": 
                         ["some option"]
@@ -413,7 +417,8 @@ class TreeSave(webapp.RequestHandler):
         data = memcache.get("tree-data-%s" % k)
         treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True))
     else:
-        treefile = simplejson.loads(self.request.params.get('tree',None))
+        data = db.get(db.Key.from_path('Tree', k)).data
+        treefile = simplejson.loads(UnzipFiles(data,iszip=True))
         
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
@@ -438,7 +443,8 @@ class TreeSave(webapp.RequestHandler):
             tree.users = [userKey]
         existing = False
         
-    if users.get_current_user() is not None and userKey in tree.users:
+    if userKey in tree.users:
+        
         if tree.environment and 'subtree' in tree.environment.keys():
             orig = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
             reps = []
