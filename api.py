@@ -433,7 +433,7 @@ class TreeSave(webapp.RequestHandler):
     key = db.Key.from_path('Tree', k)
     tree = db.get(key)
     existing = True
-    if tree is None or (users.get_current_user() is not None and userKey not in tree.users):
+    if tree is None or userKey not in tree.users:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         #k = "phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43"
         treefile["key"] = k
@@ -443,8 +443,7 @@ class TreeSave(webapp.RequestHandler):
             tree.users = [userKey]
         existing = False
         
-    if userKey in tree.users:
-        
+    if userKey is None or userKey in tree.users:
         if tree.environment and 'subtree' in tree.environment.keys():
             orig = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
             reps = []
@@ -472,7 +471,9 @@ class TreeSave(webapp.RequestHandler):
             tree.description = treefile["description"] if "description" in treefile.keys() else None
             tree.put()
         
-        params = {'key': k, 'userKey': userKey}
+        params = {'key': k}
+        if userKey is not None:
+            params['userKey'] =  str(userKey)
         
         if temporary is not None:
             params['temporary'] = True

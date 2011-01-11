@@ -5,11 +5,11 @@ cron:
   
 - description: Cleanup Temporary Annotations
   url: /cron/deletetempannotations
-  schedule: every 30 minutes
+  schedule: every 2 minutes
 
 - description: Cleanup Temporary Nodes
   url: /cron/deletetempnodes
-  schedule: every 2 hours
+  schedule: every 30 minutes
 
 - description: Cleanup Temporary Trees
   url: /cron/deletetemptrees

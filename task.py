@@ -50,7 +50,7 @@ class TreeParse(webapp.RequestHandler):
 
     params = {'key': k}
     if userKey is not None:
-        params['userKey'] = userKey
+        params['userKey'] = str(userKey)
         
     if temporary is not None:
         params['temporary'] = 1
