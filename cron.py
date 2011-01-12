@@ -37,7 +37,7 @@ class DeleteTemporaryAnnotations(webapp.RequestHandler):
   def get(self):
     self.post()
   def post(self):
-    q = db.GqlQuery("SELECT __key__ FROM Annotation WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=30)).fetch(800)
+    q = db.GqlQuery("SELECT __key__ FROM Annotation WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=2)).fetch(800)
     try:
         db.delete(q)
     except:
@@ -49,7 +49,7 @@ class DeleteTemporaryNodes(webapp.RequestHandler):
     self.post()
   def post(self):
     d = []
-    q = db.GqlQuery("SELECT __key__ FROM NodeIndex WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=30)).fetch(500)
+    q = db.GqlQuery("SELECT __key__ FROM NodeIndex WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=2)).fetch(500)
     for n in q:
         d.append(n.parent())
     try:
@@ -64,7 +64,7 @@ class DeleteTemporaryTrees(webapp.RequestHandler):
     self.post()
   def post(self):
     d = []
-    q = db.GqlQuery("SELECT __key__ FROM TreeIndex WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=30)).fetch(200)
+    q = db.GqlQuery("SELECT __key__ FROM TreeIndex WHERE temporary = True AND addtime < :1", datetime.datetime.utcfromtimestamp(time.time()) - datetime.timedelta(days=2)).fetch(200)
     for n in q:
         d.append(n.parent())
     try:

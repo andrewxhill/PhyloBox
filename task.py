@@ -36,6 +36,7 @@ class TreeParse(webapp.RequestHandler):
   def post(self):
     k = self.request.params.get('key', None)
     temporary = self.request.params.get('temporary', None) 
+    userKey = self.request.params.get('userKey', None) 
     
     if self.request.params.get('memcache', None) is None:
         tree = db.get(db.Key.from_path('Tree', k))
@@ -48,6 +49,9 @@ class TreeParse(webapp.RequestHandler):
         treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(tree),iszip=True))
 
     params = {'key': k}
+    if userKey is not None:
+        params['userKey'] = str(userKey)
+        
     if temporary is not None:
         params['temporary'] = 1
     taskqueue.add(
@@ -61,9 +65,9 @@ class TreeParse(webapp.RequestHandler):
     if treeindex is None:
         treeindex = TreeIndex(key=indexkey)
         
-    if users.get_current_user() is not None:
-        if users.get_current_user() not in treeindex.users:
-            treeindex.users.append([users.get_current_user()])
+    if userKey is not None:
+        if db.Key(userKey) not in treeindex.users:
+            treeindex.users.append(db.Key(userKey))
 
     treeindex.title = treefile["title"] if "title" in treefile.keys() else None
     treeindex.date = treefile["date"] if "date" in treefile.keys() else None
@@ -88,6 +92,7 @@ class TreeSplit(webapp.RequestHandler):
     k = self.request.params.get('key', None)
     offset = int(self.request.params.get('offset', 0))
     temporary = self.request.params.get('temporary', None) 
+    userKey = self.request.params.get('userKey', None) 
     
     tree = memcache.get("tree-data-%s" % k)
     if tree is None:
@@ -129,6 +134,8 @@ class TreeSplit(webapp.RequestHandler):
             #newnode.put()
             
             newTask = {'params': {'key': k,'id':node["id"]}}
+            if userKey is not None:
+                newTask['userKey'] = userKey
             newTask['name'] = "%s-%s-%s" % (int(time.time()/10),k.replace('-',''),node["id"])
             
             if temporary is not None:
@@ -148,6 +155,9 @@ class TreeSplit(webapp.RequestHandler):
                 
                 params = {'offset': nodeCt,
                           'key': k}
+                if userKey is not None:
+                    params['userKey'] = userKey 
+                
                 if temporary is not None:
                     params['temporary'] = 1
                     
@@ -180,6 +190,11 @@ class NodeParse(webapp.RequestHandler):
   def post(self):
     k = self.request.params.get('key', None)
     temporary = self.request.params.get('temporary', None) 
+    userKey = self.request.params.get('userKey', None) 
+    userName = None
+    if userKey is not None:
+        userName = db.get(db.Key(userKey)).user
+    
     
     jobPuts = []
     
@@ -216,7 +231,7 @@ class NodeParse(webapp.RequestHandler):
                 annotation = Annotation(parent=nodeindex.key())
                 annotation.tree = nodeindex.parent().parent().key()
                 annotation.category = "confidence"
-                annotation.user = users.get_current_user()
+                annotation.user = userName
                 conftype = "unknown"
                 conf = "unknown"
                 if "type" in confdata.keys() and confdata["type"] is not None:
@@ -233,7 +248,7 @@ class NodeParse(webapp.RequestHandler):
             annotation = Annotation(parent=nodeindex.key())
             annotation.tree = nodeindex.parent().parent().key()
             annotation.category = "confidence"
-            annotation.user = users.get_current_user()
+            annotation.user = userName
             conf = u"%s" % cd
             conftype = node["type"] if "type" in node.keys() and node["type"] is not None else "unknown"
             conftype = u"%s" % conftype
@@ -247,7 +262,7 @@ class NodeParse(webapp.RequestHandler):
         annotation = Annotation(parent=nodeindex.key())
         annotation.tree = nodeindex.parent().parent().key()
         annotation.category = "branchcolor"
-        annotation.user = users.get_current_user()
+        annotation.user = userName
         annotation.name = "unknown"
         annotation.value = u"%s" % node["color"]
         annotation.triplet = "%s:%s:%s" % ("branchcolor","unknown",node["color"].lower().strip())
@@ -258,7 +273,7 @@ class NodeParse(webapp.RequestHandler):
         annotation = Annotation(parent=nodeindex.key())
         annotation.tree = nodeindex.parent().parent().key()
         annotation.category = "branchlength"
-        annotation.user = users.get_current_user()
+        annotation.user = userName
         annotation.name = "unknown"
         lvalue = u"%s" % node["length"]
         annotation.value = lvalue
@@ -270,7 +285,7 @@ class NodeParse(webapp.RequestHandler):
         annotation = Annotation(parent=nodeindex.key())
         annotation.tree = nodeindex.parent().parent().key()
         annotation.category = "nodecolor"
-        annotation.user = users.get_current_user()
+        annotation.user = userName
         annotation.name = "unknown"
         annotation.value = u"%s" % node["ncolor"]
         annotation.triplet = "%s:%s:%s" % ("nodecolor","unknown",node["ncolor"].lower().strip())
@@ -282,7 +297,7 @@ class NodeParse(webapp.RequestHandler):
             annotation = Annotation(parent=nodeindex.key())
             annotation.tree = nodeindex.parent().parent().key()
             annotation.category = "time"
-            annotation.user = users.get_current_user()
+            annotation.user = userName
             annotation.name = a
             annotation.value = u"%s" % node[a]
             annotation.triplet = "%s:%s:%s" % ("time",a.lower().strip(),node[a].lower().strip())
@@ -294,7 +309,7 @@ class NodeParse(webapp.RequestHandler):
             annotation = Annotation(parent=nodeindex.key())
             annotation.tree = nodeindex.parent().parent().key()
             annotation.category = "geography"
-            annotation.user = users.get_current_user()
+            annotation.user = userName
             annotation.name = a
             annotation.value = node[a]
             annotation.triplet = "%s:%s:%s" % ("geography",a.lower().strip(),node[a].lower().strip())
@@ -306,7 +321,7 @@ class NodeParse(webapp.RequestHandler):
             annotation = Annotation(parent=nodeindex.key())
             annotation.tree = nodeindex.parent().parent().key()
             annotation.category = "taxonomy"
-            annotation.user = users.get_current_user()
+            annotation.user = userName
             annotation.name = a
             annotation.value = b
             annotation.triplet = "%s:%s:%s" % ("taxonomy",a.lower().strip(),b.lower().strip())
@@ -318,7 +333,7 @@ class NodeParse(webapp.RequestHandler):
             annotation = Annotation(parent=nodeindex.key())
             annotation.tree = nodeindex.parent().parent().key()
             annotation.category = "uri"
-            annotation.user = users.get_current_user()
+            annotation.user = userName
             annotation.name = a
             annotation.value = b
             annotation.triplet = "%s:%s:%s" % ("uri",a.lower().strip(),b.lower().strip())

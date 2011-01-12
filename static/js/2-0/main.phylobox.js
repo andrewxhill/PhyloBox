@@ -385,6 +385,14 @@ PhyloBox = (function ( $ ) {
 					_activeTree = t;
 					// go
 					t.begin( data );
+                    
+                    if (!WIDGET){
+                        _histKey = typeof data == "string" ? data : data.k;
+                        _histTitle = typeof data == "string" ? data : data.title;
+                        _histUrl = 'http://' + HOST + '?k=' + _histKey;
+                        appendHistory(_histTitle,_histUrl,'');
+                        //window.history.pushState('', _histTitle, _histUrl);
+                    }
 				}
 			},
 			receive: function( type, data ) {
@@ -422,7 +430,9 @@ PhyloBox = (function ( $ ) {
 			get options() { return _options; },
 			get trees() { return _trees; },
 			get activeTree() { return _activeTree; },
-			get activeNode() { return _activeNode; }
+			get activeNode() { return _activeNode; },
+            // sets
+			set options( v ) { _options = v; },
 		}.init();
 	};
 /*###########################################################################
@@ -739,6 +749,11 @@ PhyloBox = (function ( $ ) {
 						break;
 					case "save":
 						// notify sandbox
+                        if (!WIDGET){
+                            _histUrl = 'http://' + HOST + '?k=' + data.key;
+                            //window.history.pushState('', data.key, _histUrl);
+                            appendHistory(data.key, _histUrl, '');
+                        }
 						_sandbox.notify( "pb-treesave", __this );
 						break;
 				}
@@ -822,6 +837,7 @@ PhyloBox = (function ( $ ) {
 				}, API_SAVE_TREE );
 			},
 			// gets
+			get key() { return _key; },
 			get nodes() { return _nodes; },
 			get node_list() { return _node_list; },
 			get n_leaves() { return _n_leaves; },
@@ -1255,6 +1271,7 @@ PhyloBox = (function ( $ ) {
 					_holder, _padding, _single = false, 
 					_width = 0, _height = 0, _full = full,
 					_int_id, _ctx,
+                    _font = 8,
 					_vpx = 0, _vpy = 0, 
 					_cx = 0, _cy = 0, _cz = 0, 
 					_dx = 0, _dy = 0, _dz = 0, 
@@ -1319,7 +1336,7 @@ PhyloBox = (function ( $ ) {
 		            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 					_ctx.lineWidth = 1;
                     //_ctx.font = _sandbox.options.labelSize + "px Plain";
-                    _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
+                    _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : _font + "px Plain";
 					//_ctx.font = "8px Plain";
 					_ctx.globalAlpha = 1;
 					if ( _tree.environment.color === false )
@@ -1827,7 +1844,7 @@ PhyloBox = (function ( $ ) {
 						// first render ---------------->>>>>>
 			            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 			            _ctx.lineWidth = 1;
-                        _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : "8px Plain";
+                        _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : _font + "px Plain";
 						_ctx.globalAlpha = 1;
 						if ( _tree.environment.color === false )
 							_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -1891,6 +1908,7 @@ PhyloBox = (function ( $ ) {
 					get width() { return _width; },
 					get height() { return _height; },
 					get ctx() { return _ctx; },
+					get font() { return _font; },
 					get fr() { return 1000 / _delay; },
 					get cx(v) { return _cx; },
 					get cy(v) { return _cy; },
@@ -1917,13 +1935,17 @@ PhyloBox = (function ( $ ) {
 					set dz( v ) { _dz = v; },			
 					set ax( v ) { _ax = v; },			
 					set ay( v ) { _ay = v; },			
-					set az( v ) { _az = v; },
+					set az( v ) { _az = v; },		
+					set width( v ) { _width = v; },			
+					set height( v ) { _height = v; },
+					set font( v ) { _font = v; },
 					set h_radius( v ) { _h_radius = v; },
 					set selecting( v ) { _selecting = v; },
 					set hovered_node( v ) { _hovered_node = v; },
 					set selected_node( v ) { _selected_node = v; },
 					set update_links( v ) { _update_links = v; },
-					set boundaries( v ) { _boundaries = v; }
+					set boundaries( v ) { _boundaries = v; },
+					set padding( v ) { _padding = v; }
 				};
 			}
 		};
@@ -1976,12 +1998,16 @@ PhyloBox = (function ( $ ) {
 				case "file-menu-open-file":
 					// hide menu
 					$( document ).unbind( "click", _killMenu );
-					$( _activeMenu ).removeClass( "menu-butt-active" );
-					$( _activeMenu.nextElementSibling ).hide();
-					_activeMenu = null;
+                    if (_activeMenu){
+                        $( _activeMenu ).removeClass( "menu-butt-active" );
+                        $( _activeMenu.nextElementSibling ).hide();
+                         _activeMenu = null;
+                    }
 					// show overlay and loading 
 					$.fancybox.showLoading();
 					break;
+				case "drag-drop-open-file":
+                    break;
 			}
 			// save ref to parent
 			var parent = this.parentNode;
@@ -1997,7 +2023,7 @@ PhyloBox = (function ( $ ) {
 				var data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "pre" ).html() );
 				if ( ! data )
 					data = JSON.parse( $( "#uploader", _sandbox.context ).contents().find( "body" ).html() );
-				// make a tree
+                // make a tree
 				_sandbox.load( data );
 				// clean up -- safari needs the delay
 				setTimeout( function () {
@@ -2005,22 +2031,49 @@ PhyloBox = (function ( $ ) {
 					$( "#file-form", _sandbox.context ).remove();
 				}, 1000 );
 			};
-			// add load event to iframe
-			$( "#uploader", _sandbox.context ).bind( "load", uploaded );
-			// create the upload form
-			var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
-			// add to doc
-		    $( form ).appendTo( _sandbox.context );
-			// change form's target to the iframe (this is what simulates ajax)
-		    $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
-			// add the file input to the form
-			$( this ).appendTo( "#file-form", _sandbox.context );
-			// submit form
-		    $( "#file-form", _sandbox.context ).submit();
-			// re-attach input field
-			$( this ).prependTo( parent );
-			// ensure single submit
-			return false;
+            if (this.id=="drag-drop-open-file"){
+                var d = myStorage.getItem("dragdropfile");
+                
+                var params = {'stringXml':d};
+                $.ajax({
+                  url: "/api/new",
+                  dataType: 'json',
+                  type: 'POST',
+                  data: params,
+                  success: function(json){
+                      myStorage.removeItem("dragdropfile");
+                      // hide modal
+					  $.fancybox.close();
+					  // show loading
+					  $.fancybox.showActivity();
+                      if (_activeMenu){
+                        $( _activeMenu ).removeClass( "menu-butt-active" );
+                        $( _activeMenu.nextElementSibling ).hide();
+                         _activeMenu = null;
+                      }
+                      _sandbox.load( json );
+                    },
+                });
+                
+            } else {
+                // add load event to iframe
+                $( "#uploader", _sandbox.context ).bind( "load", uploaded );
+                // create the upload form
+                var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
+                // add to doc
+                $( form ).appendTo( _sandbox.context );
+                // change form's target to the iframe (this is what simulates ajax)
+                $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
+                // add the file input to the form
+                $( this ).appendTo( "#file-form", _sandbox.context );
+                // submit form
+                $( "#file-form", _sandbox.context ).submit();
+                // re-attach input field
+                $( this ).prependTo( parent );
+                
+                // ensure single submit
+                return false;
+            }
 		});
 		// see an example
 		$( "button[name='see_an_example']", _sandbox.context ).live( "click", function () {
@@ -2093,6 +2146,61 @@ PhyloBox = (function ( $ ) {
 			$.fancybox.showLoading();
 			// save active tree
 			_sandbox.saveTree();
+		});
+        $( "#phylobox-help", _sandbox.context ).live( "click", function () {
+            window.open('https://github.com/andrewxhill/PhyloBox/wiki/_pages','PhyloBox-Help');
+            
+        });
+        $( "#file-menu-export-png", _sandbox.context ).live( "click", function () {
+            var ctx = _sandbox.activeTree.view.canvas[0];
+            var ow = $(ctx).width();
+            var oh = $(ctx).height();
+            var ocw = _sandbox.activeTree.view.width;
+            var och = _sandbox.activeTree.view.height;
+            var oer = _sandbox.activeTree.environment.radius;
+            var oew = _sandbox.activeTree.environment.width;
+            var oof = _sandbox.activeTree.view.font;
+            
+            var op = _sandbox.activeTree.view.padding;
+            
+            var modX = 3;
+            
+            _sandbox.activeTree.view.font = oof * modX;
+            
+            _sandbox.activeTree.view.padding = {'b':op.b * modX,'t':op.t * modX,'l':op.l * modX,'r':op.r * modX};
+            
+            
+            $(ctx).width(ow  * modX); ctx.width = ow * modX;
+            $(ctx).height(oh * modX); ctx.height = oh * modX;
+            
+            _sandbox.activeTree.environment.radius = oer * modX;
+            _sandbox.activeTree.environment.width = oew * modX;
+            
+            _sandbox.activeTree.view.width = ocw * modX;
+            _sandbox.activeTree.view.height = och * modX;
+            
+            _sandbox.activeTree.view.refresh();
+            _sandbox.activeTree.view.replot();
+            
+            ctx = _sandbox.activeTree.view.canvas[0];
+            window.open(ctx.toDataURL("image/png"));
+            
+            _sandbox.activeTree.view.padding = op;
+            _sandbox.activeTree.view.font = oof;
+            
+            $(ctx).width(ow); ctx.width = ow;
+            $(ctx).height(oh); ctx.height = oh;
+            
+            _sandbox.activeTree.environment.radius = oer;
+            _sandbox.activeTree.environment.width = oew;
+            
+            _sandbox.activeTree.view.width = ocw;
+            _sandbox.activeTree.view.height = och;
+            
+            _sandbox.activeTree.view.replot();
+            _sandbox.activeTree.view.refresh();
+            
+            
 		});
 		// sharing info
 		$( "#share-menu-share-tree", _sandbox.context ).live( "click", function () {

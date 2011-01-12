@@ -5,7 +5,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from google.appengine.api import memcache, urlfetch
 from google.appengine.api import users
-from google.appengine.api.labs import taskqueue
+from google.appengine.api import taskqueue
 
 import xml.etree.cElementTree as ET
 NS_PXML = '{http://www.phyloxml.org}'
@@ -33,18 +33,29 @@ from NewickParser import *
 
 ##################################################
 class UserInfo(webapp.RequestHandler):
+  def removeRedirect(self,url):
+      out = ''
+      url = url.split('?',1)
+      out+=url[0]+'?'
+      for u in url[1].split('&'):
+          u = u.split('=')
+          if u[0] != 'continue':
+              out+= '%s=%s&' % (u[0],u[1])
+      return out
+      
   def get(self):
     self.post()
   def post(self):
+    url = self.request.params.get('url', "/") 
     if users.get_current_user():
         d = {"user":users.get_current_user().nickname(),
              "email":users.get_current_user().email(),
-             "endpoint": users.create_logout_url(self.request.uri)
+             "endpoint": users.create_logout_url(url)
             }
     else:
         d = {"user":None,
              "email":None,
-             "endpoint": users.create_login_url(self.request.uri)
+             "endpoint": users.create_login_url(url)
             }
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(simplejson.dumps(d).replace('\\/','/'))
@@ -94,7 +105,17 @@ class AddNewTree(webapp.RequestHandler):
     self.post()
       
   def post(self):
+    k = None
+    userKey = None
     user,url,url_linktext = GetCurrentUser(self)
+    if users.get_current_user() is not None:
+        userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+        userProfile = UserProfile.get(userKey)
+        if userProfile is None:
+            userProfile = UserProfile(key=userKey)
+            userProfile.user = users.get_current_user()
+            userProfile.put()
+    
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
     cachetime = 9000
@@ -103,8 +124,11 @@ class AddNewTree(webapp.RequestHandler):
     collectionKeys = []
     treeSizes = []
     
+    wasCached = False
+    
     #if self.request.params.get('phyloFile', None) is None:
     fileurl = self.request.params.get('phyloUrl', None)
+    stringxml = self.request.params.get('stringXml', None)
     if fileurl is not None:
         k="phylobox-%s-%s" % (version,hash(fileurl))
         data = memcache.get("tree-data-"+k)
@@ -113,20 +137,23 @@ class AddNewTree(webapp.RequestHandler):
             if result.status_code == 200:
                 treefile = result.content
         else:
+            wasCached = True
             treeCollection.append(simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True)))
             collectionKeys.append(k)
             treeSizes.append(len(treeCollection[0]))
+    elif stringxml is not None:
+        treefile = ET.fromstring(stringxml.strip())
+        treefile = ET.tostring(treefile) #.read()
+        #logging.error(treefile)
     else:
         treefile = self.request.params.get('phyloFile', None)
     
-    
     if treefile is not None:
-        if fileurl is not None:
-            k="phylobox-%s-%s" % (version,hash(fileurl))
-        else:
+        if k is None:
             k = "phylobox-"+version+"-"+str(uuid.uuid4())
+            
         treefile = UnzipFiles(treefile)
-        
+        treefile = treefile.decode('latin1').encode('utf8')
         treexml = ET.parse(StringIO.StringIO(treefile)).getroot()
         
         try:
@@ -144,7 +171,7 @@ class AddNewTree(webapp.RequestHandler):
             xmlType = 'nexml'
             treexml = treexml.findall(NS_XML+'trees')[0]
             topE = 'tree'
-        logging.error(xmlType)
+            
         for treeXML in treexml.findall(NS_XML+topE):
             
             background = "23232F"
@@ -251,25 +278,39 @@ class AddNewTree(webapp.RequestHandler):
                         tmpEntry.put()
                         stored = True
             """
-            memcache.set("tree-data-%s" % k, treefilezip, cachetime)
+            try:
+                inMemcache = True
+                memcache.set("tree-data-%s" % k, treefilezip, cachetime)
+            except:
+                userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+                tree = Tree.get_or_insert(k)
+                tree.data = treefilezip
+                tree.users.append(userKey)
+                tree.put()
+                inMemcache = False
             #logging.error("tree-data-%s" % k)
             #simplejson.loads(UnzipFiles(StringIO.StringIO(treefilezip),iszip=True))
             #logging.error(memcache.get("tree-data-%s" % k))
             
     for t in treeCollection:
-        k = t['k']
-        params = {
-                'key': k,
-                'memcache': True,
-                'temporary': True
-            }
-        
-        taskqueue.add(
-            queue_name='tree-processing-queue',
-            url='/api/save', 
-            params=params,
-            name="02-%s-%s" % (k.replace('-',''),int(time.time())))
-        
+        if wasCached is False:
+            k = t['k']
+            params = {
+                    'key': k,
+                    'temporary': True,
+                }
+            if inMemcache:
+                params['memcache'] = True
+                
+            if userKey is not None:
+                params['userKey'] = userKey 
+                
+            taskqueue.add(
+                queue_name='tree-processing-queue',
+                url='/api/save', 
+                params=params,
+                name="02-%s-%s" % (k.replace('-',''),int(time.time())))
+    
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
@@ -285,8 +326,8 @@ class AddNewTree(webapp.RequestHandler):
         self.response.out.write("http://phylobox.appspot.com/#%s" % (k))
     else:
         if len(collectionKeys)==1:
-            if max(treeSizes) > 2000:
-                #logging.error('very large tree')
+            if max(treeSizes) > 8000:
+                logging.error('very large tree')
                 self.response.out.write(str(simplejson.dumps(
                     {"error": "your tree is very large", "suggestions": 
                         ["some option"]
@@ -362,11 +403,22 @@ class TreeSave(webapp.RequestHandler):
     
     isMemcache = self.request.params.get('memcache', False) 
     
+    userKey = self.request.params.get('userKey', None) 
+    
+    if userKey is None:
+        if users.get_current_user() is not None:
+            userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+            userProfile = UserProfile.get_or_insert(str(users.get_current_user()).lower())
+    else:
+        userKey = db.Key(userKey)
+        userProfile = db.get(userKey)
+        
     if isMemcache:
         data = memcache.get("tree-data-%s" % k)
         treefile = simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True))
     else:
-        treefile = simplejson.loads(self.request.params.get('tree',None))
+        data = db.get(db.Key.from_path('Tree', k)).data
+        treefile = simplejson.loads(UnzipFiles(data,iszip=True))
         
     version = os.environ['CURRENT_VERSION_ID'].split('.')
     version = str(version[0])
@@ -380,39 +432,60 @@ class TreeSave(webapp.RequestHandler):
     
     key = db.Key.from_path('Tree', k)
     tree = db.get(key)
-    if tree is None or users.get_current_user() not in tree.users:
+    existing = True
+    if tree is None or userKey not in tree.users:
         k = "phylobox-"+version+"-"+str(uuid.uuid4())
         #k = "phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43"
         treefile["key"] = k
         key = db.Key.from_path('Tree', k)
         tree = Tree(key = key)
-        if users.get_current_user() is not None:
-            tree.users = [users.get_current_user()]
+        if userKey is not None:
+            tree.users = [userKey]
+        existing = False
         
+    if userKey is None or userKey in tree.users:
+        if tree.environment and 'subtree' in tree.environment.keys():
+            orig = simplejson.loads(UnzipFiles(StringIO.StringIO(tree.data),iszip=True))
+            reps = []
+            tree = []
+            for node in treefile["tree"]:
+                reps.append(node['id'])
+                tree.append(node)
+            for node in orig["tree"]:
+                if node['id'] in reps:
+                    pass
+                else:
+                    tree.append(node)
+            orig["tree"] = tree
+            tree.data = orig
+            tree.put()
+            
+        else:
+            tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+            tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
+            
+            #treefile = simplejson.loads(treefile)
+            tree.title = treefile["title"] if "title" in treefile.keys() else None
+            tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
+            tree.author = treefile["author"] if "author" in treefile.keys() else None
+            tree.description = treefile["description"] if "description" in treefile.keys() else None
+            tree.put()
         
-    tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
-    tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
-    
-    #treefile = simplejson.loads(treefile)
-    tree.title = treefile["title"] if "title" in treefile.keys() else None
-    tree.version = str(treefile["v"]) if "v" in treefile.keys() else None
-    tree.author = treefile["author"] if "author" in treefile.keys() else None
-    tree.description = treefile["description"] if "description" in treefile.keys() else None
-    tree.put()
-    
-    params = {'key': k}
-    if temporary is not None:
-        params['temporary'] = True
+        params = {'key': k}
+        if userKey is not None:
+            params['userKey'] =  str(userKey)
         
-    taskqueue.add(
-        url='/task/treeparse', 
-        params=params,
-        name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
+        if temporary is not None:
+            params['temporary'] = True
+            
+        taskqueue.add(
+            url='/task/treeparse', 
+            params=params,
+            name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
+            
         
-    out = {'key': k}
-    self.response.out.write(simplejson.dumps(out))
-    
-    
+        out = {'key': k}
+        self.response.out.write(simplejson.dumps(out))
       
 class Annotations(webapp.RequestHandler):
   def get(self):
@@ -424,13 +497,22 @@ class Annotations(webapp.RequestHandler):
     n = self.request.params.get('name', None)
     v = self.request.params.get('value', None)
     
+    userKey = self.request.params.get('userKey', None) 
+    
+    if userKey is None and users.get_current_user() is not None:
+        userKey = db.Key.from_path('UserProfile', str(users.get_current_user()).lower())
+        userProfile = UserProfile.get_or_insert(str(users.get_current_user()).lower())
+    else:
+        userKey = db.Key(userKey)
+        userProfile = db.get(userKey)
+    
     indexkey = db.Key.from_path('Tree', k, 'Node', str(node), 'NodeIndex', str(node))
     nodeindex = db.get(indexkey)
     annotation = Annotation(parent=nodeindex.key())
     
     annotation.node = nodeindex
     annotation.category = c
-    annotation.user = users.get_current_user()
+    annotation.user = userKey
     annotation.name = n
     annotation.value = v
     annotation.triplet = "%s:%s:%s" % (c.lower().strip(),n.lower().strip(),v.lower().strip())
@@ -456,11 +538,17 @@ class LookUp(webapp.RequestHandler):
     #tree = db.get(db.Key.from_path('Tree', k, 'TreeIndex', k))
     k = self.request.params.get('k',None)
     data = memcache.get("tree-data-%s" % k)
+    
+    treeData = None
     #logging.error(data)
     if data is None:
-        data = db.get(db.Key.from_path('Tree', k)).data
-        memcache.set("tree-data-%s" % k, data, 2000)
-    treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
+        data = db.get(db.Key.from_path('Tree', k))
+        if data:
+            data = data.data
+            memcache.set("tree-data-%s" % k, data, 2000)
+            treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
+    else:
+        treeData = UnzipFiles(StringIO.StringIO(data),iszip=True)
     #logging.error(treeData)
     return treeData 
     
@@ -494,6 +582,7 @@ class LookUp(webapp.RequestHandler):
         out = []
         tree = db.get(db.Key.from_path('Tree', k))
         env = simplejson.loads(tree.environment)
+        env['subtree'] = True
         env['root'] = rootId
         output = """{
             "description": "%s: subqueried at %s", 

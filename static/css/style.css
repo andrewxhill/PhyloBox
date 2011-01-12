@@ -119,7 +119,8 @@ h2.nodes-blank {
 }
 
 h3.overlay-sub,
-h3.overlay-sub-sm {
+h3.overlay-sub-sm,
+h3.overlay-alert {
 	font-size: 12px;
 	line-height: 15px;
 	text-align: center;
@@ -127,11 +128,16 @@ h3.overlay-sub-sm {
 }
 
 h3.overlay-sub { 
-	padding: 40px 90px 20px;
+	padding: 40px 90px 10px;
+}
+h3.overlay-sub-sm { 
+	padding: 40px 70px 10px;
 }
 
-h3.overlay-sub-sm { 
-	padding: 40px 70px 20px;
+h3.overlay-alert { 
+	padding: 10px 90px 10px;
+	color: #D44917;
+	font-family: Arial black,Arial,sans-serif; 
 }
 
 #fancybox-content a { 
@@ -286,7 +292,7 @@ div.modal-form-actions,
 div.modal-form-actions-sm,
 div.modal-form-actions-vsm { 
 	margin: 0 auto; 
-	padding: 0 0 70px 0;
+	padding: 0 0 60px 0;
 }
 
 div.modal-form-actions { 
@@ -308,7 +314,7 @@ div.modal-form-links {
 
 div.modal-form-links li { 
 	display: inline; 
-	padding: 0 13px;
+	padding: 0 7px;
 }
 div.modal-form-links a {
 	text-transform: uppercase;
@@ -454,15 +460,18 @@ a.menu-submit-active {
 	background: rgba(255,255,255,0.5); 
 }
 
+a.menu-item-anon, 
 a.menu-item-off { 
 	color: silver !important; 
 }
 
+a.menu-item-anon:hover,
 a.menu-item-off:hover { 
 	color: silver !important; 
 	background: none !important; 
 }
 
+a.menu-item-anon:active,
 a.menu-item-off:active { 
 	color: silver !important; 
 	background: none !important; 
@@ -586,7 +595,7 @@ img.nav-arrow {
 
 #head-right { 
 	float: right; 
-	width: 88px; 
+	width: 146px; 
 	height: 30px; 
 }
 
