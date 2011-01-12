@@ -45,8 +45,8 @@
 	width: 100%;
 	z-index: 1100;
 	display: none;
-	background: white url('modal.png') repeat scroll 50% 50% !important;
-	opacity: 0;
+	background: black; /*url('modal.png') repeat scroll 50% 50% !important;*/
+	opacity: 0.8;
 }
 
 #fancybox-tmp {

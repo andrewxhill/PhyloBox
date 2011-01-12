@@ -12,16 +12,16 @@
 | ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or     |
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
-
 PhyloBox = (function ( $ ) {
 	// constants
 	var HOST = window.location.host,
-		WIDGET = (window.location.pathname).split('/')[1] == "examples" ||
-            (HOST != "localhost:8080" && 
-			 HOST != "phylobox.appspot.com" && 
-			 HOST != "2-0.latest.phylobox.appspot.com"),
-		LOCAL = true;
-        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? "http://" + HOST + "/" : "http://2-0.latest.phylobox.appspot.com/";
+		WIDGET = ( window.location.pathname ).split( '/' )[1] == "examples" ||
+            ( HOST != "localhost:8080" && 
+			HOST != "phylobox.appspot.com" && 
+			HOST != "2-0.latest.phylobox.appspot.com" ),
+        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? 
+			"http://" + HOST + "/" : 
+			"http://2-0.latest.phylobox.appspot.com/";
     var API_TREE = HOME + "api/lookup/",
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
@@ -230,7 +230,7 @@ PhyloBox = (function ( $ ) {
 		return {
 			init: function() {
 				// start io
-				_io = new _IO( _context, this, API_GROUP, "json", "#doc-loader" );
+				_io = new _IO( _context, this, API_GROUP, "json" );
 				// we want this whole thingy
 				return this;
 			},
@@ -244,18 +244,26 @@ PhyloBox = (function ( $ ) {
 						_activeTree = data;
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree } );
+							_modules[m].handle( type, { 
+								tree: _activeTree 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree 
+						}]);
 						break;
 					case "pb-treeblur":
 					case "pb-treeplot":
 					case "pb-treedraw":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree } );
+							_modules[m].handle( type, { 
+								tree: _activeTree 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree 
+						}]);
 						break;
 					case "pb-treesave":
 						// tell local modules
@@ -270,47 +278,83 @@ PhyloBox = (function ( $ ) {
 					case "pb-treezoomout":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree, node: _activeNode, offsets: data } );
+							_modules[m].handle( type, { 
+								tree: _activeTree, 
+								node: _activeNode, 
+								offsets: data 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree, node: _activeNode, offsets: data }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree, 
+							node: _activeNode, 
+							offsets: data 
+						}]);
 						break;
 					case "pb-nodehover":
 					case "pb-nodeexit":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree, node: data, found: flag } );
+							_modules[m].handle( type, { 
+								tree: _activeTree, 
+								node: data, 
+								found: flag 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree, node: data }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree, 
+							node: data 
+						}]);
 						break;
 					case "pb-nodeclick":
 						// save active node
 						_activeNode = data;
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree, node: _activeNode, found: flag } );
+							_modules[m].handle( type, { 
+								tree: _activeTree, 
+								node: _activeNode, 
+								found: flag 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree, node: _activeNode }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree, 
+							node: _activeNode 
+						}]);
 						break;
 					case "pb-clearnode":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, { tree: _activeTree } );
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree 
+						}]);
 						break;
 					case "pb-cladeflip":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree, node: data } );
+							_modules[m].handle( type, { 
+								tree: _activeTree, 
+								node: data 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree, node: data }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree, 
+							node: data 
+						}]);
 						break;
 					case "pb-cladeflipped":
 						// tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
-							_modules[m].handle( type, { tree: _activeTree, node: data } );
+							_modules[m].handle( type, { 
+								tree: _activeTree, 
+								node: data 
+							});
 						// tell anyone else who might be interested
-						_context.trigger( type, [{ tree: _activeTree, node: data }] );
+						_context.trigger( type, [{ 
+							tree: _activeTree, 
+							node: data 
+						}]);
 						break;
 					case "pb-reset":
 						// tell local modules
@@ -384,28 +428,19 @@ PhyloBox = (function ( $ ) {
 /*###########################################################################
 ########################################################################## IO
 ###########################################################################*/
-	var _IO = function( x, c, s, dt, l, p) {
+	var _IO = function( x, c, s, dt, p ) {
 		// private vars
-		var _context, _caller, _server, _dataType, _loader, _params;
-		// show / hide loading icon (if exists)
-		function _loading( vis ) {
-			vis ? 
-				$( _loader, _context ).fadeIn( "fast" ) : 
-				$( _loader, _context ).fadeOut( "slow", function () {
-					$( this ).hide(); 
-				}); 
-		}
+		var _context, _caller, _server, _dataType, _params;
 		// init
         if ( ! p ) 
-			{ p = {} };
-		if ( ! x || ! c || ! s || ! dt || ! l ) 
+			p = {  };
+		if ( ! x || ! c || ! s || ! dt ) 
 			return error_( "invalid arguments..." );
-		_context = x; _caller = c; _server = s; _dataType = dt; _loader = l, _params=p;
+		_context = x, _caller = c, _server = s, _dataType = dt, _params = p;
 		// methods
 		return {
 			// make a data request
 			request: function( a, q, s ) {
-				_loading( true );
 				var type = WIDGET ? undefined : "POST";
 					server = s || _server,
 					query = WIDGET ? q + "&callback=?" : q;
@@ -418,12 +453,11 @@ PhyloBox = (function ( $ ) {
 					dataType: "json",
 					complete: function( request ) {  },
 					success: function( json ) {
-						_loading( false );
-						if ( ! json || json == 404 ) return error_( "nothing received..." );
+						if ( ! json || json == 404 ) 
+							return error_( "nothing received..." );
 						_caller.receive( a, json );
 					},
 					error: function( e ) {
-						_loading( false );
 						return error_( e[ 'responseText' ] );
 					}
 		 		});
@@ -639,41 +673,19 @@ PhyloBox = (function ( $ ) {
 		return {
 			// load data if not present
 			begin: function( data ) {
+				// initialize io
+				_io = new _IO( _sandbox.context, this, API_TREE + _sandbox.options.method, "json", _sandbox.options.params );
 				// save key
-				_key = typeof data == "string" ? data : data.k;
-				// make and attach a tree holder
-				var holder = $( "<div class='tree-holder' />" );
-				if ( _sandbox.context.tagName == "BODY" || _sandbox.context[0].tagName == "BODY" ) 
-					holder.appendTo( "#trees > section" );
-				else 
-					holder.appendTo( _sandbox.context );
-				// add toolbox?
-				if( WIDGET && _sandbox.options.tools )
-					$( toolbar__ ).prependTo( holder[0].parentNode );
-				// create view
-	            if ( typeof data == "string" && RX_URL.test( data ) ) 
-					_key = ( ( ( 1 + Math.random() ) * 0x10000 ) | 0 ).toString( 16 ).substring( 1 );
-				var pt = WIDGET && _sandbox.options.tools ? 40 : 20;
-                var tmpR = 20;
-                var tmpL = 20;
-                var tmpB = 20;
-                var tmpT = pt;
-                if (WIDGET && _sandbox.options.margins) {
-                    tmpR = _sandbox.options.margins.r ? tmpR + _sandbox.options.margins.r : tmpR;
-                    tmpL = _sandbox.options.margins.l ? tmpL + _sandbox.options.margins.l : tmpL;
-                    tmpB = _sandbox.options.margins.b ? tmpB + _sandbox.options.margins.b : tmpB;
-                    tmpT = _sandbox.options.margins.t ? tmpT + _sandbox.options.margins.t : tmpT;
-	            }
-                //_view = new _Engine.View( _sandbox, _key, holder, { t: pt, r: 20, b: 20, l: 20 }, true, 20, true );
-                _view = new _Engine.View( _sandbox, _key, holder, { t: tmpT, r: tmpR, b: tmpB, l: tmpL }, true, 20, true );
-	            // initialize io
-				_io = new _IO( _sandbox.context, this, API_TREE + _sandbox.options.method, "json", "#tree-loader-" + _view.id, _sandbox.options.params );
-                // load data or go on
-				typeof data == "string" ? 
-					RX_URL.test( data ) ? 
-						_io.request( "load", "phyloUrl=" + data, API_NEW ) : 
-						_io.request( "load", "k=" + _key ) : 
+	            if ( typeof data == "string" ) {
+					_key = data;
+					RX_URL.test( _key ) ? 
+						_io.request( "load", "phyloUrl=" + _key, API_NEW ) : 
+						_io.request( "load", "k=" + _key );
+				} else if ( data.k ) {
+					_key = data.k;
 					this.receive( "load", data );
+				} else 
+					error_( "bad data..." );
 			},
 			// receives data from the server
 			receive: function( type, data ) {
@@ -682,6 +694,32 @@ PhyloBox = (function ( $ ) {
 				// do something with it
 				switch ( type ) {
 					case "load":
+						// check key value
+						if ( RX_URL.test( _key ) )
+							_key = data.k;
+						// make and attach a tree holder
+						var holder = $( "<div class='tree-holder' />" );
+						if ( _sandbox.context.tagName == "BODY" || _sandbox.context[0].tagName == "BODY" ) 
+							holder.appendTo( "#trees > section" );
+						else 
+							holder.appendTo( _sandbox.context );
+						// add toolbox?
+						if ( WIDGET && _sandbox.options.tools )
+							$( toolbar__ ).prependTo( holder[0].parentNode );
+						// margin and padding
+						var pt = WIDGET && _sandbox.options.tools ? 40 : 20;
+		                var tmpR = 20;
+		                var tmpL = 20;
+		                var tmpB = 20;
+		                var tmpT = pt;
+		                if ( WIDGET && _sandbox.options.margins ) {
+		                    tmpR = _sandbox.options.margins.r ? tmpR + _sandbox.options.margins.r : tmpR;
+		                    tmpL = _sandbox.options.margins.l ? tmpL + _sandbox.options.margins.l : tmpL;
+		                    tmpB = _sandbox.options.margins.b ? tmpB + _sandbox.options.margins.b : tmpB;
+		                    tmpT = _sandbox.options.margins.t ? tmpT + _sandbox.options.margins.t : tmpT;
+			            }
+		              	// create view
+		                _view = new _Engine.View( _sandbox, _key, holder, { t: tmpT, r: tmpR, b: tmpB, l: tmpL }, true, 20, true );
 						// make tree
 						this.make( data );
 						// bind handler for tree ready
@@ -691,15 +729,13 @@ PhyloBox = (function ( $ ) {
 							// notify sandbox
 							_sandbox.notify( "pb-treefocus", __this );
 						});
+						// change the url hash to the new destination
+						if ( ! WIDGET )
+							window.location.hash = _key;
 						// plot
 						_view.plot( this );
 						// go
 						_view.begin();
-	                    // change the url hash to the new destination
-						if ( ! WIDGET )
-							RX_URL( window.location.hash.substr( 1 ) ) ?
-								window.location.hash = window.location.hash.substr( 1 ) :
-								_key = _key;
 						break;
 					case "save":
 						// notify sandbox
@@ -1708,33 +1744,26 @@ PhyloBox = (function ( $ ) {
 						switch ( _tree.environment.viewmode ) {
 							// dendogram, cladogram
 							case 0: case 1:
-								// switch( _tree.environment.branchlengths ) {
-								// 	case true:
-								// 		
-								// 		break;
-								// 	case false:
-										var gap_x = _width / ( _tree.n_layers - 1 );
-										var gap_y = _height / ( _tree.n_leaves - 1 );
-										_max_z = ( _tree.n_layers - 1 ) * gap_x;
-										var j = 0;
-										for ( var l = 0; l < nls.length; l++ ) {
-											for ( var n = 0; n < nls[l].length; n++ ) {
-												var x = ( nls[l][n].layer * gap_x ) - _vpx;
-												if ( nls[l][n].is_leaf ) {
-													var y = j * gap_y - _vpy;
-													j++;
-												} else {
-													var max_y = nls[l][n].children[0].point3D.y;
-													var min_y = nls[l][n].children[nls[l][n].n_children - 1].point3D.y;
-													var y = min_y + ( ( max_y - min_y ) / 2 );
-												}
-												var z = _tree.environment.threeD ? nls[l][n].n_parents * gap_x - ( _max_z / 2 ) : 1;
-												nls[l][n].point3D =  new _Engine.Point3D( x, y, z );
-											}
+								var gap_x = _width / ( _tree.n_layers - 1 );
+								var gap_y = _height / ( _tree.n_leaves - 1 );
+								_max_z = ( _tree.n_layers - 1 ) * gap_x;
+								var j = 0;
+								for ( var l = 0; l < nls.length; l++ ) {
+									for ( var n = 0; n < nls[l].length; n++ ) {
+										var x = ( nls[l][n].layer * gap_x ) - _vpx;
+										if ( nls[l][n].is_leaf ) {
+											var y = j * gap_y - _vpy;
+											j++;
+										} else {
+											var max_y = nls[l][n].children[0].point3D.y;
+											var min_y = nls[l][n].children[nls[l][n].n_children - 1].point3D.y;
+											var y = min_y + ( ( max_y - min_y ) / 2 );
 										}
-										_gap = gap_x;
-								// 		break;
-								// }
+										var z = _tree.environment.threeD ? nls[l][n].n_parents * gap_x - ( _max_z / 2 ) : 1;
+										nls[l][n].point3D =  new _Engine.Point3D( x, y, z );
+									}
+								}
+								_gap = gap_x;
 								break;
 							// circular dendogram, circular cladogram
 							case 2: case 3:
@@ -2078,6 +2107,11 @@ PhyloBox = (function ( $ ) {
 			// begin with welcome modal
 			welcome: function() {
 				$.fancybox( $("#welcome").html(), _fb_options );
+			},
+			// show loading for key and url hashes
+			loading: function() {
+				// show overlay and loading
+				$.fancybox.showLoading();
 			},
 			// respond to external actions
 			handle: function( type, data ) {
@@ -2658,7 +2692,7 @@ PhyloBox = (function ( $ ) {
 		$( "#tree-prop-name", _sandbox.context ).live( "change", function () {
 			_sandbox.activeTree.title = $( this ).val();
 			// notify sandbox
-			_sandbox.notify( "pb-treedraw" );
+			_sandbox.notify( "pb-treeplot" );
 		});
 		// change background color
 		$( "#tree-prop-bg", _sandbox.context ).live( "change", function () {
@@ -2947,8 +2981,8 @@ PhyloBox = (function ( $ ) {
 				cladeinfo: false,
 				treeinfo: false,
 				feedback: false,
-				method: 'byKey', //to be appended to the end of the query url so /api/lookup/ becomes /api/lookup/byKey
-				params: null  //parameters to be passed via lookup other than key
+				method: 'byKey', // to be appended to the end of the query url so /api/lookup/ becomes /api/lookup/byKey
+				params: null  // parameters to be passed via lookup other than key
 		    }, phylobox_environment_options );
 			// make a sandbox
 			var _sandbox = new _Sandbox( _context, _options );
@@ -3005,8 +3039,14 @@ PhyloBox = (function ( $ ) {
 							_sandbox.load( value );
 							break;
 						case "app":
-							// show modal window
-							_nav.welcome();
+							if ( window.location.hash ) {
+								// start with loading
+								_nav.loading();
+								// load hash key or url
+								_sandbox.load( window.location.hash.substr(1) );	
+							} else
+								// show modal window
+								_nav.welcome();
 							break;
 						default:
 							alert( "Oops! Something's not configured properly. Please check our wiki for more information on developing with PhyloBox. \

@@ -21,55 +21,47 @@
 	<script type="text/javascript" src="/static/js/2-0/jquery.hotkeys.js"></script>
 	<script type="text/javascript" src="/static/fancybox/jquery.fancybox-1.3.4.js"></script>
 	<script type="text/javascript" src="/static/js/2-0/main.phylobox.js"></script>
-    <script type="text/javascript" >
+    <script type="text/javascript">
+		// scrapes query for params
         function getVars() {
             var vars = [], hash;
             var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-         
-            for(var i = 0; i < hashes.length; i++)
-            {
-                hash = hashes[i].split('=');
-                if (hash[0]=='method'||hash[0]=='k'){
-                    vars.push(hash[0]);
+            for ( var i = 0; i < hashes.length; i++ ) {
+                hash = hashes[i].split( '=' );
+                if ( hash[0] == 'method' || hash[0] == 'k' ) {
+                    vars.push( hash[0] );
                     vars[hash[0]] = hash[1];
-                }else{
-                    if (!vars.params){
-                        vars.push('params');
-                        vars['params'] = {};
+                } else {
+                    if ( ! vars.params ) {
+                        vars.push( 'params' );
+                        vars['params'] = {  };
                     }
-                    vars['params'][hash[0]]=hash[1];
+                    vars['params'][hash[0]] = hash[1];
                 }
             }
             return vars;
-        };
-        
+        }
+		// creates an instance of PhyloBox
         function init() {
-            var myBox;
-            var vars = getVars();
+            var myBox, vars = getVars();
             if ( vars.k ) {
-                var key = vars['k'];
-                options = {};
-                if (vars.method){
-                    options['method'] = vars.method;
-                }
-                if (vars.params){
-                    options['params'] = vars.params;
-                }
-                myBox = new PhyloBox.Viz(null,options);
-                myBox.drawTree( "key", key);
+                var key = vars.k;
+                options = {  };
+                if ( vars.method )
+                    options.method = vars.method;
+                if ( vars.params )
+                    options.params = vars.params;
+                myBox = new PhyloBox.Viz( null, options );
+                myBox.drawTree( 'key', key );
             } else {
                 myBox = new PhyloBox.Viz();
-                myBox.drawTree("app");
+                myBox.drawTree( 'app' );
             }
-        };
+        }
     </script>
 </head>
 <body onload="init()">
 	<header id="head">
-		<!-- <div id="perma-link">
-			<p>Permalink:</p>
-			<input type="text" id="perma-link-address" value="" />
-		</div> -->
 		<div id="head-right">
 			<div class="separator separator-left">
 				<img src="static/gfx/line.png" alt="line" width="3" height="30" />

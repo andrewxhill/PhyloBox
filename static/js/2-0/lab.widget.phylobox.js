@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------.
 |  Software: PhyloBox Widget                                                |
-|   Version: 2.0                                                            |
+|   Version: 2.1                                                            |
 |   Contact: andrewxhill@gmail.com || sanderpick@gmail.com                  |
 | ------------------------------------------------------------------------- |
 |     Admin: Andrew Hill (project admininistrator)                          |

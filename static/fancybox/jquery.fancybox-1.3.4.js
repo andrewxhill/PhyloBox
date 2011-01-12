@@ -1130,8 +1130,8 @@
 		hideOnContentClick : false,
 
 		overlayShow : true,
-		overlayOpacity : 0.7,
-		overlayColor : '#777',
+		overlayOpacity : 0.8,
+		overlayColor : '#000',
 
 		titleShow : true,
 		titlePosition : 'float', // 'float', 'outside', 'inside' or 'over'
