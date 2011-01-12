@@ -757,8 +757,7 @@ PhyloBox = (function ( $ ) {
 					_rid = rid;
 					_renesting = true;
 				} else {
-					_rid = rid || _data.environment.root ? 
-						_data.environment.root : 
+					_rid = _data.environment.root || 
 						_data.root ? 
 							_data.root : 
 							_data.tree[0].id;
