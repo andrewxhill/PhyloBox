@@ -21,13 +21,18 @@ PhyloBox = (function ( $ ) {
 			HOST != "2-0.latest.phylobox.appspot.com" ),
         HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? 
 			"http://" + HOST + "/" : 
-			"http://2-0.latest.phylobox.appspot.com/";
+			"http://2-0.latest.phylobox.appspot.com/",
+		USER;
     var API_TREE = HOME + "api/lookup/",
 		API_GROUP = HOME + "api/group",
 		API_NEW = HOME + "api/new",
 		API_SAVE_TREE = HOME + "api/save",
 		RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/,
 		EXAMPLE_TREE = "http://www.phyloxml.org/examples/apaf.xml";
+	// set storage
+    var pbStorage = sessionStorage == null ?
+        globalStorage[ location.hostname ] :
+        sessionStorage;
     // private parts
 /*###########################################################################
 ###################################################################### SYSTEM
@@ -366,6 +371,11 @@ PhyloBox = (function ( $ ) {
 						_activeTree = _activeNode = null;
 						_trees = [];
 						break;
+					case "pb-history-change":
+					    // tell local modules
+						for ( var m = 0; m < _modules.length; m++ )
+							_modules[m].handle( type, data );
+					    break;
 					default: error_( "can't notify: invalid event type..." );
 				}
 			},
@@ -386,11 +396,11 @@ PhyloBox = (function ( $ ) {
 					// go
 					t.begin( data );
                     
-                    if (!WIDGET){
-                        _histKey = typeof data == "string" ? data : data.k;
-                        _histTitle = typeof data == "string" ? data : data.title;
-                        _histUrl = 'http://' + HOST + '?k=' + _histKey;
-                        appendHistory(_histTitle,_histUrl,'');
+                    if ( ! WIDGET ) {
+                        var histKey = typeof data == "string" ? data : data.k;
+                        var histTitle = typeof data == "string" ? data : data.title;
+                        var histUrl = 'http://' + HOST + '?k=' + histKey;
+                        this.notify( "pb-history-change", [ histTitle, histUrl, '' ] );
                         //window.history.pushState('', _histTitle, _histUrl);
                     }
 				}
@@ -749,10 +759,10 @@ PhyloBox = (function ( $ ) {
 						break;
 					case "save":
 						// notify sandbox
-                        if (!WIDGET){
-                            _histUrl = 'http://' + HOST + '?k=' + data.key;
+                        if ( ! WIDGET ) {
+                            var histUrl = 'http://' + HOST + '?k=' + data.key;
                             //window.history.pushState('', data.key, _histUrl);
-                            appendHistory(data.key, _histUrl, '');
+                            _sandbox.notify( "pb-history-change", [ data.key, histUrl, '' ] );
                         }
 						_sandbox.notify( "pb-treesave", __this );
 						break;
@@ -1970,6 +1980,8 @@ PhyloBox = (function ( $ ) {
 			opacity: true,
 			modal: true
 		};
+		// save ref for drag-n-drop
+		var dragdrop = document.body;
 		// hide file / edit / share menu
 		function _killMenu( e ) {
 			if ( e.target.nodeName != "INPUT" ) {
@@ -1985,8 +1997,66 @@ PhyloBox = (function ( $ ) {
 				$( this ).css( "left", $( this.parentNode ).offset().left );
 			});
 		});
+		// file drop functionality        
+        function dragenter( e ) {
+            dragdrop.setAttribute( "dragenter", true );
+        }
+        function dragleave( e ) {
+            dragdrop.removeAttribute( "dragenter" );
+        }
+        function dragover( e ) {
+            e.preventDefault();
+        }
+        function drop( e ) {
+            var dt = e.dataTransfer;
+            e.preventDefault();
+            if ( dt.files.length == 0 )
+                return false;
+            for ( var i = 0; i < dt.files.length; i++ ) {
+                var file = dt.files[i];
+                var reader = new FileReader();
+                reader.onload = function( e ) {
+                      var dropped = e.target.result;
+                      pbStorage.setItem( "dragdropfile", e.target.result );
+                      $( '#drag-drop-open-file' ).trigger( 'change' );
+                    };
+                reader.readAsText( file, "UTF-8" );
+            }
+        }
+        
+        window.addEventListener( "dragleave", dragleave, true );
+        dragdrop.addEventListener( "dragover", dragover, true );
+        dragdrop.addEventListener( "drop", drop, true );
+        
+		// url updates
+        function _appendHistory( title, url, object ) {
+            console.log(title, url, object);
+            if ( url )
+                window.history.pushState( object, title, url );
+            else
+                url = '/';
+            $.ajax({
+              url: "/api/user",
+              dataType: 'json',
+              data: 'url=' + url,
+              success: function( json ) {
+                    USER = json; 
+                    if ( ! USER.user ) {
+                        $( '.userAction' ).attr( 'href', USER.endpoint );
+                        $( '.userAction' ).html( 'Sign In' );
+                        $( '.menu-item-user' ).attr( 'class', 'menu-item-anon' );
+                    } else {
+                        $( '.userAction' ).attr( 'href', USER.endpoint );
+                        $( '.userAction' ).html( 'Sign Out' );
+                        $( '.menu-item-anon' ).attr( 'class', 'menu-item-user' );
+                    }
+                }
+            });
+        }
+        // set location
+		_appendHistory( window.location.href );
 		// modal events
-		$( "input[type='file']", _sandbox.context ).live( "change", function () {
+		$( "#file-menu-open-file, #welcome-new-file", _sandbox.context ).live( "change", function () {
 			// check origin
 			switch ( this.id ) {
 				case "welcome-new-file":
@@ -2006,8 +2076,6 @@ PhyloBox = (function ( $ ) {
 					// show overlay and loading 
 					$.fancybox.showLoading();
 					break;
-				case "drag-drop-open-file":
-                    break;
 			}
 			// save ref to parent
 			var parent = this.parentNode;
@@ -2031,49 +2099,40 @@ PhyloBox = (function ( $ ) {
 					$( "#file-form", _sandbox.context ).remove();
 				}, 1000 );
 			};
-            if (this.id=="drag-drop-open-file"){
-                var d = myStorage.getItem("dragdropfile");
-                
-                var params = {'stringXml':d};
-                $.ajax({
-                  url: "/api/new",
-                  dataType: 'json',
-                  type: 'POST',
-                  data: params,
-                  success: function(json){
-                      myStorage.removeItem("dragdropfile");
-                      // hide modal
-					  $.fancybox.close();
-					  // show loading
-					  $.fancybox.showActivity();
-                      if (_activeMenu){
-                        $( _activeMenu ).removeClass( "menu-butt-active" );
-                        $( _activeMenu.nextElementSibling ).hide();
-                         _activeMenu = null;
-                      }
-                      _sandbox.load( json );
-                    },
-                });
-                
-            } else {
-                // add load event to iframe
-                $( "#uploader", _sandbox.context ).bind( "load", uploaded );
-                // create the upload form
-                var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
-                // add to doc
-                $( form ).appendTo( _sandbox.context );
-                // change form's target to the iframe (this is what simulates ajax)
-                $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
-                // add the file input to the form
-                $( this ).appendTo( "#file-form", _sandbox.context );
-                // submit form
-                $( "#file-form", _sandbox.context ).submit();
-                // re-attach input field
-                $( this ).prependTo( parent );
-                
-                // ensure single submit
-                return false;
-            }
+            // add load event to iframe
+            $( "#uploader", _sandbox.context ).bind( "load", uploaded );
+            // create the upload form
+            var form = "<form id='file-form' action='" + API_NEW + "' enctype='multipart/form-data' encoding='multipart/form-data' method='post' style='display:none;'></form>";
+            // add to doc
+            $( form ).appendTo( _sandbox.context );
+            // change form's target to the iframe (this is what simulates ajax)
+            $( "#file-form", _sandbox.context ).attr( "target", "uploader" );
+            // add the file input to the form
+            $( this ).appendTo( "#file-form", _sandbox.context );
+            // submit form
+            $( "#file-form", _sandbox.context ).submit();
+            // re-attach input field
+            $( this ).prependTo( parent );
+            // ensure single submit
+            return false;
+		});
+		$( "#drag-drop-open-file", _sandbox.context ).live( "change", function () {
+            var d = pbStorage.getItem("dragdropfile");
+            var params = {'stringXml':d};
+            $.ajax({
+              url: "/api/new",
+              dataType: 'json',
+              type: 'POST',
+              data: params,
+              success: function( json ) {
+                  pbStorage.removeItem( "dragdropfile" );
+				  // show loading
+				  $.fancybox.showActivity();
+                  // load data
+                  _sandbox.load( json );
+                },
+            });  
+            
 		});
 		// see an example
 		$( "button[name='see_an_example']", _sandbox.context ).live( "click", function () {
@@ -2147,10 +2206,11 @@ PhyloBox = (function ( $ ) {
 			// save active tree
 			_sandbox.saveTree();
 		});
+        // go to repo wiki
         $( "#phylobox-help", _sandbox.context ).live( "click", function () {
             window.open('https://github.com/andrewxhill/PhyloBox/wiki/_pages','PhyloBox-Help');
-            
         });
+        // export canvas as png
         $( "#file-menu-export-png", _sandbox.context ).live( "click", function () {
             var ctx = _sandbox.activeTree.view.canvas[0];
             var ow = $(ctx).width();
@@ -2199,8 +2259,6 @@ PhyloBox = (function ( $ ) {
             
             _sandbox.activeTree.view.replot();
             _sandbox.activeTree.view.refresh();
-            
-            
 		});
 		// sharing info
 		$( "#share-menu-share-tree", _sandbox.context ).live( "click", function () {
@@ -2231,7 +2289,7 @@ PhyloBox = (function ( $ ) {
 					case "pb-treesave":
 						// save silently
 						if ( $( "#fancybox-loading" ).css( "display" ) != "none" ) {
-							// 
+							// hide loader
 							$.fancybox.hideActivity();
 							// show saved modal
 							$.fancybox( $("#tree-saved").html(), $.extend( _fb_options, { width: 350, height: 200 } ) );
@@ -2241,6 +2299,9 @@ PhyloBox = (function ( $ ) {
 						// show overlay and loading 
 						$.fancybox.showLoading();
 						break;
+					case "pb-history-change":
+					    _appendHistory.apply( this, data );
+					    break;
 				}
 			}
 		};
