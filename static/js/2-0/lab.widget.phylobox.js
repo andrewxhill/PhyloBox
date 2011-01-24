@@ -31,8 +31,8 @@ PbEvent = (function () {
 	}
 })();
 // location
-var version = "http://localhost:8080/";
-//var version = "http://2-0.latest.phylobox.appspot.com/";
+//var version = "http://localhost:8080/";
+var version = "http://2-0.latest.phylobox.appspot.com/";
 // load all css scripts
 (function() {
     var head = document.getElementsByTagName('head').item(0),

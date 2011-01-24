@@ -13,8 +13,8 @@
 | FITNESS FOR A PARTICULAR PURPOSE.                                         |
 '--------------------------------------------------------------------------*/
 // locaation
-//var version = "http://2-0.latest.phylobox.appspot.com/";
-var version = "http://localhost:8080/";
+var version = "http://2-0.latest.phylobox.appspot.com/";
+//var version = "http://localhost:8080/";
 // tools
 var toolbar__ = '<div id="toolbar">';
 toolbar__ += 		'<nav>';
