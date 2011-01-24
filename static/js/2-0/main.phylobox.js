@@ -2030,7 +2030,6 @@ PhyloBox = (function ( $ ) {
         
 		// url updates
         function _appendHistory( title, url, object ) {
-            console.log(title, url, object);
             if ( url )
                 window.history.pushState( object, title, url );
             else

@@ -352,35 +352,35 @@
     <div id="drag-drop-open-filex" style="display: hidden;" ></div>
     <input type="file" id="drag-drop-open-file" class="drag-drop-file" size="0" style="display: none;" name="phyloFile" />
     <script type="text/javascript">
-        var uservoiceOptions = {
-          /* required */
-          key: 'phylobox',
-          host: 'phylobox.uservoice.com', 
-          forum: '94483',
-          showTab: true,  
-          /* optional */
-          alignment: 'right',
-          background_color:'#f0f0f0', 
-          text_color: '#f0f0f0',
-          hover_color: '#f0f0f0',
-          lang: 'en'
-        };
-        
-        function _loadUserVoice() {
-          $('#uservoice-feedback-tab').css({'display':'none','visibility':'hidden'});
-          var s = document.createElement('script');
-          s.setAttribute('type', 'text/javascript');
-          s.setAttribute('src', ("https:" == document.location.protocol ? "https://" : "http://") + "cdn.uservoice.com/javascripts/widgets/tab.js");
-          document.getElementsByTagName('head')[0].appendChild(s);
-          s.onload = setTimeout(function(){
-                $('#uservoice-feedback-tab').css({'display':'none','visibility':'hidden'});
-              }, 250);
-        }
-        function feedback(){
-            $('#uservoice-feedback-tab').trigger('click');
-        }
-        _loadSuper = window.onload;
-        window.onload = (typeof window.onload != 'function') ? _loadUserVoice : function() { _loadSuper(); _loadUserVoice(); };
+        // var uservoiceOptions = {
+        //   /* required */
+        //   key: 'phylobox',
+        //   host: 'phylobox.uservoice.com', 
+        //   forum: '94483',
+        //   showTab: true,  
+        //   /* optional */
+        //   alignment: 'right',
+        //   background_color:'#f0f0f0', 
+        //   text_color: '#f0f0f0',
+        //   hover_color: '#f0f0f0',
+        //   lang: 'en'
+        // };
+        // 
+        // function _loadUserVoice() {
+        //   $('#uservoice-feedback-tab').css({'display':'none','visibility':'hidden'});
+        //   var s = document.createElement('script');
+        //   s.setAttribute('type', 'text/javascript');
+        //   s.setAttribute('src', ("https:" == document.location.protocol ? "https://" : "http://") + "cdn.uservoice.com/javascripts/widgets/tab.js");
+        //   document.getElementsByTagName('head')[0].appendChild(s);
+        //   s.onload = setTimeout(function(){
+        //         $('#uservoice-feedback-tab').css({'display':'none','visibility':'hidden'});
+        //       }, 250);
+        // }
+        // function feedback(){
+        //     $('#uservoice-feedback-tab').trigger('click');
+        // }
+        // _loadSuper = window.onload;
+        // window.onload = (typeof window.onload != 'function') ? _loadUserVoice : function() { _loadSuper(); _loadUserVoice(); };
     </script>
 </body>
 </html>
