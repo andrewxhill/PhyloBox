@@ -14,26 +14,29 @@
 '--------------------------------------------------------------------------*/
 PhyloBox = (function ( $ ) {
 	// constants
-	var HOST = window.location.host,
-		WIDGET = ( window.location.pathname ).split( '/' )[1] == "examples" ||
-            ( HOST != "localhost:8080" && 
-			HOST != "phylobox.appspot.com" && 
-			HOST != "2-0.latest.phylobox.appspot.com" ),
-        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? 
+	var HOST = window.location.host
+		, WIDGET = ( window.location.pathname ).split( '/' )[1] == "examples" ||
+        ( HOST != "localhost:8080" && 
+			  HOST != "phylobox.appspot.com" && 
+			  HOST != "2-0.latest.phylobox.appspot.com" )
+    , HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? 
 			"http://" + HOST + "/" : 
-			"http://2-0.latest.phylobox.appspot.com/",
-		USER;
-    var API_TREE = HOME + "api/lookup/",
-		API_GROUP = HOME + "api/group",
-		API_NEW = HOME + "api/new",
-		API_SAVE_TREE = HOME + "api/save",
-		RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/,
-		EXAMPLE_TREE = "http://www.phyloxml.org/examples/apaf.xml";
+			"http://2-0.latest.phylobox.appspot.com/"
+		, USER
+	;
+  var API_TREE = HOME + "api/lookup/"
+	  , API_GROUP = HOME + "api/group"
+		, API_NEW = HOME + "api/new"
+		, API_SAVE_TREE = HOME + "api/save"
+		, RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+		, EXAMPLE_TREE = "http://www.phyloxml.org/examples/apaf.xml"
+	;
 	// set storage
-    var pbStorage = sessionStorage == null ?
-        globalStorage[ location.hostname ] :
-        sessionStorage;
-    // private parts
+  var pbStorage = sessionStorage == null ?
+    globalStorage[ location.hostname ] :
+    sessionStorage
+  ;
+  // private parts
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -3132,25 +3135,25 @@ PhyloBox = (function ( $ ) {
 			// use native container if none given here
 			var _context = WIDGET ? $( "#" + phylobox_container_div_id ) : $( "body" );
 			// options
-		   	var _options = $.extend({
-		        background: null,
-		        viewMode: null,
-		        threeD: null,
-		        htuLabels: null,
-		        leafLabels:  null,
-		        labelSize:  8,
-		        branchColor: null,
-		        branchWidth: null,
-		        nodeRadius: null,
-		        title: null,
-				tools: false,
-				taxalist: false,
-				cladeinfo: false,
-				treeinfo: false,
-				feedback: false,
-				method: 'byKey', // to be appended to the end of the query url so /api/lookup/ becomes /api/lookup/byKey
-				params: null  // parameters to be passed via lookup other than key
-		    }, phylobox_environment_options );
+	   	var _options = $.extend({
+	        background: null
+        , viewMode: null
+        , threeD: null
+        , htuLabels: null
+        , leafLabels:  null
+        , labelSize:  8
+        , branchColor: null
+        , branchWidth: null
+        , nodeRadius: null
+        , title: null
+			  , tools: false
+			  , taxalist: false
+			  , cladeinfo: false
+			  , treeinfo: false
+			  , feedback: false
+			  , method: 'byKey' // to be appended to the end of the query url so /api/lookup/ becomes /api/lookup/byKey
+			  , params: null  // parameters to be passed via lookup other than key
+	    }, phylobox_environment_options );
 			// make a sandbox
 			var _sandbox = new _Sandbox( _context, _options );
 			// to collect modules
