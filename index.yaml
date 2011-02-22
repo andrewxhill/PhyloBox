@@ -10,14 +10,17 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-- kind: treeStore
+- kind: Annotation
   properties:
-  - name: objId
-  - name: last_update_date
-    direction: desc
+  - name: temporary
+  - name: addtime
 
-- kind: treeStore
+- kind: NodeIndex
   properties:
-  - name: userName
-  - name: last_update_date
-    direction: desc
+  - name: temporary
+  - name: addtime
+
+- kind: TreeIndex
+  properties:
+  - name: temporary
+  - name: addtime

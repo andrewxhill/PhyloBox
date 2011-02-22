@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>PhyloBox</title>    
+    <!--[if IE]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="/static/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="/static/css/style.css" type="text/css" media="screen" />
+	<meta name="keywords" content="" />
+	<meta name="description" content="PhyloBox Yo!" />
+	<!--[if lt IE 9]>
+		<script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js">IE7_PNG_SUFFIX=".png";</script>
+	<![endif]-->
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/js/2-0/jquery.easing.1.3.js"></script>
+	<script type="text/javascript" src="/static/js/2-0/jquery.scrollTo-1.4.2.js"></script>
+	<script type="text/javascript" src="/static/js/2-0/date.format.js"></script>
+	<script type="text/javascript" src="/static/js/2-0/jquery.hotkeys.js"></script>
+	<script type="text/javascript" src="/static/fancybox/jquery.fancybox-1.3.4.js"></script>
+	<script type="text/javascript" src="/static/js/2-0/main.phylobox.js"></script>
+	<!-- <script type="text/javascript">
+		// load all css scripts
+		(function() {
+		    var head = document.getElementsByTagName( 'head' ).item( 0 ),
+		    style = document.createElement( 'link' );
+			style.type = "text/css";
+			style.rel = "stylesheet";
+			style.href = "static/css/2-0/widget.style.css";
+			style.media = "screen";
+			head.appendChild( style );
+		})();
+		// load all js scripts
+		(function(g,b,d){var c=b.head||b.getElementsByTagName("head"),D="readyState",E="onreadystatechange",F="DOMContentLoaded",G="addEventListener",H=setTimeout;
+		function f(){
+		   	$LAB
+				//.script( version + "static/js/2-0/jquery.js" ).wait()
+				.script( "http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js" )
+				.script( "static/js/2-0/jquery.easing.1.3.js" )
+				.script( "static/js/2-0/jquery.scrollTo-1.4.2.js" )
+				.script( "static/js/2-0/date.format.js" )
+				.script( "static/js/2-0/jquery.hotkeys.js" )
+				.script( "static/fancybox/jquery.fancybox-1.3.4.js" )
+				.script( "static/js/2-0/main.phylobox.js" )
+				.wait( function () { 
+					pbReady = true;
+				});
+		}
+		H(function(){if("item"in c){if(!c[0]){H(arguments.callee,25);return}c=c[0]}var a=b.createElement("script"),e=false;a.onload=a[E]=function(){if((a[D]&&a[D]!=="complete"&&a[D]!=="loaded")||e){return false}a.onload=a[E]=null;e=true;f()};
+		a.src="static/js/2-0/LAB.min.js";
+		c.insertBefore(a,c.firstChild)},0);if(b[D]==null&&b[G]){b[D]="loading";b[G](F,d=function(){b.removeEventListener(F,d,false);b[D]="complete"},false)}})(this,document);
+	</script> -->
+	<script type="text/javascript">
+		// pbReady = false;
+		// var waiter = function() {
+		// 	if ( pbReady ) {
+		// 		if ( i ) clearTimeout( i );
+		// 		booter().go();
+		// 	}
+		// 	var i = setInterval( waiter, 10 );
+		// }
+		var booter = function () {
+	        // parse query params
+	        function getVars() {
+	            var vars = [], hash;
+	            var hashes = window.location.href.slice( window.location.href.indexOf('?') + 1 ).split( '&' );
+	            for ( var i = 0; i < hashes.length; i++ ) {
+	                hash = hashes[i].split( '=' );
+	                if ( hash[0] == 'method' || hash[0] == 'k' ) {
+	                    vars.push(hash[0]);
+	                    vars[hash[0]] = hash[1];
+	                } else {
+	                    if ( ! vars.params ) {
+	                        vars.push( 'params' );
+	                        vars['params'] = {};
+	                    }
+	                    vars['params'][hash[0]] = hash[1];
+	                }
+	            }
+	            return vars;
+	        }
+			// methods
+			return {
+				// make phylobox as an app
+		        go: function () {
+		            var myBox;
+		            var vars = getVars();
+		            if ( vars.k ) {
+		                var key = vars['k'];
+		                options = {};
+		                if ( vars.method )
+		                    options['method'] = vars.method;
+		                if ( vars.params )
+		                    options['params'] = vars.params;
+		                myBox = new PhyloBox.Viz( null, options );
+		                myBox.drawTree( "key", key );
+		            } else {
+		                myBox = new PhyloBox.Viz();
+		                myBox.drawTree( "app" );
+		            }
+		        }
+			};
+		};
+    </script>
+</head>
+<body onload="booter().go()">
+	<header id="head">
+		<div id="head-right">
+			<div class="separator separator-left">
+				<img src="static/gfx/line.png" alt="line" width="3" height="30" />
+			</div>
+			<nav>
+				<ul>
+					<li><a href="javascript:;" class="option-butt" id="phylobox-help">Help</a></li>
+					<li><a href="javascript:;" class="option-butt printCanvas">Print</a></li>
+                    <li><a href="javascript:;" class="option-butt userAction">Sign In</a></li>
+				</ul>
+			</nav>
+		</div>
+		<div id="head-left">
+			<h1 class="logo">
+				<img src="static/gfx/logo.jpg" />
+			</h1>
+			<nav>
+				<ul>
+					<li class="menu-holder">
+						<a href="javascript:;" class="menu-butt">File<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
+						<div id="file-menu" class="menu">
+							<ul>
+								<li><a href="javascript:;" id="file-menu-new" class="menu-item">New</a></li>
+								<li>
+									<input type="file" id="file-menu-open-file" class="menu-submit-file" size="1" name="phyloFile" />
+									<a href="javascript:;" id="" class="menu-item">Open...</a>
+								</li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Close</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="file-menu-save-tree" class="menu-item-anon">Save Tree</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Save Group</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Fork...</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as PhyloJson</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as SVG</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Export as JPEG</a></li>
+								<li><a href="javascript:;" id="file-menu-export-png" class="menu-item">Export as PNG</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item printCanvas">Print</a></li>
+							</ul>
+						</div>
+					</li>
+					<li class="menu-holder">
+						<a href="javascript:;" class="menu-butt">Edit<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
+						<div id="edit-menu" class="menu">
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 1</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 2</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 3</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 4</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 5</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 6</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 7</a></li>
+							</ul>
+						</div>
+					</li>
+					<li class="menu-holder">
+						<a href="javascript:;" class="menu-butt">Share<img src="static/gfx/nav-arrow.png" alt="arrow" class="nav-arrow" /></a>
+						<div id="share-menu" class="menu">
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 1</a></li>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 2</a></li>
+							</ul>
+							<div class="menu-separator"></div>
+							<ul>
+								<li><a href="javascript:;" id="" class="menu-item-off">Option 3</a></li>
+							</ul>
+						</div>
+					</li>
+					<!-- <div class="clear"></div> -->
+				</ul>
+			</nav>
+			<!-- <div class="clear"></div> -->
+		</div>
+		<!-- <div class="clear"></div> -->
+	</header>
+	<div id="toolbar">
+		<nav>
+			<ul>
+				<li><a href="javascript:;" id="select" class="tool"><img src="static/gfx/tools/select.png" alt="select-tool" title="Node Select" /></a></li>
+				<li><a href="javascript:;" id="flip" class="tool"><img src="static/gfx/tools/flip.png" alt="flip-tool" title="Clade Flip" /></a></li>
+				<li><a href="javascript:;" id="translate" class="tool"><img src="static/gfx/tools/translate.png" alt="translate-tool" title="Tree Translate" /></a></li>
+				<li style="padding-right:30px;"><a href="javascript:;" id="rotate" class="tool"><img src="static/gfx/tools/rotate.png" alt="rotate-tool" title="Tree Rotate" /></a></li>
+				<li><a href="javascript:;" id="zin" class="tool"><img src="static/gfx/tools/zin.png" alt="zoom-in-tool" title="Tree Zoom In" /></a></li>
+				<li><a href="javascript:;" id="zout" class="tool"><img src="static/gfx/tools/zout.png" alt="zoom-out-tool" title="Tree Zoom Out" /></a></li>
+				<!-- <div class="clear"></div> -->
+			</ul>
+		</nav>
+	</div>
+	<!-- <div class="clear" style="margin-top: -3px;"></div> -->
+	<div id="main">
+		<div id="main-left">
+			<div id="taxa" class="panel panel-left">
+				<header>
+					<h2 class="panel-head">Taxa List</h2>
+				</header>
+				<section>
+					<ul></ul>
+				</section>
+			</div>
+			<div id="node" class="panel panel-left">
+				<div class="separator separator-left">
+					<img src="static/gfx/line.png" alt="line" width="3" height="25" />
+				</div>
+				<div class="handle handle-left">
+					<div>
+						<img src="static/gfx/handle.png" alt="handle" />
+					</div>
+				</div>
+				<header>
+					<h2 class="panel-head">Node</h2>
+				</header>
+				<section>
+					<h2 class="prop-title nodes-blank"></h2>
+				</section>
+			</div>
+			<!-- <div class="clear"></div> -->
+		</div>
+		<div id="main-right">
+			<div id="doc" class="panel panel-right">
+				<header>
+					<h2 class="panel-head">Tree Properties</h2>
+				</header>
+				<section></section>
+			</div>
+		</div>
+		<div id="main-center">
+			<div id="trees" class="panel panel-center">
+				<div class="separator separator-left">
+					<img src="static/gfx/line.png" alt="line" width="3" height="25" />
+				</div>
+				<div class="separator separator-right">
+					<img src="static/gfx/line.png" alt="line" width="3" height="25" />
+				</div>
+				<div class="handle handle-left">
+					<div>
+						<img src="static/gfx/handle.png" alt="handle" />
+					</div>
+				</div>
+				<div class="handle handle-right">
+					<div>
+						<img src="static/gfx/handle.png" alt="handle" />
+					</div>
+				</div>
+				<header>
+					<h2 class="panel-head">Trees</h2>
+				</header>
+				<section></section>
+			</div>
+		</div>
+	</div>
+	<div class="clear"></div>
+	<footer id="foot">
+		<a href="javascript:feedback()" class="plain">Feedback</a>
+	</footer>
+	<!-- modal content markup -->
+	<div id="overlay">
+		<!--///////////////////////////////////////////////////////////////////////// error -->
+		<div id="error">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l-sm.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r-sm.png" />
+			</h1>
+			<h3 class="overlay-sub-sm">
+				Oops. Something's not configured properly. Please check the <a href="https://github.com/andrewxhill/PhyloBox/wiki/_pages" target="_blank">PhyloBox Wiki</a> for more on developing with PhyloBox.
+			</h3>
+		</div>
+		<!--/////////////////////////////////////////////////////////////////////// welcome -->
+		<div id="welcome">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r.png" />
+			</h1>
+			<h3 class="overlay-sub"><span class="boold">PhyloBox</span> is an online environment for viewing, editing, sharing, and publishing phylogenetic trees. All work is licensed under a <a href="http://creativecommons.org/licenses/by/3.0/us/" target="_blank">Creative Commons Attribution 3.0 License.</a></h3>
+			
+            <h3 class="overlay-head">Quick Start:</h3>
+			<div class="modal-form-actions">
+			    <button tabindex="1" class="choice" name="visualize_your_phylogeny" type="submit">
+					<input type="file" id="welcome-new-file" class="welcome-submit-file" size="1" name="phyloFile" />
+					<span>Visualize New Phylogeny</span>
+				</button>
+				<button tabindex="2" class="choice" name="see_an_example" type="submit">
+					<span>See an Example</span>
+				</button>
+			</div>
+			<h3 class="overlay-alert">Warning, this is a beta release for testing only</h3>
+			<div class="modal-form-links">
+				<li><a href="https://github.com/andrewxhill/PhyloBox/wiki/_pages" target="_blank">About</a></li>
+				<li><a href="https://github.com/andrewxhill/PhyloBox/wiki/PhyloBox-API-For-Developers" target="_blank">API</a></li>
+				<li><a href="https://github.com/andrewxhill/PhyloBox/wiki" target="_blank">Support</a></li>
+				<li><a href="https://github.com/andrewxhill/PhyloBox" target="_blank">Github</a></li>
+				<li><a href="mailto:andrewxhill@gmail.com?subject=PhyloBox">Contact</a></li>
+				<li><a class='userAction' href="http://unknown.com">Sign In</a></li>
+			</div>
+		</div>
+		<!--///////////////////////////////////////////////////////////////////////// saved -->
+		<div id="tree-saved">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l-sm.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r-sm.png" />
+			</h1>
+			<h3 class="overlay-sub-sm">Your tree has been saved.</h3>
+			<div class="modal-form-actions-vsm">
+				<button tabindex="1" class="choice" name="close" type="submit">
+					<span>Close</span>
+				</button>
+			</div>
+		</div>
+		<!--////////////////////////////////////////////////////////// confirm new document -->
+		<div id="confirm-new">
+			<h1 class="vlogo-left">
+				<img src="static/gfx/vlogo-l-sm.png" />
+			</h1>
+			<h1 class="vlogo-right">
+				<img src="static/gfx/vlogo-r-sm.png" />
+			</h1>
+			<h3 class="overlay-sub-sm">Your are about to start a new project. Your current project will be saved. Are you sure you want to proceed?</h3>
+			<div class="modal-form-actions-sm">
+				<button tabindex="2" class="choice" name="yes" type="submit">
+					<span>Yes</span>
+				</button>
+				<button tabindex="1" class="choice" name="no" type="submit">
+					<span>No</span>
+				</button>
+			</div>
+		</div>
+	</div>
+    <div id="drag-drop-open-filex" style="display: hidden;" ></div>
+    <input type="file" id="drag-drop-open-file" class="drag-drop-file" size="0" style="display: none;" name="phyloFile" />
+    <script type="text/javascript">
+        // var uservoiceOptions = {
+        //   /* required */
+        //   key: 'phylobox',
+        //   host: 'phylobox.uservoice.com', 
+        //   forum: '94483',
+        //   showTab: true,  
+        //   /* optional */
+        //   alignment: 'right',
+        //   background_color:'#f0f0f0', 
+        //   text_color: '#f0f0f0',
+        //   hover_color: '#f0f0f0',
+        //   lang: 'en'
+        // };
+        // 
+        // function _loadUserVoice() {
+        //   $('#uservoice-feedback-tab').css({'display':'none','visibility':'hidden'});
+        //   var s = document.createElement('script');
+        //   s.setAttribute('type', 'text/javascript');
+        //   s.setAttribute('src', ("https:" == document.location.protocol ? "https://" : "http://") + "cdn.uservoice.com/javascripts/widgets/tab.js");
+        //   document.getElementsByTagName('head')[0].appendChild(s);
+        //   s.onload = setTimeout(function(){
+        //         $('#uservoice-feedback-tab').css({'display':'none','visibility':'hidden'});
+        //       }, 250);
+        // }
+        // function feedback(){
+        //     $('#uservoice-feedback-tab').trigger('click');
+        // }
+        // _loadSuper = window.onload;
+        // window.onload = (typeof window.onload != 'function') ? _loadUserVoice : function() { _loadSuper(); _loadUserVoice(); };
+    </script>
+</body>
+</html>
