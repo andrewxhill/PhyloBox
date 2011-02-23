@@ -961,17 +961,18 @@ PhyloBox = (function ( $ ) {
 				return {
 					draw: function( ctx ) {
 						// check visibility
-				        if ( _node.visibility ) {
+				    if ( _node.visibility ) {
 							// scale alpha and radius on depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
 							var scale = 0.7 - ( ( ( _point.z + _point.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
-					        // set styles
-			                ctx.fillStyle = isHex_( _node.color );
+							console.log(scale);
+					    // set styles
+			        ctx.fillStyle = isHex_( _node.color );
 							ctx.globalAlpha = scale;
-					        // draw the line
-					        ctx.beginPath();
+					    // draw the line
+					    ctx.beginPath();
 							if ( scale > 0 )	
 								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * scale, 0, 2 * Math.PI, false );
-					        ctx.fill();
+					    ctx.fill();
 							// leaf label
 							if ( _view.tree.environment.leaflabels && _node.is_leaf ) {
 								switch( _view.tree.environment.viewmode ) {
@@ -996,14 +997,14 @@ PhyloBox = (function ( $ ) {
 									case 0: case 1:
 										ctx.textBaseline = "alphabetic";
 										ctx.textAlign = "right";
-										var lx = Math.round( _point.screenX ),
-											ly = Math.round( _point.screenY - 3 );
+										var lx = Math.round( _point.screenX )
+											, ly = Math.round( _point.screenY - 3 );
 										break;
 									case 2: case 3:
 										ctx.textBaseline = "middle";
 										ctx.textAlign = _point.t > Math.PI / 2 && _point.t < 3 * Math.PI / 2 ? "left" : "right";
-										var lx = Math.round( _point.screenX - 3 * Math.cos( _point.t ) ),
-											ly = Math.round( _point.screenY - 3 * Math.sin( _point.t ) );
+										var lx = Math.round( _point.screenX - 3 * Math.cos( _point.t ) )
+											, ly = Math.round( _point.screenY - 3 * Math.sin( _point.t ) );
 										break;
 								}
 								var label = _node.name || _node.id;
@@ -1746,9 +1747,9 @@ PhyloBox = (function ( $ ) {
     				_cxf = (_cx - lx) / (_sf/_si); //( _cxi * _sf - lx * n ) / _si;
     				_cyf = (_cy - ly) / (_sf/_si); //( _cyi * _sf - ly * n ) / _si;
     				_zoomStep = 0;
-    				_zoomTimer = setInterval( function () {
-    				  _zoomStepper( depth );
-    				}, _delay );
+    				//_zoomTimer = setInterval( function () {
+    				//  _zoomStepper( depth );
+    				//}, _delay );
     			}
     		}
         // set animations step
