@@ -89,7 +89,8 @@ class PhyloTree():
                 self.ignored_elements[a] = 1
         
         if dbstore:
-            self.storenode(element.json())
+            #self.storenode(element.json())
+            pass
         
         self.setelement(element)
         
