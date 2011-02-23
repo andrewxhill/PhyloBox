@@ -932,6 +932,7 @@ PhyloBox = (function ( $ ) {
 					get screenY() { return _vpy + ( _cy + _y ) * ( _fl / ( _fl + _z + _cz ) ); },
 					// gets
 					get fl() { return _fl; },
+					get cz() { return _cz; },
 					get x() { return _x; },
 					get y() { return _y; },
 					get z() { return _z; },
@@ -962,7 +963,7 @@ PhyloBox = (function ( $ ) {
 						// check visibility
 				        if ( _node.visibility ) {
 							// scale alpha and radius on depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
-							var scale = 0.7 - ( (_point.z / ( _view.max_z / 2 ) ) * 0.3 );
+							var scale = 0.7 - ( ( ( _point.z + _point.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
 					        // set styles
 			                ctx.fillStyle = isHex_( _node.color );
 							ctx.globalAlpha = scale;
@@ -1108,7 +1109,7 @@ PhyloBox = (function ( $ ) {
 							v2.z = p2.z - p1.z;
 							// find "slope"
 							var u1 = ( un.x * v1.x + un.y * v1.y + un.z * v1.z ) / ( un.x * v2.x + un.y * v2.y + un.z * v2.z ) || 0;
-		                    // make the control point
+		          // make the control point
 							var cp1 = {};
 							cp1.x = p1.x + u1 * v2.x;
 							cp1.y = p1.y + u1 * v2.y;
@@ -1135,7 +1136,7 @@ PhyloBox = (function ( $ ) {
 							v4.z = p4.z - p3.z;
 							// find "slope"
 							var u2 = ( un.x * v3.x + un.y * v3.y + un.z * v3.z ) / ( un.x * v4.x + un.y * v4.y + un.z * v4.z ) || 0;
-		                    // make the control point
+		          // make the control point
 							var cp2 = {};
 							cp2.x = p3.x + u2 * v4.x;
 							cp2.y = p3.y + u2 * v4.y;
@@ -1240,17 +1241,17 @@ PhyloBox = (function ( $ ) {
 				return {
 					draw: function( ctx ) {
 						// check visibility
-				        if( ! _node.visibility ) return false;
+				    if( ! _node.visibility ) return false;
 						// scale alpha and linw width with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
-						var scale = 0.7 - ( (_pointB.z / ( _view.max_z / 2 ) ) * 0.3 );
-				     	// set styles
-				        ctx.strokeStyle = isHex_( _node.color );
-				        ctx.globalAlpha = scale;
+						var scale = 0.7 - ( ( ( _pointB.z + _pointB.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
+				    // set styles
+				    ctx.strokeStyle = isHex_( _node.color );
+				    ctx.globalAlpha = scale;
 						//ctx.globalCompositeOperation = "xor";
-				        ctx.lineWidth  = _view.tree.environment.width * scale;
+				    ctx.lineWidth  = _view.tree.environment.width * scale;
 						// draw the line
-				        ctx.beginPath();
-				        ctx.moveTo( _pointA.screenX, _pointA.screenY );
+				    ctx.beginPath();
+				    ctx.moveTo( _pointA.screenX, _pointA.screenY );
 						switch ( _view.tree.environment.viewmode ) {
 							case 0: case 2: // dendrograms
 								ctx.lineTo( _controlP1.screenX, _controlP1.screenY );
@@ -1697,8 +1698,8 @@ PhyloBox = (function ( $ ) {
 							// notify sandbox
 							_sandbox.notify( "pb-nodeexit", _hovered_node, true );
 							// search for nearby nodes
-							var nodes = _tree.node_list,
-								r = _h_radius;
+							var nodes = _tree.node_list
+								, r = _h_radius;
 							for ( var n = 0; n < nodes.length; n++ ) {
 								var p = {}; 
 								p.x = nodes[n].point3D.screenX,
@@ -1733,7 +1734,7 @@ PhyloBox = (function ( $ ) {
 			  function _startZoom( reverse, depth ) {
     			var n = 1 / 5
     			  , lx = _f.x - _c_width() / 2
-    			  , ly = _f.y - _c_height() / 2;
+    			  , ly = _f.y - _c_height() / 2
     			;
     			if ( reverse ) 
     			  n *= -1;
@@ -1742,8 +1743,8 @@ PhyloBox = (function ( $ ) {
     				_sf = _si + n;
     				_cxi = _cx;
     				_cyi = _cy;
-    				_cxf = ( _cxi * _sf - lx * n ) / _si;
-    				_cyf = ( _cyi * _sf - ly * n ) / _si;
+    				_cxf = (_cx - lx) / (_sf/_si); //( _cxi * _sf - lx * n ) / _si;
+    				_cyf = (_cy - ly) / (_sf/_si); //( _cyi * _sf - ly * n ) / _si;
     				_zoomStep = 0;
     				_zoomTimer = setInterval( function () {
     				  _zoomStepper( depth );
@@ -1754,10 +1755,10 @@ PhyloBox = (function ( $ ) {
     		function _zoomStepper( depth ) {
     			var t = _zoomStep * _delay;
     			var d = _zoomSteps * _delay;
-    			_s = _getTween( 'linear', t, _si, _sf - _si, d );
+    			_s = _getTween( 'expo', t, _si, _sf - _si, d );
     			_setZoom( depth );
-    			_cx = _getTween( 'linear', t, _cxi, _cxf - _cxi, d );
-    			_cy = _getTween( 'linear', t, _cyi, _cyf - _cyi, d );
+    			_cx = _getTween( 'expo', t, _cxi, _cxf - _cxi, d );
+    			_cy = _getTween( 'expo', t, _cyi, _cyf - _cyi, d );
     			_update(); _render();
     			_zoomStep++;
     			if ( _zoomStep >= _zoomSteps )
