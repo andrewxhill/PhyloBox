@@ -728,18 +728,18 @@ PhyloBox = (function ( $ ) {
 							$( toolbar__ ).prependTo( holder[0].parentNode );
 						// margin and padding
 						var pt = WIDGET && _sandbox.options.tools ? 40 : 20;
-		                var tmpR = 20;
-		                var tmpL = 20;
-		                var tmpB = 20;
-		                var tmpT = pt;
-		                if ( WIDGET && _sandbox.options.margins ) {
-		                    tmpR = _sandbox.options.margins.r ? tmpR + _sandbox.options.margins.r : tmpR;
-		                    tmpL = _sandbox.options.margins.l ? tmpL + _sandbox.options.margins.l : tmpL;
-		                    tmpB = _sandbox.options.margins.b ? tmpB + _sandbox.options.margins.b : tmpB;
-		                    tmpT = _sandbox.options.margins.t ? tmpT + _sandbox.options.margins.t : tmpT;
-			            }
-		              	// create view
-		                _view = new _Engine.View( _sandbox, _key, holder, { t: tmpT, r: tmpR, b: tmpB, l: tmpL }, true, 20, true );
+		        var tmpR = 20;
+            var tmpL = 20;
+            var tmpB = 20;
+            var tmpT = pt;
+            if ( WIDGET && _sandbox.options.margins ) {
+              tmpR = _sandbox.options.margins.r ? tmpR + _sandbox.options.margins.r : tmpR;
+              tmpL = _sandbox.options.margins.l ? tmpL + _sandbox.options.margins.l : tmpL;
+              tmpB = _sandbox.options.margins.b ? tmpB + _sandbox.options.margins.b : tmpB;
+              tmpT = _sandbox.options.margins.t ? tmpT + _sandbox.options.margins.t : tmpT;
+            }
+		        // create view
+		        _view = new _Engine.View( _sandbox, _key, holder, { t: tmpT, r: tmpR, b: tmpB, l: tmpL }, true, 60, true );
 						// make tree
 						this.make( data );
 						// bind handler for tree ready
@@ -759,11 +759,11 @@ PhyloBox = (function ( $ ) {
 						break;
 					case "save":
 						// notify sandbox
-                        if ( ! WIDGET ) {
-                            var histUrl = 'http://' + HOST + '?k=' + data.key;
-                            //window.history.pushState('', data.key, _histUrl);
-                            _sandbox.notify( "pb-history-change", [ data.key, histUrl, '' ] );
-                        }
+            if ( ! WIDGET ) {
+              var histUrl = 'http://' + HOST + '?k=' + data.key;
+              //window.history.pushState('', data.key, _histUrl);
+              _sandbox.notify( "pb-history-change", [ data.key, histUrl, '' ] );
+            }
 						_sandbox.notify( "pb-treesave", __this );
 						break;
 				}
@@ -837,7 +837,7 @@ PhyloBox = (function ( $ ) {
 				// stringify the data
 				var save = JSON.stringify( _data ),
 				// save an image
-		   	    png = JSON.stringify( _view.canvas[0].toDataURL( "image/png" ) );
+		   	png = JSON.stringify( _view.canvas[0].toDataURL( "image/png" ) );
 				// save
 				_io.request( "save", { 
 					key: _key, 
@@ -874,15 +874,18 @@ PhyloBox = (function ( $ ) {
 ###########################################################################*/
 			Point3D: function( pX, pY, pZ, pR, pT ) {
 				// private vars
-				var _fl = 2000, 
-					_vpx = 0, _vpy = 0, 
-					_cx = 0, _cy = 0, _cz = 0, 
-					_x = 0, _y = 0, _z = 0, 
-					_r = 0, _t = 0;
-				// init
-				_x = pX; _y = pY; _z = pZ;
-				_r = pR ? pR : 0;
-				_t = pT ? pT : 0;
+				var _fl = 2000
+					, _vpx = 0
+					, _vpy = 0
+					, _cx = 0
+					, _cy = 0
+					, _cz = 0 
+					, _x = pX
+					, _y = pY
+					, _z = pZ
+					, _r = pR ? pR : 0
+					, _t = pT ? pT : 0
+				;
 				// methods
 				return {
 					setVanishingPoint: function( vpx, vpy ) {
@@ -1274,24 +1277,57 @@ PhyloBox = (function ( $ ) {
 ###########################################################################*/
 			View: function( sandbox, id, holder, padding, single, fr, full, pW, pH ) {
 				// private vars
-				var _sandbox = sandbox, 
-					_inited = false, 
-					_id, _canvas, _tree, 
-					_delay = 50, 
-					_holder, _padding, _single = false, 
-					_width = 0, _height = 0, _full = full,
-					_int_id, _ctx,
-                    _font = 8,
-					_vpx = 0, _vpy = 0, 
-					_cx = 0, _cy = 0, _cz = 0, 
-					_dx = 0, _dy = 0, _dz = 0, 
-					_ax = 0, _ay = 0, _az = 0, 
-					_max_z = 0, _gap = 0, _h_radius = 10,
-					_fm = { x: 0, y: 0 }, _m = { x: 0, y: 0 }, _f = { x: 0, y: 0, n: null }, 
-					_selecting = false, _locked = false, 
-					_hovered_node, _selected_node,
-					_l = [], _d = [], _cp = [],
-					_update_links = false, _boundaries = false;
+				var _sandbox = sandbox 
+					, _inited = false 
+					, _id = "view-" + id
+					, _canvas 
+					, _tree
+					, _delay = 1000 / fr 
+					, _holder = holder
+					, _padding = padding
+					, _single = single 
+					, _width
+					, _height
+					, _full = full
+					, _int_id 
+					, _ctx
+          , _font = 8
+          , _fl = 2000
+					, _vpx = 0 
+					, _vpy = 0 
+					, _cx = 0 
+					, _cxi = 0
+					, _cy = 0
+					, _cyf = 0
+					, _cz = 0
+					, _s = 1
+					, _si = 1
+					, _sf = 1
+					, _dx = 0 
+					, _dy = 0 
+					, _dz = 0 
+					, _ax = 0 
+					, _ay = 0 
+					, _az = 0
+					, _max_z = 0 
+					, _gap = 0
+					, _h_radius = 10
+					, _fm = { x: 0, y: 0 } 
+					, _m = { x: 0, y: 0 }
+					, _f = { x: 0, y: 0, n: null } 
+					, _selecting = false 
+					, _locked = false 
+					, _hovered_node 
+					, _selected_node
+					, _l = []
+					, _d = []
+					, _cp = []
+					, _update_links = false
+					, _boundaries = false
+					, _zoomTimer
+					, _zoomSteps = _delay
+					, _zoomStep = 0
+				;
 				// start frame rendering
 				function _start() {
 					// check single
@@ -1343,10 +1379,10 @@ PhyloBox = (function ( $ ) {
 				// draw objects
 				function _render() {
 					// enable css3 color words
-		            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
+		      _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 					_ctx.lineWidth = 1;
-                    //_ctx.font = _sandbox.options.labelSize + "px Plain";
-                    _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : _font + "px Plain";
+          //_ctx.font = _sandbox.options.labelSize + "px Plain";
+          _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : _font + "px Plain";
 					//_ctx.font = "8px Plain";
 					_ctx.globalAlpha = 1;
 					if ( _tree.environment.color === false )
@@ -1420,13 +1456,13 @@ PhyloBox = (function ( $ ) {
 					_ctx.fill();
 				}
 				// returns true canvas size
-				function _c_width() { 
+				function _c_width() {
 					return _width + _padding.l + _padding.r; 
 				}
-				function _c_height() { 
+				function _c_height() {
 					return _height + _padding.t + _padding.b; 
 				}
-				// tools
+        // tools
 				function _select( e, t, m ) {
 					// determine action
 					switch ( t ) {
@@ -1624,85 +1660,145 @@ PhyloBox = (function ( $ ) {
 							break;
 					}
 				}
-				function _zin( e, t, m ) {
-					console.log( t + " by zoom in at " + m.x + ", " + m.y );
-					// notify sandbox
-					_sandbox.notify( "pb-treezoomin", {  } );
-					
-					/*
-					
-					//WHEEL//
-					private function wheel(event:MouseEvent=null, cz:Number=0):void {
-						var d:Number;
-						var n:Number;
-						var lx:Number;
-						var ly:Number;
-						if(event) {
-							d = event.delta;
-							n = d / 50;
-							lx = event.localX;
-							ly = event.localY; 
-						} else {
-							n = cz;
-							lx = _w/2;
-							ly = _h/2; 
-						}
-
-						if(_s+n >= .3 && _s+n <= 1) {
-							_si = _s;
-							_txi = _tx;
-							_tyi = _ty;
-
-							_sf = _si + n;
-							_txf = (_txi*(_sf) - lx*n)/_si;
-							_tyf = (_tyi*(_sf) - ly*n)/_si;
-
-							_z.reset();
-							_z.start();
-						} 
+				function _zoom( e, t, m ) {
+				  // determine action
+					switch( t ) {
+					  case "mousedown":
+							// set
+							_m = m;
+							_selecting = true;
+							// search for nearby nodes
+							var nodes = _tree.node_list,
+								r = _h_radius;
+							for ( var n = 0; n < nodes.length; n++ ) {
+								var p = {}; 
+								p.x = nodes[n].point3D.screenX,
+								p.y = nodes[n].point3D.screenY;
+								if ( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
+									_f.x = p.x;
+									_f.y = p.y;
+									// zoom to mouse location
+  								_startZoom( e.data.reverse, nodes[n].point3D.z );
+									// notify sandbox
+									_sandbox.notify( "pb-treezoomin", {} );
+									// clear flag
+									_locked = true;
+									break;
+								}
+							}
+							// clear
+							_selecting = false;
+							_locked = false;
+							break;
+						case "mousesearch":
+							// set
+							_m = m;
+							_selecting = true;
+							// notify sandbox
+							_sandbox.notify( "pb-nodeexit", _hovered_node, true );
+							// search for nearby nodes
+							var nodes = _tree.node_list,
+								r = _h_radius;
+							for ( var n = 0; n < nodes.length; n++ ) {
+								var p = {}; 
+								p.x = nodes[n].point3D.screenX,
+								p.y = nodes[n].point3D.screenY;
+								if( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
+									_f.x = p.x;
+									_f.y = p.y;
+									_locked = true;
+									_hovered_node = nodes[n];
+									// notify sandbox
+									_sandbox.notify( "pb-nodehover", nodes[n], true );
+									break;
+								}
+							}
+							// draw
+							_render();
+							// clear
+							_selecting = false;
+							_locked = false;
+							break;
 					}
-
-					private function zoom(event:TimerEvent):void {
-						var t:Number = _z.currentCount*_z.delay;
-						var d:Number = _z.repeatCount*_z.delay
-						_s = getTween('linear', t, _si, _sf-_si, d);
-						_tx = getTween('linear', t, _txi, _txf-_txi, d);
-						_ty = getTween('linear', t, _tyi, _tyf-_tyi, d);
-					}
-
-					private function zoomDone(event:TimerEvent):void {
-						_z.removeEventListener(TimerEvent.TIMER_COMPLETE, zoomDone, false);
-						//wheel(null, -.5);
-					}
-					
-					*/
 				}
-				function _zout( e, t, m ) {
-					console.log( t + " by zoom out at " + m.x + ", " + m.y );
-					// notify sandbox
-					_sandbox.notify( "pb-treezoomout", {  } );
+				// set current scale
+				function _setScale( z ) {
+				  _s = _fl / ( _fl + z + _cz );
 				}
+				// set current zoom
+				function _setZoom( z ) {
+				  _cz = ( _fl - _s * _fl - _s * z ) / _s;
+				}
+				// begin animated zoom
+			  function _startZoom( reverse, depth ) {
+    			var n = 1 / 5
+    			  , lx = _f.x - _c_width() / 2
+    			  , ly = _f.y - _c_height() / 2;
+    			;
+    			if ( reverse ) 
+    			  n *= -1;
+    			if ( _s + n >= 0.3 && _s + n <= 5 ) {
+    				_si = _s;
+    				_sf = _si + n;
+    				_cxi = _cx;
+    				_cyi = _cy;
+    				_cxf = ( _cxi * _sf - lx * n ) / _si;
+    				_cyf = ( _cyi * _sf - ly * n ) / _si;
+    				_zoomStep = 0;
+    				_zoomTimer = setInterval( function () {
+    				  _zoomStepper( depth );
+    				}, _delay );
+    			}
+    		}
+        // set animations step
+    		function _zoomStepper( depth ) {
+    			var t = _zoomStep * _delay;
+    			var d = _zoomSteps * _delay;
+    			_s = _getTween( 'linear', t, _si, _sf - _si, d );
+    			_setZoom( depth );
+    			_cx = _getTween( 'linear', t, _cxi, _cxf - _cxi, d );
+    			_cy = _getTween( 'linear', t, _cyi, _cyf - _cyi, d );
+    			_update(); _render();
+    			_zoomStep++;
+    			if ( _zoomStep >= _zoomSteps )
+    			  clearInterval( _zoomTimer );
+    		}
+    		// returns animation step
+    		function _getTween( f, t, b, c, d ) {
+    			var s = 1.70158;
+    			switch ( f ) {
+    				case 'linear':	
+    					return c * t / d + b;
+    					break;
+    				case 'expo':
+    					return ( t == d ) ? b + c : c * ( - Math.pow( 2, -10 * t / d ) + 1 ) + b;
+    					break;
+    				case 'back':
+    					return c * ( ( t = t / d - 1 ) * t * ( ( s + 1 ) * t + s ) + 1 ) + b;
+    					break;
+    				case 'backlin':
+    					var c1 = c * s;
+    					var c2 = c - c1;
+    					return ( t > d / s ) ? c2 * t / ( d - d / s ) + c1 : c1 * t / d / s + b;
+    					break;
+    			}
+    		}
 				// init
-				_delay = 1000 / fr;
-				_holder = holder;
-				_padding = padding;
-				_single = single;
 				_width = ! _full ? pW : _holder.width() - _padding.l - _padding.r;
 				_height = ! _full ? pH : _holder.height() - _padding.t - _padding.b;
-				_id = "view-" + id;
 				// create canvas
 				_canvas = $( "<canvas style='display:none;' width='" + _c_width() + "' height='" + _c_height() + "' id='" + _id + "'></canvas>" );
 				// add to document
 				_canvas.appendTo( _holder );
 				// text select tool fix for chrome on mousemove
-				_canvas[0].onselectstart = function() { return false; };
-		        // add tool events
+				_canvas[0].onselectstart = function () { return false; };
+		    // add tool events
 				_canvas.bind( "pb-select", _select );
 				_canvas.bind( "pb-flip", _flip );
 				_canvas.bind( "pb-translate", _translate );
 				_canvas.bind( "pb-rotate", _rotate );
-				_canvas.bind( "pb-zin", _zin );
-				_canvas.bind( "pb-zout", _zout );
+				_canvas.bind( "pb-zin", { reverse: false }, _zoom );
+				_canvas.bind( "pb-zout", { reverse: true }, _zoom );
 				// get context
 				_ctx = $( "#" + _id, _sandbox.context )[0].getContext( "2d" );
 				// hide
@@ -1736,10 +1832,10 @@ PhyloBox = (function ( $ ) {
 						if ( tree && ! _tree ) {
 							_tree = tree;
 							// add the title
-			                if ( _tree.title ) {
-			                    _title = $( "<p class='tree-title' id='" + _id + "-title'>" + _tree.title + "</p>" );
-			                    _title.appendTo( _holder );
-			                }
+              if ( _tree.title ) {
+                _title = $( "<p class='tree-title' id='" + _id + "-title'>" + _tree.title + "</p>" );
+                _title.appendTo( _holder );
+              }
 						}
 						// local offsets
 						var local = { 
@@ -1825,6 +1921,7 @@ PhyloBox = (function ( $ ) {
 						this.connect( _tree.nodes );
 						// zoom
 						_cz = _tree.environment.threeD ? _max_z : 0;
+						_setScale(1);
 						// update points
 						for ( var d = 0; d < _d.length; d++ ) {
 							_d[d].point.setVanishingPoint( _vpx, _vpy );
@@ -1838,8 +1935,8 @@ PhyloBox = (function ( $ ) {
 						}
 						// check options color
 						if ( _sandbox.options.branchColor !== null )
-			                for ( var d = 0; d < _d.length; d++ )
-			                    _d[d].node.color = isHex_( _sandbox.options.branchColor );
+			        for ( var d = 0; d < _d.length; d++ )
+			          _d[d].node.color = isHex_( _sandbox.options.branchColor );
 						// update control points
 						for ( var cp = 0; cp < _cp.length; cp++ ) {
 							_cp[cp].setVanishingPoint( _vpx, _vpy );
@@ -2399,24 +2496,24 @@ PhyloBox = (function ( $ ) {
 				return false;
 			}
 			var pre = WIDGET ? HOME : "";
-			// set cursor
-			switch( _activeTool ) {
-				case "select": case "flip":
-					$( this ).css( "cursor", "default" );
-					break;
-				case "translate":
-					$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
-					break;
-				case "rotate":
-					$( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-rotate.png) 8 8, auto" );
-					break;
-				case "zin":
-					$( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto" );
-					break;
-				case "zout":
-					$( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto" );
-					break;		
-			}
+      // // set cursor
+      // switch( _activeTool ) {
+      //  case "select": case "flip":
+      //    $( this ).css( "cursor", "default" );
+      //    break;
+      //  case "translate":
+      //    $( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
+      //    break;
+      //  case "rotate":
+      //    $( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-rotate.png) 8 8, auto" );
+      //    break;
+      //  case "zin":
+      //    $( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto" );
+      //    break;
+      //  case "zout":
+      //    $( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto" );
+      //    break;    
+      // }
 		});
 		canvases.live( "mouseleave", function ( e ) {
 			// check if active
@@ -3081,39 +3178,39 @@ PhyloBox = (function ( $ ) {
 		return hex.test( c ) ? "#" + c : c; 
 	}
 	// color test
-    function compHex_( o ) {
-        var c = o, hex = "";
-        function hexToR( h ) {
+  function compHex_( o ) {
+    var c = o, hex = "";
+    function hexToR( h ) {
 			return parseInt( ( cutHex( h ) ).substring( 0, 2 ), 16 );
 		}
-        function hexToG( h ) { 
+    function hexToG( h ) { 
 			return parseInt( ( cutHex( h ) ).substring( 2, 4 ), 16 );
 		}
-        function hexToB( h ) {
+    function hexToB( h ) {
 			return parseInt( ( cutHex( h ) ).substring( 4, 6 ), 16 );
 		}
-        function cutHex( h ) {
+    function cutHex( h ) {
 			return h.charAt( 0 ) == "#" ? h.substring( 1, 7 ) : h;	
 		}
-        c = cutHex( c );
-        hexToR( c ) < 128 ?
-            hex = hex + "FF" :
-            hex = hex + "00" ;
-        hexToG( c ) < 128 ?
-            hex = hex + "FF" :
-            hex = hex + "00" ;
-        hexToB( c ) < 128 ?
-            hex = hex + "FF" :
-            hex = hex + "00" ;
-        return hex.length < o.length ? "#" + hex : hex;
-    }
+    c = cutHex( c );
+    hexToR( c ) < 128 ?
+        hex = hex + "FF" :
+        hex = hex + "00" ;
+    hexToG( c ) < 128 ?
+        hex = hex + "FF" :
+        hex = hex + "00" ;
+    hexToB( c ) < 128 ?
+        hex = hex + "FF" :
+        hex = hex + "00" ;
+    return hex.length < o.length ? "#" + hex : hex;
+  }
 	// throw an error to console and exit
 	function error_( e ) {
 		console.log( "PhyloBox Error: " + e );
 		return false;
 	}
 	// extend native canvas - draws a dotted circle
-    CanvasRenderingContext2D.prototype.dottedArc = function( x, y, radius, startAngle, endAngle, anticlockwise ) {
+  CanvasRenderingContext2D.prototype.dottedArc = function( x, y, radius, startAngle, endAngle, anticlockwise ) {
 		var g = Math.PI / radius / 2, sa = startAngle, ea = startAngle + g;
 		while ( ea < endAngle ) {
 			this.beginPath();
