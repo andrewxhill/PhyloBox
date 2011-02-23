@@ -20,10 +20,10 @@ from django.utils import feedgenerator, simplejson
 import logging
 
 #project module storing all the db table models
-from TreeStore import *
-from phyloxml import *
-from GenericMethods import *
-from NewickParser import *
+from pb.DB import *
+from pb.methods import *
+from pb.parsing.phyloxml import *
+from pb.parsing.newick import *
 
 EXAMPLE_PHYLOBOX_KEY = 'tmp9c63a1c1-9d89-4562-97cf-b1a479e56460'
 

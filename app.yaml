@@ -24,10 +24,10 @@ handlers:
   login: admin
   
 - url: /task/.*
-  script: task.py
+  script: pb/task/__init__.py
   
 - url: /api/.*
-  script: api.py
+  script: pb/api/__init__.py
   
 - url: /.*
   script: app.py

@@ -21,10 +21,10 @@ import logging
 
 
 #project module storing all the db table models
-from TreeStore import *
-from phyloxml import *
-from GenericMethods import *
-from NewickParser import *
+from pb.db import *
+from pb.parse.phyloxml import *
+from pb.methods import *
+from pb.parse.newick import *
 
 EXAMPLE_PHYLOBOX_KEY = 'tmp9c63a1c1-9d89-4562-97cf-b1a479e56460'
 
