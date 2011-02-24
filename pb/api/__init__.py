@@ -296,7 +296,7 @@ class AddNewTree(webapp.RequestHandler):
                 treeindex = db.get(indexkey)
                 if treeindex is None:
                     treeindex = TreeIndex(key=indexkey)
-                    
+                userKey = str(userKey)
                 if userKey is not None:
                     if db.Key(userKey) not in treeindex.users:
                         treeindex.users.append(db.Key(userKey))
