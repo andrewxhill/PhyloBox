@@ -6,8 +6,9 @@
 	<style> 
         body { background: #f0f0f0; padding: 30px; margin: 0; }
         #header { width: 400px; margin: 0 auto 5px; text-align: center; padding: 20px 0; background: white; }
-        #left {float: left;}
-        #right {float: right;}
+        #container {position: relative; float: left; width: 1150px}
+        #left {float: left; width:420px}
+        #right {float: left; width:420px}
         .myOptionsDemo{width: 400px; height: 240px;}
         .myOptionsSubmit{width: 400px; height: 150px; font-size: 50px; margin-top: 25px;}
         .title { font-family: Arial black,Arial,sans-serif; font-size: 1.5em; color: #00001D; }
@@ -60,6 +61,7 @@
 </head> 
 <!-- Include the function you created above to initialize PhyloBox in the body tag --> 
 <body onload="init()"> 
+    <div id="container">
     <div id="left">
         <div id="header"> 
             <div class="title">Your Source</div> 
@@ -94,6 +96,7 @@
             <!-- This is the actual PhyloBox container (the only required element) --> 
             <div id="phylo_div" class="pb"></div> 
         </div> 
+    </div> 
     </div> 
 </body> 
 </html> 
