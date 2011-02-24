@@ -961,17 +961,20 @@ PhyloBox = (function ( $ ) {
 				return {
 					draw: function( ctx ) {
 						// check visibility
-				        if ( _node.visibility ) {
+				    if ( _node.visibility ) {
 							// scale alpha and radius on depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
 							var scale = 0.7 - ( ( ( _point.z + _point.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
-					        // set styles
-			                ctx.fillStyle = isHex_( _node.color );
+							var z_scale = _point.cz < 0 ? - 0.003 * _point.cz * scale : scale;
+					    // set styles
+			        ctx.fillStyle = isHex_( _node.color );
 							ctx.globalAlpha = scale;
-					        // draw the line
-					        ctx.beginPath();
+					    // draw the line
+					    ctx.beginPath();
 							if ( scale > 0 )	
-								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * scale, 0, 2 * Math.PI, false );
-					        ctx.fill();
+								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * z_scale, 0, 2 * Math.PI, false );
+					    ctx.fill();
+					    // font 
+					    ctx.font = _view.font * z_scale + "px Plain";
 							// leaf label
 							if ( _view.tree.environment.leaflabels && _node.is_leaf ) {
 								switch( _view.tree.environment.viewmode ) {
@@ -996,14 +999,14 @@ PhyloBox = (function ( $ ) {
 									case 0: case 1:
 										ctx.textBaseline = "alphabetic";
 										ctx.textAlign = "right";
-										var lx = Math.round( _point.screenX ),
-											ly = Math.round( _point.screenY - 3 );
+										var lx = Math.round( _point.screenX )
+											, ly = Math.round( _point.screenY - 3 * z_scale );
 										break;
 									case 2: case 3:
 										ctx.textBaseline = "middle";
 										ctx.textAlign = _point.t > Math.PI / 2 && _point.t < 3 * Math.PI / 2 ? "left" : "right";
-										var lx = Math.round( _point.screenX - 3 * Math.cos( _point.t ) ),
-											ly = Math.round( _point.screenY - 3 * Math.sin( _point.t ) );
+										var lx = Math.round( _point.screenX - 3 * Math.cos( _point.t ) )
+											, ly = Math.round( _point.screenY - 3 * Math.sin( _point.t ) );
 										break;
 								}
 								var label = _node.name || _node.id;
@@ -1244,11 +1247,11 @@ PhyloBox = (function ( $ ) {
 				    if( ! _node.visibility ) return false;
 						// scale alpha and linw width with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
 						var scale = 0.7 - ( ( ( _pointB.z + _pointB.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
+						var z_scale = _pointB.cz < 0 ? - 0.005 * _pointB.cz * scale : scale;
 				    // set styles
 				    ctx.strokeStyle = isHex_( _node.color );
-				    ctx.globalAlpha = scale;
-						//ctx.globalCompositeOperation = "xor";
-				    ctx.lineWidth  = _view.tree.environment.width * scale;
+				    ctx.globalAlpha = z_scale;
+				    ctx.lineWidth  = _view.tree.environment.width * z_scale;
 						// draw the line
 				    ctx.beginPath();
 				    ctx.moveTo( _pointA.screenX, _pointA.screenY );
@@ -1263,7 +1266,6 @@ PhyloBox = (function ( $ ) {
 								break;
 						}
 						ctx.stroke();
-						//ctx.globalCompositeOperation = "source-over";
 					},
 					// gets
 					get points() { return [ _pointA, _pointB ] },
@@ -1292,7 +1294,7 @@ PhyloBox = (function ( $ ) {
 					, _full = full
 					, _int_id 
 					, _ctx
-          , _font = 8
+          , _font
           , _fl = 2000
 					, _vpx = 0 
 					, _vpy = 0 
@@ -1347,6 +1349,7 @@ PhyloBox = (function ( $ ) {
 				}
 				// update coordinates of all points
 				function _update() {
+				  if ( ! _single ) _ax = _ay = 0.005;
 					// points
 					for ( var d = 0; d < _d.length; d++ ) {
 						_d[d].point.setVanishingPoint( _vpx, _vpy );
@@ -1383,7 +1386,7 @@ PhyloBox = (function ( $ ) {
 		      _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 					_ctx.lineWidth = 1;
           //_ctx.font = _sandbox.options.labelSize + "px Plain";
-          _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : _font + "px Plain";
+          _ctx.font = _font + "px Plain";
 					//_ctx.font = "8px Plain";
 					_ctx.globalAlpha = 1;
 					if ( _tree.environment.color === false )
@@ -1595,14 +1598,16 @@ PhyloBox = (function ( $ ) {
 							break;
 						case "mousemove":
 							// set
-							_dx = m.x - _fm.x;
-							_dy = m.y - _fm.y;
-							_vpx += _dx;
-							_vpy += _dy;
+							//_dx = m.x - _fm.x;
+							//_dy = m.y - _fm.y;
+							_cx += m.x - _fm.x;
+							_cy += m.y - _fm.y;
+							_vpx += m.x - _fm.x;
+							_vpy += m.y - _fm.y;
 							// draw
 							_update(); _render();
 							// notify sandbox
-							_sandbox.notify( "pb-treepan", { dx: _dx, dy: _dy, } );
+							_sandbox.notify( "pb-treepan", { dx: m.x - _fm.x, dy: m.y - _fm.y } );
 							// clear
 							_fm = m;
 							_dx = _dy = 0;
@@ -1732,9 +1737,9 @@ PhyloBox = (function ( $ ) {
 				}
 				// begin animated zoom
 			  function _startZoom( reverse, depth ) {
-    			var n = 1 / 5
-    			  , lx = _f.x - _c_width() / 2
-    			  , ly = _f.y - _c_height() / 2
+    			var n = 1 / 3
+    			  , lx = _f.x - _vpx
+    			  , ly = _f.y - _vpy;
     			;
     			if ( reverse ) 
     			  n *= -1;
@@ -1743,8 +1748,8 @@ PhyloBox = (function ( $ ) {
     				_sf = _si + n;
     				_cxi = _cx;
     				_cyi = _cy;
-    				_cxf = (_cx - lx) / (_sf/_si); //( _cxi * _sf - lx * n ) / _si;
-    				_cyf = (_cy - ly) / (_sf/_si); //( _cyi * _sf - ly * n ) / _si;
+    				_cxf = ( ( _cxi - lx ) * _sf - ( _cxi - lx ) * n ) / _si;
+    				_cyf = ( ( _cyi - ly ) * _sf - ( _cyi - ly ) * n ) / _si;
     				_zoomStep = 0;
     				_zoomTimer = setInterval( function () {
     				  _zoomStepper( depth );
@@ -1759,7 +1764,8 @@ PhyloBox = (function ( $ ) {
     			_setZoom( depth );
     			_cx = _getTween( 'expo', t, _cxi, _cxf - _cxi, d );
     			_cy = _getTween( 'expo', t, _cyi, _cyf - _cyi, d );
-    			_update(); _render();
+    			_update(); 
+    			_render();
     			_zoomStep++;
     			if ( _zoomStep >= _zoomSteps )
     			  clearInterval( _zoomTimer );
@@ -1787,6 +1793,7 @@ PhyloBox = (function ( $ ) {
 				// init
 				_width = ! _full ? pW : _holder.width() - _padding.l - _padding.r;
 				_height = ! _full ? pH : _holder.height() - _padding.t - _padding.b;
+				_font = WIDGET ? _sandbox.options.labelSize : 8;
 				// create canvas
 				_canvas = $( "<canvas style='display:none;' width='" + _c_width() + "' height='" + _c_height() + "' id='" + _id + "'></canvas>" );
 				// add to document
@@ -1950,9 +1957,9 @@ PhyloBox = (function ( $ ) {
 						 	_cp[cp].rotateZ( _az );
 						}
 						// first render ---------------->>>>>>
-			            _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
-			            _ctx.lineWidth = 1;
-                        _ctx.font = WIDGET ? _sandbox.options.labelSize + "px Plain" : _font + "px Plain";
+			      _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
+			      _ctx.lineWidth = 1;
+            _ctx.font = _font + "px Plain";
 						_ctx.globalAlpha = 1;
 						if ( _tree.environment.color === false )
 							_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -1970,7 +1977,7 @@ PhyloBox = (function ( $ ) {
 						if ( _boundaries ) _showBounds();
 						// update and position title
 						if ( _title )
-			                _title.text( _tree.title ).css({ bottom: 0, right: 0 });
+			        _title.text( _tree.title ).css({ bottom: 0, right: 0 });
 					},
 					replot: function() {
 						// pause time
