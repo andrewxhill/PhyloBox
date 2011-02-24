@@ -208,8 +208,8 @@ class NodeParse(webapp.RequestHandler):
     
     #indexkey = db.Key.from_path('Tree', k, 'Node', str(id), 'NodeIndex', str(id))
     node = simplejson.loads(nodeindex.parent().data)
-    
-    nodeindex.tree = db.Key.from_path('Tree', k)
+    parent_key = db.Key.from_path('Tree', k)
+    nodeindex.tree = parent_key
     nodeindex.id = node["id"]
     nodeindex.name = node["name"] if "name" in node.keys() else None
     
@@ -229,7 +229,7 @@ class NodeParse(webapp.RequestHandler):
         if type(cd)==type([]):
             for confdata in cd:
                 annotation = Annotation(parent=nodeindex.key())
-                annotation.tree = nodeindex.parent().parent().key()
+                annotation.tree = parent_key
                 annotation.category = "confidence"
                 annotation.user = userName
                 conftype = "unknown"
@@ -246,7 +246,7 @@ class NodeParse(webapp.RequestHandler):
                 jobPuts.append(annotation)
         else:
             annotation = Annotation(parent=nodeindex.key())
-            annotation.tree = nodeindex.parent().parent().key()
+            annotation.tree = parent_key
             annotation.category = "confidence"
             annotation.user = userName
             conf = u"%s" % cd
@@ -260,7 +260,7 @@ class NodeParse(webapp.RequestHandler):
             jobPuts.append(annotation)
     if "color" in node.keys() and node["color"] is not None:
         annotation = Annotation(parent=nodeindex.key())
-        annotation.tree = nodeindex.parent().parent().key()
+        annotation.tree = parent_key
         annotation.category = "branchcolor"
         annotation.user = userName
         annotation.name = "unknown"
@@ -271,7 +271,7 @@ class NodeParse(webapp.RequestHandler):
         jobPuts.append(annotation)
     if "length" in node.keys() and node["length"] is not None:
         annotation = Annotation(parent=nodeindex.key())
-        annotation.tree = nodeindex.parent().parent().key()
+        annotation.tree = parent_key
         annotation.category = "branchlength"
         annotation.user = userName
         annotation.name = "unknown"
@@ -283,7 +283,7 @@ class NodeParse(webapp.RequestHandler):
         jobPuts.append(annotation)
     if "ncolor" in node.keys() and node["ncolor"] is not None:
         annotation = Annotation(parent=nodeindex.key())
-        annotation.tree = nodeindex.parent().parent().key()
+        annotation.tree = parent_key
         annotation.category = "nodecolor"
         annotation.user = userName
         annotation.name = "unknown"
@@ -295,7 +295,7 @@ class NodeParse(webapp.RequestHandler):
     for a in temporal_annotations:
         if a in node.keys() and node[a] is not None:
             annotation = Annotation(parent=nodeindex.key())
-            annotation.tree = nodeindex.parent().parent().key()
+            annotation.tree = parent_key
             annotation.category = "time"
             annotation.user = userName
             annotation.name = a
@@ -307,7 +307,7 @@ class NodeParse(webapp.RequestHandler):
     for a in geographic_annotations:
         if a in node.keys() and node[a] is not None:
             annotation = Annotation(parent=nodeindex.key())
-            annotation.tree = nodeindex.parent().parent().key()
+            annotation.tree = parent_key
             annotation.category = "geography"
             annotation.user = userName
             annotation.name = a
@@ -319,7 +319,7 @@ class NodeParse(webapp.RequestHandler):
     if 'taxonomy' in node.keys() and node['taxonomy'] is not None:
         for a,b in node["taxonomy"].items():
             annotation = Annotation(parent=nodeindex.key())
-            annotation.tree = nodeindex.parent().parent().key()
+            annotation.tree = parent_key
             annotation.category = "taxonomy"
             annotation.user = userName
             annotation.name = a
@@ -331,7 +331,7 @@ class NodeParse(webapp.RequestHandler):
     if 'uri' in node.keys() and node['uri'] is not None:
         for a,b in node["uri"].items():
             annotation = Annotation(parent=nodeindex.key())
-            annotation.tree = nodeindex.parent().parent().key()
+            annotation.tree = parent_key
             annotation.category = "uri"
             annotation.user = userName
             annotation.name = a
