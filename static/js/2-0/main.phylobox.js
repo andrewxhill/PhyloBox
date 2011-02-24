@@ -19,7 +19,7 @@ PhyloBox = (function ( $ ) {
             ( HOST != "localhost:8080" && 
 			HOST != "phylobox.appspot.com" && 
 			HOST != "2-0.latest.phylobox.appspot.com" ),
-        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com/":'' } ? 
+        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com":'', "phylobox.appspot.com":'' } ? 
 			"http://" + HOST + "/" : 
 			"http://2-0.latest.phylobox.appspot.com/",
 		USER;
