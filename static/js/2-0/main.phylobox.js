@@ -4,7 +4,7 @@
 |   Contact: andrewxhill@gmail.com || sanderpick@gmail.com                  |
 | ------------------------------------------------------------------------- |
 |     Admin: Andrew Hill (project admininistrator)                          |
-|   Authors: Sander Pick, Andrew Hill                                    	|                     
+|   Authors: Sander Pick, Andrew Hill                                     	|                     
 | ------------------------------------------------------------------------- |
 |   License: Distributed under the General Public License (GPL)             |
 |            http://www.gnu.org/licenses/licenses.html#GPL                  |
@@ -14,26 +14,26 @@
 '--------------------------------------------------------------------------*/
 PhyloBox = (function ( $ ) {
 	// constants
-	var HOST = window.location.host,
-		WIDGET = ( window.location.pathname ).split( '/' )[1] == "examples" ||
-            ( HOST != "localhost:8080" && 
-			HOST != "phylobox.appspot.com" && 
-			HOST != "2-0.latest.phylobox.appspot.com" ),
-        HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com":'', "phylobox.appspot.com":'' } ? 
+	var HOST = window.location.host
+	  , WIDGET = ( window.location.pathname ).split( '/' )[1] == "examples" ||
+        ( HOST != "localhost:8080" && 
+			  HOST != "phylobox.appspot.com" && 
+			  HOST != "2-0.latest.phylobox.appspot.com" )
+    , HOME = HOST in { "localhost:8080":'', "2-0.latest.phylobox.appspot.com":'', "phylobox.appspot.com":'' } ? 
 			"http://" + HOST + "/" : 
-			"http://2-0.latest.phylobox.appspot.com/",
-		USER;
-    var API_TREE = HOME + "api/lookup/",
-		API_GROUP = HOME + "api/group",
-		API_NEW = HOME + "api/new",
-		API_SAVE_TREE = HOME + "api/save",
-		RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/,
-		EXAMPLE_TREE = "http://www.phyloxml.org/examples/apaf.xml";
+			"http://2-0.latest.phylobox.appspot.com/"
+		, USER;
+    var API_TREE = HOME + "api/lookup/"
+		, API_GROUP = HOME + "api/group"
+		, API_NEW = HOME + "api/new"
+		, API_SAVE_TREE = HOME + "api/save"
+		, RX_URL = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+		, EXAMPLE_TREE = "http://www.phyloxml.org/examples/apaf.xml";
 	// set storage
-    var pbStorage = sessionStorage == null ?
-        globalStorage[ location.hostname ] :
-        sessionStorage;
-    // private parts
+  var pbStorage = sessionStorage == null ?
+    globalStorage[ location.hostname ] :
+    sessionStorage;
+  // private parts
 /*###########################################################################
 ###################################################################### SYSTEM
 ###########################################################################*/
@@ -963,7 +963,8 @@ PhyloBox = (function ( $ ) {
 						// check visibility
 				    if ( _node.visibility ) {
 							// scale alpha and radius on depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
-							var scale = 0.7 - ( ( ( _point.z + _point.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
+              // var scale = 0.7 - ( ( ( _point.z + _point.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
+							var scale = 0.7 - ( ( ( _point.z ) / ( _view.max_z / 2 ) ) * 0.3 );
 							var z_scale = _point.cz < 0 ? - 0.003 * _point.cz * scale : scale;
 					    // set styles
 			        ctx.fillStyle = isHex_( _node.color );
@@ -971,7 +972,7 @@ PhyloBox = (function ( $ ) {
 					    // draw the line
 					    ctx.beginPath();
 							if ( scale > 0 )	
-								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * z_scale, 0, 2 * Math.PI, false );
+								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * scale, 0, 2 * Math.PI, false );
 					    ctx.fill();
 					    // font 
 					    ctx.font = _view.font * z_scale + "px Plain";
@@ -1246,12 +1247,13 @@ PhyloBox = (function ( $ ) {
 						// check visibility
 				    if( ! _node.visibility ) return false;
 						// scale alpha and linw width with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
-						var scale = 0.7 - ( ( ( _pointB.z + _pointB.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
+						//var scale = 0.7 - ( ( ( _pointB.z + _pointB.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
+						var scale = 0.7 - ( ( ( _pointB.z ) / ( _view.max_z / 2 ) ) * 0.3 );
 						var z_scale = _pointB.cz < 0 ? - 0.005 * _pointB.cz * scale : scale;
 				    // set styles
 				    ctx.strokeStyle = isHex_( _node.color );
-				    ctx.globalAlpha = z_scale;
-				    ctx.lineWidth  = _view.tree.environment.width * z_scale;
+				    ctx.globalAlpha = scale;
+				    ctx.lineWidth  = _view.tree.environment.width * scale;
 						// draw the line
 				    ctx.beginPath();
 				    ctx.moveTo( _pointA.screenX, _pointA.screenY );
