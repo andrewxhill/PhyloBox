@@ -138,7 +138,7 @@ class AddNewTree(webapp.RequestHandler):
                 treefile = result.content
         else:
             wasCached = True
-            treeCollection.append(simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True)))
+            treeCollection.append({"treefile":simplejson.loads(UnzipFiles(StringIO.StringIO(data),iszip=True))})
             collectionKeys.append(k)
             treeSizes.append(len(treeCollection[0]))
     elif stringxml is not None:
@@ -246,8 +246,8 @@ class AddNewTree(webapp.RequestHandler):
             treefile['tree'] = output
             
             treeSizes.append(len(output))
-            
-            treeCollection.append(treefile)
+            treeColl = {"treefile":treefile,"tasks":tree.objtree.tasks,"puts":tree.objtree.puts}
+            treeCollection.append(treeColl)
             collectionKeys.append(k)
             
             #zip the string
@@ -265,26 +265,71 @@ class AddNewTree(webapp.RequestHandler):
                 tree.users.append(userKey)
                 tree.put()
                 inMemcache = False
-    """
-    for t in treeCollection:
+    
+    for coll in treeCollection:
         if wasCached is False:
+            t = coll["treefile"]
             k = t['k']
-            params = {
-                    'key': k,
-                    'temporary': True,
-                }
-            if inMemcache:
-                params['memcache'] = True
+            key = db.Key.from_path('Tree', k)
+            tree = db.get(key)
+            existing = True
+            if tree is None or userKey not in tree.users:
+                k = "phylobox-"+version+"-"+str(uuid.uuid4())
+                #k = "phylobox-2-0-553752e6-2d54-49f3-880d-e0a2fdef5e43"
+                treefile["key"] = k
+                key = db.Key.from_path('Tree', k)
+                tree = Tree(key = key)
+                if userKey is not None:
+                    tree.users = [userKey]
+                existing = False
+                #tree.data = ZipFiles(simplejson.dumps(treefile).replace('\\/','/'))
+                tree.environment = simplejson.dumps(treefile["environment"]).replace('\\/','/')
                 
-            if userKey is not None:
-                params['userKey'] = userKey 
+                #treefile = simplejson.loads(treefile)
+                tree.title = t["title"] if "title" in t.keys() else None
+                tree.version = str(t["v"]) if "v" in t.keys() else None
+                tree.author = t["author"] if "author" in t.keys() else None
+                tree.description = t["description"] if "description" in t.keys() else None
+                tree.put()
                 
+                indexkey = db.Key.from_path('Tree', k, 'TreeIndex', k)
+                treeindex = db.get(indexkey)
+                if treeindex is None:
+                    treeindex = TreeIndex(key=indexkey)
+                    
+                if userKey is not None:
+                    if db.Key(userKey) not in treeindex.users:
+                        treeindex.users.append(db.Key(userKey))
+
+                treeindex.title = treefile["title"] if "title" in treefile.keys() else None
+                treeindex.date = treefile["date"] if "date" in treefile.keys() else None
+                treeindex.root = str(treefile["root"]) if "root" in treefile.keys() else None
+                treeindex.author = treefile["author"] if "author" in treefile.keys() else None
+                treeindex.scientificName = treefile["scientificName"] if "scientificName" in treefile.keys() else None
+                treeindex.scientificNameId = treefile["scientificNameId"] if "scientificNameId" in treefile.keys() else None
+                treeindex.scientificNameAuthority = treefile["scientificNameAuthority"] if "scientificNameAuthority" in treefile.keys() else None
+                db.put(treeindex)
+                
+                db.put(coll["puts"])
+                
+                for tsk in coll["tasks"]:  
+                    #{'params': {'id': 62, 'key': 'phylobox-2-0--1147718809'}, 'name': '129850343-phylobox201147718809-62'}
+                    taskqueue.add(
+                        queue_name='tree-processing-queue',
+                        url='/task/nodeparse', 
+                        params=tsk['params'],
+                        name=tsk['name'])
+                    
+                
+                
+            
+            """
             taskqueue.add(
                 queue_name='tree-processing-queue',
                 url='/api/save', 
                 params=params,
                 name="02-%s-%s" % (k.replace('-',''),int(time.time())))
-    """
+            """
     #self.response.headers['Content-Type'] = 'application/json'
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(self.request.params.get('callback', None) + "(")
@@ -307,13 +352,14 @@ class AddNewTree(webapp.RequestHandler):
                         ["some option"]
                     })))
             else:
-                self.response.out.write(simplejson.dumps(treeCollection[0]).replace('\\/','/'))
+                self.response.out.write(simplejson.dumps(treeCollection[0]["treefile"]).replace('\\/','/'))
+        """
         else:
             c = "phylobox-"+version+"-collection-"+str(uuid.uuid4())
             memcache.set("collection-data-%s" % c, collectionKeys, cachetime)
             treeGroup = {"collection":c,"trees":treeCollection}
             self.response.out.write(str(simplejson.dumps(treeCollection).replace('\\/','/')))
-        
+        """
         
     if self.request.params.get('callback', None) is not None:
         self.response.out.write(")")
@@ -451,12 +497,12 @@ class TreeSave(webapp.RequestHandler):
         
         if temporary is not None:
             params['temporary'] = True
-            
+        """
         taskqueue.add(
             url='/task/treeparse', 
             params=params,
             name="01-%s-%s" % (k.replace('-',''),int(time.time()/10)))
-            
+        """
         
         out = {'key': k}
         self.response.out.write(simplejson.dumps(out))

@@ -19,6 +19,8 @@ class PhyloTree():
         self.tree = {}
         self.frame = {}
         self.k = k
+        self.puts = []
+        self.tasks = []
     
     
     def storenode(self, node):
@@ -40,24 +42,12 @@ class PhyloTree():
         newnode.children = children
         newnode.data = simplejson.dumps(node)  
         
-        db.put(newnode)
+        self.puts.append(newnode)
+        #db.put(newnode)
     
         newTask = {'params': {'key': self.k,'id':node["id"]}}
-        """
-        if userKey is not None:
-            newTask['userKey'] = userKey
-        """
         newTask['name'] = "%s-%s-%s" % (int(time.time()/10),self.k.replace('-',''),node["id"])
-        """
-        if temporary is not None:
-            newTask['params']['temporary'] = True
-        """
-        taskqueue.add(
-            queue_name='tree-processing-queue',
-            url='/task/nodeparse', 
-            params=newTask['params'],
-            name=newTask['name'])
-            
+        self.tasks.append(newTask)
             
     def elementbyid(self,id):
         if id in self.tree:
@@ -89,7 +79,7 @@ class PhyloTree():
                 self.ignored_elements[a] = 1
         
         if dbstore:
-            #self.storenode(element.json())
+            self.storenode(element.json())
             pass
         
         self.setelement(element)
