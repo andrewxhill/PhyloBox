@@ -4,19 +4,32 @@
 <head> 
     <!-- Demo Styles --> 
 	<style> 
-        body { background: #f0f0f0; padding: 30px; margin: 0; }
-        #header { width: 400px; margin: 0 auto 5px; text-align: center; padding: 20px 0; background: white; }
-        #container {position: relative; float: left; width: 1150px}
+        body { background: #f0f0f0; padding: 30px; }
+        #container {margin: auto; width: 840px}
         #left {float: left; width:420px}
         #right {float: left; width:420px}
-        .myOptionsDemo{width: 400px; height: 240px;}
-        .myOptionsSubmit{width: 400px; height: 150px; font-size: 50px; margin-top: 25px;}
+        #header { width: 405px; text-align: center; padding: 20px 0; background: white; }
+        .myOptionsDemo{width: 400px; height: 235px;}
+        .myOptionsSubmit{width: 400px; height: 125px; font-size: 50px; margin-top: 15px;}
         .title { font-family: Arial black,Arial,sans-serif; font-size: 1.5em; color: #00001D; }
         .eventLog { font-size: 0.7em; font-family: helvetica,arial,freesans,clean,sans-serif; background: yellow; color: #666; width: 400px; margin: 0 auto; padding: 2px; }
         #content { width: 400px; margin: 0 auto; }
         .pb { width: 400px; height: 400px; float: left; }
         .cl { overflow: auto; background: #00001d; color: #c69500; float: left; width: 300px; height: 400px;  border: 1px solid red; margin-left: 15px; }
         .info { background: #00001d; color: #c69500; padding: 10px; font-size: 1.3em; float: left; width: 695px; height: 85px;  border: 1px solid red; margin-top: 15px; }
+        
+        #urlselect {
+          margin: 0px;
+          padding: 0px;
+          font-family:Verdana, Geneva, Arial, Helvetica, sans-serif;
+          font-size:1em;/* Resize Font*/
+          width : 405px; /* Resize Width */
+          display : block;
+          text-align:left;
+          cursor: pointer;
+          border:1px solid #D1E4F6;
+          color:#333;
+        }
     </style> 
 	<!-- Attach Phylobox to Your Webpage --> 
     <script type="text/javascript" src="/static/js/2-0/lab.widget.phylobox.js"></script> 
@@ -42,32 +55,47 @@
             $(".myOptionsSubmit").click(function(){
                 var s = $(".myOptionsDemo").val();
                 myOptions = (new Function("return " + s))() 
-                $('#content').empty();
-                $('#content').html('<div id="phylo_div" class="pb"></div>');
                 loadPB();
             });
             loadPB();
         }
-        
+        var url = "http://www.phylosoft.org/archaeopteryx/examples/data/multiple_supports.xml"
+        var myPhylobox;
 		// function called by window.onload() in body tag
 		function loadPB() {
+            myPhylobox = 0;
+            $('#content').empty();
+            var aN = (Math.round(Math.random()*100)).toString();
+            $('#content').html('<div id="'+aN+'" class="pb"></div>');
 			// create a new PhyloBox instance contained by #phylo_div
-			var myPhylobox = new PhyloBox.Viz( "phylo_div", myOptions );
+			myPhylobox = new PhyloBox.Viz( aN, myOptions );
 			// draw some phylogeny
-			myPhylobox.drawTree( "url", "http://www.phylosoft.org/archaeopteryx/examples/data/multiple_supports.xml" );
+			myPhylobox.drawTree( "url", url );
 
 		}
+        function newUrl(select) { 
+            url = select.value;
+            loadPB();
+        } 
     </script> 
 </head> 
 <!-- Include the function you created above to initialize PhyloBox in the body tag --> 
 <body onload="init()"> 
     <div id="container">
-    <div id="left">
-        <div id="header"> 
-            <div class="title">Your Source</div> 
-        </div>
-        <br /> 
-            <textarea class="myOptionsDemo">
+        <div id="left">
+            <div id="header"> 
+                <div class="title">Your Source</div> 
+            </div>
+            <br /> 
+            
+            <select id="urlselect" name="urls" onchange="newUrl(this)"> 
+            <option value="http://www.phylosoft.org/archaeopteryx/examples/data/multiple_supports.xml">Phylosoft.org multiple_supports.xml</option> 
+            <option value="http://www.phylosoft.org/archaeopteryx/examples/data/bcl_2.xml">Phylosoft.org bcl_2.xml</option> 
+            <option value="http://www.phyloxml.org/examples/apaf.xml">Phyloxml.org apaf.xml</option> 
+            </select> 
+            
+            <br /> 
+                <textarea class="myOptionsDemo">
 {
     background: "#456883", 
     viewMode: "circular cladogram",
@@ -82,21 +110,20 @@
     tools: true,
     shadow: false
 };
-            </textarea>
-            <br />
-            <button class="myOptionsSubmit">Update</button>
+                </textarea>
+                <br />
+                <button class="myOptionsSubmit">Update</button>
+        </div>
+        <div id="right">
+            <div id="header"> 
+                <div class="title">Your Webpage</div> 
+            </div> 
+            <br /> 
+            <div id="content"> 
+                <!-- This is the actual PhyloBox container (the only required element) --> 
+                <div id="phylo_div" class="pb"></div> 
+            </div> 
         </div> 
-    </div>
-    <div id="right">
-        <div id="header"> 
-            <div class="title">Your Webpage</div> 
-        </div> 
-        <br /> 
-        <div id="content"> 
-            <!-- This is the actual PhyloBox container (the only required element) --> 
-            <div id="phylo_div" class="pb"></div> 
-        </div> 
-    </div> 
     </div> 
 </body> 
 </html> 
