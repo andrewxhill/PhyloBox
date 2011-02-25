@@ -986,7 +986,7 @@ PhyloBox = (function ( $ ) {
 								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * z_scale, 0, 2 * Math.PI, false );
 					    ctx.fill();
 					    // font 
-					    ctx.font = _view.font * z_scale + "px Plain";
+					    ctx.font = _view.font * z_scale + "px Arial";
 							// leaf label
 							if ( _view.tree.environment.leaflabels && _node.is_leaf ) {
 								switch( _view.tree.environment.viewmode ) {
@@ -1400,9 +1400,9 @@ PhyloBox = (function ( $ ) {
 					// enable css3 color words
 		      _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 					_ctx.lineWidth = 1;
-          //_ctx.font = _sandbox.options.labelSize + "px Plain";
-          _ctx.font = _font + "px Plain";
-					//_ctx.font = "8px Plain";
+          //_ctx.font = _sandbox.options.labelSize + "px Arial";
+          _ctx.font = _font + "px Arial";
+					//_ctx.font = "8px Arial";
 					_ctx.globalAlpha = 1;
 					if ( _tree.environment.color === false )
 						_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -2016,7 +2016,7 @@ PhyloBox = (function ( $ ) {
 						// first render ---------------->>>>>>
 			      _ctx.fillStyle = _tree.environment.color ? isHex_( _tree.environment.color ) : "rgba( 35, 35, 47, 0.0 )";
 			      _ctx.lineWidth = 1;
-            _ctx.font = _font + "px Plain";
+            _ctx.font = _font + "px Arial";
 						_ctx.globalAlpha = 1;
 						if ( _tree.environment.color === false )
 							_ctx.clearRect( 0, 0, _c_width(), _c_height() );
@@ -2571,24 +2571,24 @@ PhyloBox = (function ( $ ) {
 				return false;
 			}
 			var pre = WIDGET ? HOME : "";
-      // // set cursor
-      // switch( _activeTool ) {
-      //  case "select": case "flip":
-      //    $( this ).css( "cursor", "default" );
-      //    break;
-      //  case "translate":
-      //    $( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
-      //    break;
-      //  case "rotate":
-      //    $( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-rotate.png) 8 8, auto" );
-      //    break;
-      //  case "zin":
-      //    $( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto" );
-      //    break;
-      //  case "zout":
-      //    $( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto" );
-      //    break;    
-      // }
+      // set cursor
+      switch( _activeTool ) {
+       case "select": case "flip":
+         $( this ).css( "cursor", "default" );
+         break;
+       case "translate":
+         $( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-translate.png) 8 8, auto" );
+         break;
+       case "rotate":
+         $( this ).css( "cursor", "url(" + pre + "static/gfx/tools/mouse-rotate.png) 8 8, auto" );
+         break;
+       case "zin":
+         $( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zin.png) 6 6, auto" );
+         break;
+       case "zout":
+         $( this ).css( "cursor", "url("+pre+"static/gfx/tools/mouse-zout.png) 6 6, auto" );
+         break;    
+      }
 		});
 		canvases.live( "mouseleave", function ( e ) {
 			// check if active
