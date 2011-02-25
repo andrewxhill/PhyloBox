@@ -371,8 +371,18 @@ PhyloBox = (function ( $ ) {
 						_activeTree = _activeNode = null;
 						_trees = [];
 						break;
+					case "pb-zin": 
+					case "pb-zout":
+					  // tell local modules
+						for ( var m = 0; m < _modules.length; m++ )
+							_modules[m].handle( type, { tree: _activeTree } );
+						// tell anyone else who might be interested
+						_context.trigger( type, [{ 
+							tree: _activeTree 
+						}]);
+					  break;
 					case "pb-history-change":
-					    // tell local modules
+					  // tell local modules
 						for ( var m = 0; m < _modules.length; m++ )
 							_modules[m].handle( type, data );
 					    break;
@@ -395,14 +405,14 @@ PhyloBox = (function ( $ ) {
 					_activeTree = t;
 					// go
 					t.begin( data );
-                    
-                    if ( ! WIDGET ) {
-                        var histKey = typeof data == "string" ? data : data.k;
-                        var histTitle = typeof data == "string" ? data : data.title;
-                        var histUrl = 'http://' + HOST + '?k=' + histKey;
-                        this.notify( "pb-history-change", [ histTitle, histUrl, '' ] );
-                        //window.history.pushState('', _histTitle, _histUrl);
-                    }
+          
+          if ( ! WIDGET ) {
+            var histKey = typeof data == "string" ? data : data.k;
+            var histTitle = typeof data == "string" ? data : data.title;
+            var histUrl = 'http://' + HOST + '?k=' + histKey;
+            this.notify( "pb-history-change", [ histTitle, histUrl, '' ] );
+            //window.history.pushState('', _histTitle, _histUrl);
+          }
 				}
 			},
 			receive: function( type, data ) {
@@ -441,7 +451,7 @@ PhyloBox = (function ( $ ) {
 			get trees() { return _trees; },
 			get activeTree() { return _activeTree; },
 			get activeNode() { return _activeNode; },
-            // sets
+      // sets
 			set options( v ) { _options = v; },
 		}.init();
 	};
@@ -964,15 +974,16 @@ PhyloBox = (function ( $ ) {
 				    if ( _node.visibility ) {
 							// scale alpha and radius on depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
               // var scale = 0.7 - ( ( ( _point.z + _point.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
-							var scale = 0.7 - ( ( ( _point.z ) / ( _view.max_z / 2 ) ) * 0.3 );
-							var z_scale = _point.cz < 0 ? - 0.003 * _point.cz * scale : scale;
+							var scale = 0.7 - ( ( _point.z / ( _view.max_z / 2 ) ) * 0.3 );
+							//var z_scale = _point.cz < 0 ? - 0.003 * _point.cz * scale : scale;
+					    var z_scale = _point.cz < 0 ? - 0.003 * _point.cz + scale : scale;
 					    // set styles
 			        ctx.fillStyle = isHex_( _node.color );
 							ctx.globalAlpha = scale;
 					    // draw the line
 					    ctx.beginPath();
 							if ( scale > 0 )	
-								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * scale, 0, 2 * Math.PI, false );
+								ctx.arc( _point.screenX, _point.screenY, _view.tree.environment.radius * z_scale, 0, 2 * Math.PI, false );
 					    ctx.fill();
 					    // font 
 					    ctx.font = _view.font * z_scale + "px Plain";
@@ -1249,11 +1260,12 @@ PhyloBox = (function ( $ ) {
 						// scale alpha and linw width with depth ---- alpha will vary from 1.0 - 0.3 across max depth of tree
 						//var scale = 0.7 - ( ( ( _pointB.z + _pointB.cz ) / ( _view.max_z / 2 ) ) * 0.3 );
 						var scale = 0.7 - ( ( ( _pointB.z ) / ( _view.max_z / 2 ) ) * 0.3 );
-						var z_scale = _pointB.cz < 0 ? - 0.005 * _pointB.cz * scale : scale;
+						//var z_scale = _pointB.cz < 0 ? - 0.003 * _pointB.cz * scale : scale;
+				    var z_scale = _pointB.cz < 0 ? - 0.003 * _pointB.cz + scale : scale;
 				    // set styles
 				    ctx.strokeStyle = isHex_( _node.color );
 				    ctx.globalAlpha = scale;
-				    ctx.lineWidth  = _view.tree.environment.width * scale;
+				    ctx.lineWidth  = _view.tree.environment.width * z_scale;
 						// draw the line
 				    ctx.beginPath();
 				    ctx.moveTo( _pointA.screenX, _pointA.screenY );
@@ -1332,6 +1344,7 @@ PhyloBox = (function ( $ ) {
 					, _zoomTimer
 					, _zoomSteps = _delay
 					, _zoomStep = 0
+					, _zoomLevel = 0
 				;
 				// start frame rendering
 				function _start() {
@@ -1669,65 +1682,65 @@ PhyloBox = (function ( $ ) {
 					}
 				}
 				function _zoom( e, t, m ) {
-				  // determine action
-					switch( t ) {
-					  case "mousedown":
-							// set
-							_m = m;
-							_selecting = true;
-							// search for nearby nodes
-							var nodes = _tree.node_list,
-								r = _h_radius;
-							for ( var n = 0; n < nodes.length; n++ ) {
-								var p = {}; 
-								p.x = nodes[n].point3D.screenX,
-								p.y = nodes[n].point3D.screenY;
-								if ( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
-									_f.x = p.x;
-									_f.y = p.y;
-									// zoom to mouse location
-  								_startZoom( e.data.reverse, nodes[n].point3D.z );
-									// notify sandbox
-									_sandbox.notify( "pb-treezoomin", {} );
-									// clear flag
-									_locked = true;
-									break;
-								}
-							}
-							// clear
-							_selecting = false;
-							_locked = false;
-							break;
-						case "mousesearch":
-							// set
-							_m = m;
-							_selecting = true;
-							// notify sandbox
-							_sandbox.notify( "pb-nodeexit", _hovered_node, true );
-							// search for nearby nodes
-							var nodes = _tree.node_list
-								, r = _h_radius;
-							for ( var n = 0; n < nodes.length; n++ ) {
-								var p = {}; 
-								p.x = nodes[n].point3D.screenX,
-								p.y = nodes[n].point3D.screenY;
-								if( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
-									_f.x = p.x;
-									_f.y = p.y;
-									_locked = true;
-									_hovered_node = nodes[n];
-									// notify sandbox
-									_sandbox.notify( "pb-nodehover", nodes[n], true );
-									break;
-								}
-							}
-							// draw
-							_render();
-							// clear
-							_selecting = false;
-							_locked = false;
-							break;
-					}
+          // // determine action
+          // switch( t ) {
+          //   case "mousedown":
+          //    // set
+          //    _m = m;
+          //    _selecting = true;
+          //    // search for nearby nodes
+          //    var nodes = _tree.node_list,
+          //      r = _h_radius;
+          //    for ( var n = 0; n < nodes.length; n++ ) {
+          //      var p = {}; 
+          //      p.x = nodes[n].point3D.screenX,
+          //      p.y = nodes[n].point3D.screenY;
+          //      if ( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
+          //        _f.x = p.x;
+          //        _f.y = p.y;
+          //        // zoom to mouse location
+          //        _startZoom( e.data.reverse, nodes[n].point3D.z );
+          //        // notify sandbox
+          //        _sandbox.notify( "pb-treezoomin", {} );
+          //        // clear flag
+          //        _locked = true;
+          //        break;
+          //      }
+          //    }
+          //    // clear
+          //    _selecting = false;
+          //    _locked = false;
+          //    break;
+          //  case "mousesearch":
+          //    // set
+          //    _m = m;
+          //    _selecting = true;
+          //    // notify sandbox
+          //    _sandbox.notify( "pb-nodeexit", _hovered_node, true );
+          //    // search for nearby nodes
+          //    var nodes = _tree.node_list
+          //      , r = _h_radius;
+          //    for ( var n = 0; n < nodes.length; n++ ) {
+          //      var p = {}; 
+          //      p.x = nodes[n].point3D.screenX,
+          //      p.y = nodes[n].point3D.screenY;
+          //      if( m.x + r >= p.x && m.x - r <= p.x && m.y + r >= p.y && m.y - r <= p.y ) {
+          //        _f.x = p.x;
+          //        _f.y = p.y;
+          //        _locked = true;
+          //        _hovered_node = nodes[n];
+          //        // notify sandbox
+          //        _sandbox.notify( "pb-nodehover", nodes[n], true );
+          //        break;
+          //      }
+          //    }
+          //    // draw
+          //    _render();
+          //    // clear
+          //    _selecting = false;
+          //    _locked = false;
+          //    break;
+          // }
 				}
 				// set current scale
 				function _setScale( z ) {
@@ -1739,33 +1752,69 @@ PhyloBox = (function ( $ ) {
 				}
 				// begin animated zoom
 			  function _startZoom( reverse, depth ) {
-    			var n = 1 / 3
-    			  , lx = _f.x - _vpx
-    			  , ly = _f.y - _vpy;
-    			;
-    			if ( reverse ) 
-    			  n *= -1;
-    			if ( _s + n >= 0.3 && _s + n <= 5 ) {
-    				_si = _s;
-    				_sf = _si + n;
-    				_cxi = _cx;
-    				_cyi = _cy;
-    				_cxf = ( ( _cxi - lx ) * _sf - ( _cxi - lx ) * n ) / _si;
-    				_cyf = ( ( _cyi - ly ) * _sf - ( _cyi - ly ) * n ) / _si;
-    				_zoomStep = 0;
-    				_zoomTimer = setInterval( function () {
-    				  _zoomStepper( depth );
-    				}, _delay );
-    			}
+          // var n = 1 / 3
+          //   , lx = _f.x - _vpx
+          //   , ly = _f.y - _vpy;
+          // ;
+          // if ( reverse ) 
+          //   n *= -1;
+          // if ( _s + n >= 0.3 && _s + n <= 5 ) {
+          //  _si = _s;
+          //  _sf = _si + n;
+          //  _cxi = _cx;
+          //  _cyi = _cy;
+          //  _cxf = ( ( _cxi - lx ) * _sf - ( _cxi - lx ) * n ) / _si;
+          //  _cyf = ( ( _cyi - ly ) * _sf - ( _cyi - ly ) * n ) / _si;
+          //  _zoomStep = 0;
+          //  _zoomTimer = setInterval( function () {
+          //    _zoomStepper( depth );
+          //  }, _delay );
+          // }
+          var n = 1 / 3;
+          if ( _zoomLevel > -1 && _zoomLevel < 5 ) {
+            if ( reverse ) {
+              n *= -1;
+              _zoomLevel--;
+            } else 
+              _zoomLevel++;
+            dozoom();
+          } else if ( _zoomLevel == 5 && reverse ) {
+            n *= -1;
+            _zoomLevel--;
+            dozoom();
+          } else if ( _zoomLevel == -1 && !reverse ) {
+            _zoomLevel++;
+            dozoom();
+          }
+          function dozoom() {
+            _si = _s;
+            _sf = _si + n;
+            _zoomStep = 0;
+            _zoomTimer = setInterval( function () {
+             _zoomStepper( depth, 'expo' );
+            }, _delay );
+          }
+          // if ( _s + n >= 0.3 && _s + n <= 5 ) {
+          //   _si = _s;
+          //   _sf = _si + n;
+          //   // _cxi = _cx;
+          //   // _cyi = _cy;
+          //   // _cxf = ( ( _cxi - lx ) * _sf - ( _cxi - lx ) * n ) / _si;
+          //   // _cyf = ( ( _cyi - ly ) * _sf - ( _cyi - ly ) * n ) / _si;
+          //   _zoomStep = 0;
+          //   _zoomTimer = setInterval( function () {
+          //    _zoomStepper( depth, type );
+          //   }, _delay );
+          // }
     		}
         // set animations step
-    		function _zoomStepper( depth ) {
+    		function _zoomStepper( depth, type ) {
     			var t = _zoomStep * _delay;
     			var d = _zoomSteps * _delay;
-    			_s = _getTween( 'expo', t, _si, _sf - _si, d );
+    			_s = _getTween( type, t, _si, _sf - _si, d );
     			_setZoom( depth );
-    			_cx = _getTween( 'expo', t, _cxi, _cxf - _cxi, d );
-    			_cy = _getTween( 'expo', t, _cyi, _cyf - _cyi, d );
+    			//_cx = _getTween( type, t, _cxi, _cxf - _cxi, d );
+    			//_cy = _getTween( type, t, _cyi, _cyf - _cyi, d );
     			_update(); 
     			_render();
     			_zoomStep++;
@@ -1790,6 +1839,12 @@ PhyloBox = (function ( $ ) {
     					var c2 = c - c1;
     					return ( t > d / s ) ? c2 * t / ( d - d / s ) + c1 : c1 * t / d / s + b;
     					break;
+    				case 'easeInBack': 
+    				  return c * ( t /= d ) * t * ( ( s + 1 ) * t - s ) + b;
+              break;
+            case 'easeOutBack':
+            	return c * ( ( t = t / d - 1 ) * t * ( ( s + 1 ) * t + s ) + 1 ) + b;
+              break;
     			}
     		}
 				// init
@@ -1807,8 +1862,8 @@ PhyloBox = (function ( $ ) {
 				_canvas.bind( "pb-flip", _flip );
 				_canvas.bind( "pb-translate", _translate );
 				_canvas.bind( "pb-rotate", _rotate );
-				_canvas.bind( "pb-zin", { reverse: false }, _zoom );
-				_canvas.bind( "pb-zout", { reverse: true }, _zoom );
+				//_canvas.bind( "pb-zin", { reverse: false }, _zoom );
+				//_canvas.bind( "pb-zout", { reverse: true }, _zoom );
 				// get context
 				_ctx = $( "#" + _id, _sandbox.context )[0].getContext( "2d" );
 				// hide
@@ -2004,16 +2059,19 @@ PhyloBox = (function ( $ ) {
 					},
 					// connect nodes with lines
 					connect: function( node ) {
-				        for ( var c = 0; c < node.children.length; c++ ) {
+				    for ( var c = 0; c < node.children.length; c++ ) {
 							var sp = node.children[c].siblings.length > 0 ? node.children[c].siblings[0].point3D : false;
 							var l = new _Engine.Line( node, node.children[c], sp, this );
 							var cp1 = l.controlP1;
 							var cp2 = l.controlP2;
-				            _l.push( l );
+				      _l.push( l );
 							_cp.push( cp1 );
 							_cp.push( cp2 );
-				            this.connect( node.children[c] );
-				        }
+				      this.connect( node.children[c] );
+				    }
+					},
+					zoom: function( reverse ) {
+					  _startZoom( reverse, 1 );
 					},
 					// gets
 					get id() { return _id; },
@@ -2444,6 +2502,9 @@ PhyloBox = (function ( $ ) {
 		}
 		// tools
 		$( ".tool", _sandbox.context ).live( "click", function () {
+		  // check zooms
+		  if ( $( this ).hasClass( "tool-button" ) ) 
+				return false;
 			// check unavailable
 			if ( $( this ).hasClass( "tool-off" ) ) 
 				return false;
@@ -2456,6 +2517,10 @@ PhyloBox = (function ( $ ) {
 			$( this ).addClass( "tool-active" );
 			// set to active
 			_activeTool = this.id;
+		});
+		$( ".tool-button", _sandbox.context ).live( "click", function ( e ) {
+			// notify sandbox
+			_sandbox.notify( "pb-" + this.id );
 		});
 		$( ".tool", _sandbox.context ).live( "mousedown", function ( e ) {
 			// prevent image drag behavior
@@ -2640,6 +2705,14 @@ PhyloBox = (function ( $ ) {
 							$( this ).remove();
 						});
 						break;
+					case "pb-zin":
+					  // flip clade
+						_sandbox.activeTree.view.zoom();
+					  break;
+					case "pb-zout":
+  				  // flip clade
+  					_sandbox.activeTree.view.zoom(true);
+  					break;
 				}
 			}
 		};
