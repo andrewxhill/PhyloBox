@@ -21,7 +21,7 @@ import logging
 
 
 #project module storing all the db table models
-from pb.db import *
+from pb.DB import *
 from pb.parse.phyloxml import *
 from pb.methods import *
 from pb.parse.newick import *
